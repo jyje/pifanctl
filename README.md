@@ -22,7 +22,7 @@ If you want to build it yourself, you can do the following:
 ```sh
 git clone https://github.com/jyje/pifanctl ~/.pifanctl
 cd ~/.pifanctl/sources
-pip install --upgrade -r requirements.txt
+pip install --upgrade -r requirements.raspi.txt
 python main.py --help
 ```
 ### Trouble Shooting
@@ -54,9 +54,14 @@ Then you can try the following command:
 python3 -m venv ~/.pifanctl/sources/venv
 source ~/.pifanctl/sources/venv/bin/activate
 
-pip install --upgrade -r requirements.txt
+pip install --upgrade -r requirements.raspi.txt
 
 # To deactivate the virtual environment, you can run the following command:
 # deactivate
 ```
 ---
+
+# References
+
+- [Official: Raspberry Pi Foundation](https://www.raspberrypi.org)
+- [Blog: Using Raspberry Pi to Control a PWM Fan and Monitor its Speed](https://blog.driftking.tw/en/2019/11/Using-Raspberry-Pi-to-Control-a-PWM-Fan-and-Monitor-its-Speed/)

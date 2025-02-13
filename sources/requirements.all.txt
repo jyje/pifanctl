@@ -1,0 +1,2 @@
+-r requirements.raspi.txt
+Mock.GPIO == 0.1.10

@@ -1,25 +1,128 @@
-import glob, time, typer
-import RPi.GPIO as GPIO
+import time, logging
+import typer
+from typing_extensions import Annotated
+
+import pifanctl.router as router
+import pifanctl.enum as enum
+
 
 app = typer.Typer(
     name = "pifanctl",
-    help = "🥧 A CLI for PWM Fan Controlling of Raspberry Pi"
+    help = """
+    🥧 A CLI for PWM Fan Controlling of Raspberry Pi
+
+    Project Page: https://github.com/jyje/pifanctl
+    """
 )
 
-def get_max_temperature():
-    file_list = glob.glob('/sys/class/thermal/thermal_zone*/temp')
-    temp_array = []
-    for file_path in file_list:
-        with open(file_path, 'r') as file:
-            temp_raw = file.read().strip()
-            temp = float(temp_raw)/1000
-            temp_array.append(temp)
-    return max(temp_array)
+state = {}
 
-@app.command()
-def check(name: str):
-    current_temperature = get_max_temperature()
-    print(f"Hello {name}, current temperature: {current_temperature:.3f} °C")
+
+def version_callback(value: bool):
+    """
+    Version callback
+    """
+
+    __version__ = "0.0.1"
+
+    if value:
+        print(f"v{__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def common_callback(
+    ctx: typer.Context,
+    log_level: Annotated[
+        enum.LogLevels,
+        typer.Option(
+            "--log-level", "-l",
+            help = "Set the log level",
+            autocompletion = enum.LogLevels.list,
+        )
+    ] = enum.LogLevels.INFO,
+    verbose: Annotated[
+        bool,
+        typer.Option(
+            "--verbose", "-v",
+            help = "Enable verbose output",
+        )
+    ] = False,
+    version: Annotated[
+        bool,
+        typer.Option(
+            "--version", "-V",
+            help = "Show version",
+            callback = version_callback,
+        )
+    ] = False,
+):
+    """
+    Common callback
+    """
+
+    # Set logging
+    logging.basicConfig(
+        level = log_level,
+        format = "%(levelname)s [%(asctime)sZ] %(message)s",
+        datefmt = "%Y-%m-%d %H:%M:%S",
+    )
+    logging.Formatter.converter = time.gmtime
+    logging.addLevelName(logging.DEBUG, "\033[94mDEBUG\033[0m")
+    logging.addLevelName(logging.INFO, "\033[92mINFO\033[0m")
+    logging.addLevelName(logging.WARNING, "\033[93mWARNING\033[0m")
+    logging.addLevelName(logging.ERROR, "\033[91mERROR\033[0m")
+    logging.addLevelName(logging.CRITICAL, "\033[95mCRITICAL\033[0m")
+    state["log_level"] = log_level
+
+    # Set verbose
+    state["verbose"] = verbose
+
+    # Show state
+    logging.debug(f"state: {state}")
+
+
+@app.command(
+    help = "Show current status"
+)
+def status(ctx: typer.Context):
+    router.status(state)
+
+
+@app.command(
+    help = "Start fan control"
+)
+def start(ctx: typer.Context):
+    router.start(state)
+
+
+@app.command(
+    help = "Stop fan control"
+)
+def stop(ctx: typer.Context):
+    router.stop(state)
+
+
+@app.command(
+    help = "Set and enable fan control in system service"
+)
+def enable(ctx: typer.Context):
+    router.enable(state)
+
+
+@app.command(
+    help = "Disable fan control from system service"
+)
+def disable(ctx: typer.Context):
+    router.disable(state)
+
+
+@app.command(
+    help = "Manage a configuration of fan control"
+)
+def config(ctx: typer.Context):
+    router.config(state)
+
 
 if __name__ == "__main__":
     app()
