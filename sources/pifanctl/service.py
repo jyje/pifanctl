@@ -3,7 +3,10 @@ import glob, logging
 try:
     import RPi.GPIO as GPIO
     RPI_DEVICE = True
-except ImportError as e:
+except RuntimeError as e:
+    logging.info(f"Impossible to import RPi.GPIO: {e}")
+    
+    logging.info("Mock.GPIO will be used")
     import Mock.GPIO as GPIO
     RPI_DEVICE = False
 
