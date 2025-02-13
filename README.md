@@ -25,6 +25,11 @@ cd ~/.pifanctl/sources
 pip install --upgrade -r requirements.raspi.txt
 python ~/.pifanctl/sources/main.py --help
 ```
+
+Then you can use the following command to control the fan:
+
+![result of `pifanctl --help`](docs/pifanctl-help.png)
+
 ### Trouble Shooting
 
 #### Problem 1: externally-managed-environment
