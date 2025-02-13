@@ -23,11 +23,12 @@ If you want to build it yourself, you can do the following:
 git clone https://github.com/jyje/pifanctl ~/.pifanctl
 cd ~/.pifanctl/sources
 pip install --upgrade -r requirements.raspi.txt
-python main.py --help
+python ~/.pifanctl/sources/main.py --help
 ```
 ### Trouble Shooting
 
-If you encounter the following error:
+#### Problem 1: externally-managed-environment
+In Raspberry Pi, if you encounter the following error:
 
 ```sh
 error: externally-managed-environment
@@ -59,6 +60,39 @@ pip install --upgrade -r requirements.raspi.txt
 # To deactivate the virtual environment, you can run the following command:
 # deactivate
 ```
+
+#### Problem 2: Mock.GPIO
+
+In non-Raspberry Pi OS, if you encounter like the following error:
+
+```sh
+Building wheels for collected packages: RPi.GPIO
+  Building wheel for RPi.GPIO (pyproject.toml) ... error
+  error: subprocess-exited-with-error
+  
+  × Building wheel for RPi.GPIO (pyproject.toml) did not run successfully.
+  │ exit code: 1
+  ╰─> [27 lines of output]
+      running bdist_wheel
+      running build
+      running build_py
+      creating build/lib.macosx-15.3-arm64-cpython-313/RPi
+      copying RPi/__init__.py -> build/lib.macosx-15.3-arm64-cpython-313/RPi
+      creating build/lib.macosx-15.3-arm64-cpython-313/RPi/GPIO
+      copying RPi/GPIO/__init__.py -> build/lib.macosx-15.3-arm64-cpython-313/RPi/GPIO
+      running build_ext
+      building 'RPi._GPIO' extension
+      creating build/temp.macosx-15.3-arm64-cpython-313/source
+```
+
+This is because the `RPi.GPIO` is not available in non-Raspberry Pi OS. Then we can use `Mock.GPIO` instead to simulate the `RPi.GPIO` to control the fan.
+
+So you can try the following command:
+
+```sh
+pip install --upgrade -r requirements.mock.txt
+```
+
 ---
 
 # References
