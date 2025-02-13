@@ -1,4 +1,4 @@
-import time, logging
+import os, time, logging
 import typer
 from typing_extensions import Annotated
 
@@ -21,13 +21,17 @@ state = {}
 def version_callback(value: bool):
     """
     Version callback
+
+    The version is set by value. The value is determined by the GitHub Actions workflow.
     """
 
-    __version__ = "0.0.1"
+    VERSION_FILE_PATH = os.path.join(os.path.dirname(__file__), "version")
 
-    if value:
-        print(f"v{__version__}")
-        raise typer.Exit()
+    assert os.path.exists(VERSION_FILE_PATH), f"version file not found: {VERSION_FILE_PATH}"
+
+    version = open(VERSION_FILE_PATH, "r").read().strip()
+    print(version)
+    raise typer.Exit()
 
 
 @app.callback()

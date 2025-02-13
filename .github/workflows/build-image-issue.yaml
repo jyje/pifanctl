@@ -53,6 +53,9 @@ jobs:
       - name: Extract short SHA
         run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
 
+      - name: Set the version with short SHA
+        run: echo "${{ env.SHORT_SHA }}" > ./sources/version
+
       - name: Build/Publish as GitHub Package
         uses: docker/build-push-action@v6
         with:
@@ -66,6 +69,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Test image
+      - name: Test image default
         run: |
           docker run -i ghcr.io/${{ github.repository }}-issue:${{ env.SHORT_SHA }}
+
+      - name: Test image version
+        run: |
+          docker run -i ghcr.io/${{ github.repository }}-issue:${{ env.SHORT_SHA }} python main.py --version
