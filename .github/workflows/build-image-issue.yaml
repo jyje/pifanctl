@@ -24,8 +24,8 @@ jobs:
       - name: Check for --no-ci flag in commit message
         id: check_flag
         run: |
-          echo Checking commit message for --no-ci flag...
-          if echo ${{ github.event.head_commit.message }} | grep -- '--no-ci'; then
+          echo "Checking commit message for --no-ci flag..."
+          if [ "$(echo '${{ github.event.head_commit.message }}' | grep -c -- '--no-ci')" -gt 0 ]; then
             echo "step_init=false" >> $GITHUB_OUTPUT
           else
             echo "step_init=true" >> $GITHUB_OUTPUT
