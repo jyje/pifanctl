@@ -12,6 +12,8 @@
 
 </div>
 
+🐳 **pifanctl** is a CLI tool for PWM fan control on Raspberry Pi. It can be easily run via **Docker** and **Kubernetes** and is optimized for ARM64 architecture. The project features a CI/CD pipeline using GitHub Actions with Actions Runner Controller (ARC), ensuring all builds are tested in actual Raspberry Pi environments. Please enjoy it!
+
 ## 1. Run
 
 You should access the Raspberry Pi (ARM64) to run the following commands.
@@ -56,15 +58,46 @@ python ~/.pifanctl/sources/main.py --version
 python ~/.pifanctl/sources/main.py status
 ```
 
----
+## 3. CI/CD Pipeline
 
-## 3. Trouble Shooting
+This project uses GitHub Actions with Actions Runner Controller (ARC) for ARM64-based CI/CD pipeline. The builds are executed on self-hosted Raspberry Pi runners, ensuring native ARM64 compatibility.
+
+### 3.1. Workflow Structure
+
+- **Main Branch (`build-image-main.yaml`)**
+  - Builds and publishes to `ghcr.io/jyje/pifanctl:latest`
+  - Tags with commit SHA
+  - Runs on production-ready code
+
+- **Develop Branch (`build-image-develop.yaml`)**
+  - Builds and publishes to `ghcr.io/jyje/pifanctl-dev:latest`
+  - Used for development and testing
+
+- **Issue Branches (`build-image-issue.yaml`)**
+  - Builds and publishes to `ghcr.io/jyje/pifanctl-issue:latest`
+  - Builds feature branches with pattern `issue-**`
+  - Tags only with commit SHA for temporary testing
+
+### 3.2. Key Features
+
+- Native ARM64 builds using self-hosted runners (`r4spi-microk8s`)
+- Automatic version tagging using commit SHA
+- Skip CI option with `--no-ci` flag in commit messages
+- GitHub Container Registry (ghcr.io) integration
+- Automated testing of built images
+
+### 3.3. Build Process
+
+1. Initialize and check for CI skip flag
+2. Build Docker image for ARM64 platform
+3. Push to GitHub Container Registry
+4. Run automated tests on the built image
+
+## 4. Trouble Shooting
 
 Is there any problem? see [trouble-shooting.md](docs/trouble-shooting.md)
 
----
-
-## 4. References
+## 5. References
 
 - [Official: Raspberry Pi Foundation](https://www.raspberrypi.org)
 - [Blog: Using Raspberry Pi to Control a PWM Fan and Monitor its Speed](https://blog.driftking.tw/en/2019/11/Using-Raspberry-Pi-to-Control-a-PWM-Fan-and-Monitor-its-Speed/)
