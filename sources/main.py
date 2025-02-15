@@ -25,6 +25,9 @@ def version_callback(value: bool):
     The version is set by value. The value is determined by the GitHub Actions workflow.
     """
 
+    if not value:
+        return
+
     VERSION_FILE_PATH = os.path.join(os.path.dirname(__file__), "version")
 
     assert os.path.exists(VERSION_FILE_PATH), f"version file not found: {VERSION_FILE_PATH}"
