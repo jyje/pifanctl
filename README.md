@@ -8,7 +8,8 @@
 
 [![CI status for main branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml/badge.svg?branch=main)](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml)
 [![CI status for develop branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml)
-[![GitHub Repository stars](https://img.shields.io/github/stars/jyje/pifanctl)](https://github.com/jyje/pifanctl)
+[![GitHub Repo stars](https://img.shields.io/github/stars/jyje/pifanctl?style=flat&color=yellow)](https://github.com/jyje/pifanctl)
+
 
 </div>
 
@@ -92,6 +93,8 @@ This project uses GitHub Actions with Actions Runner Controller (ARC) for ARM64-
 2. Build Docker image for ARM64 platform
 3. Push to GitHub Container Registry
 4. Run automated tests on the built image
+
+
 
 ## 4. Trouble Shooting
 
