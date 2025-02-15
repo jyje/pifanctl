@@ -60,6 +60,7 @@ Building wheels for collected packages: RPi.GPIO
 ```
 
 This is because the `RPi.GPIO` is not available in non-Raspberry Pi OS. Then we can use `Mock.GPIO` instead to simulate the `RPi.GPIO` to control the fan.
+Simulating the `RPi.GPIO` is not proper way to control the fan. It is only for UX enhancement.
 
 So you can try the following command:
 
