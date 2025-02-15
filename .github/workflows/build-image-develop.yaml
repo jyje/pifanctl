@@ -7,8 +7,9 @@ on:
       - develop
     paths:
       - .github/workflows/build-image-develop.yaml
-      - "docker/Dockerfile"
-      - "sources/**"
+      - docker/all.dockerfile
+      - docker/raspi.dockerfile
+      - sources/**
 
 jobs:
   init:
@@ -24,7 +25,7 @@ jobs:
         id: check_flag
         run: |
           echo "Checking commit message for --no-ci flag..."
-          if echo "${{ github.event.head_commit.message }}" | grep -- '--no-ci'; then
+          if [ "$(echo '${{ github.event.head_commit.message }}' | grep -c -- '--no-ci')" -gt 0 ]; then
             echo "step_init=false" >> $GITHUB_OUTPUT
           else
             echo "step_init=true" >> $GITHUB_OUTPUT
@@ -34,13 +35,11 @@ jobs:
     name: 🏗️ Build and testing
     needs: init
     if: ${{ needs.init.outputs.step_init == 'true' }}
-    runs-on: ubuntu-24.04-arm
+    runs-on:
+      labels: r4spi-microk8s # Self-hosted ARM64 runner
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -52,20 +51,25 @@ jobs:
       - name: Extract short SHA
         run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
 
+      - name: Set the version with short SHA
+        run: echo "${{ env.SHORT_SHA }}" > ./sources/version
+
       - name: Build/Publish as GitHub Package
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./docker/Dockerfile
-          platforms: linux/amd64,linux/arm64
+          file: ./docker/all.dockerfile
+          platforms: linux/arm64
           push: true
           provenance: false
           tags: |
             ghcr.io/${{ github.repository }}-dev:latest
             ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
 
-      - name: Test image
+      - name: Test image default
         run: |
           docker run -i ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }}
+
+      - name: Test image version
+        run: |
+          docker run -i ghcr.io/${{ github.repository }}-dev:${{ env.SHORT_SHA }} python main.py --version
