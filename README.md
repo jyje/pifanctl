@@ -2,7 +2,7 @@
 
 # pifanctl
 
-<img alt="pifanctl logo" src="docs/whale-cooling-pie.jpg" height="250" style="max-width: 100%;">
+<img alt="pifanctl logo" src="docs/whale-cooling-pie.jpg" width="450" style="object-fit: contain; max-width: 100%; aspect-ratio: 16 / 9;">
 
 🥧 A CLI for **PWM Fan Controlling** of **Raspberry Pi**
 
