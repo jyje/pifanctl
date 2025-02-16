@@ -10,10 +10,6 @@ WORKDIR /workspace
 RUN pip install --upgrade --no-cache-dir pip
 RUN pip install --upgrade --no-cache-dir -r requirements.all.txt
 
-# Create user with UID 1000
-RUN useradd -m -u 1000 user
-USER user
-
 # Run the command
 CMD ["python", "main.py", "--help"]
 
