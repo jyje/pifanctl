@@ -91,9 +91,9 @@ You can check the environment of CI/CD pipeline in [app.jyje.live#stack](https:/
 
 ### 3.2. Key Features
 
-- Native ARM64 builds using self-hosted runners (`r4spi-microk8s`)
+- Native ARM64 builds using self-hosted runners (**`r4spi-microk8s`**)
 - Automatic version tagging using commit SHA
-- Skip CI option with `--no-ci` flag in commit messages
+- Skip CI option with **`--no-ci`** flag in commit messages
 - GitHub Container Registry (ghcr.io) integration
 - Automated testing of built images
 
