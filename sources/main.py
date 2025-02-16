@@ -16,7 +16,7 @@ app = typer.Typer(
     """
 )
 
-state = {}
+state: dict = {}
 
 
 def version_callback(value: bool):
@@ -100,8 +100,62 @@ def status(ctx: typer.Context):
 @app.command(
     help = "Start fan control"
 )
-def start(ctx: typer.Context):
-    router.start(state)
+def start(
+    ctx: typer.Context,
+    pin: Annotated[
+        int,
+        typer.Option(
+            "--pin", "-p",
+            help = "Set the BCM pin number to drive the PWM fan",
+        )
+    ] = 18.0,
+    target_temperature: Annotated[
+        float,
+        typer.Option(
+            "--target-temperature", "-t",
+            help = "Set the target temperature. [unit: °C]",
+        )
+    ] = 50.0,
+    pwm_frequency: Annotated[
+        int,
+        typer.Option(
+            "--pwm-frequency",
+            help = "Set the PWM frequency. [unit: Hz]",
+        )
+    ] = 1000,
+    pwm_refresh_interval: Annotated[
+        float,
+        typer.Option(
+            "--pwm-refresh-interval",
+            help = "Set the PWM refresh interval. [unit: s]",
+        )
+    ] = 30.0,
+    duty_cycle_initial: Annotated[
+        float,
+        typer.Option(
+            "--duty-cycle-initial",
+            help = "Set the initial duty cycle. [unit: %]",
+        )
+    ] = 0.0,
+    duty_cycle_step: Annotated[
+        float,
+        typer.Option(
+            "--duty-cycle-step",
+            help = "Set the duty cycle step. [unit: %]",
+        )
+    ] = 2.0,
+):
+    params = {
+        "pin": pin,
+        "target_temperature": target_temperature,
+        "pwm_frequency": pwm_frequency,
+        "pwm_refresh_interval": pwm_refresh_interval,
+        "duty_cycle_initial": duty_cycle_initial,
+        "duty_cycle_step": duty_cycle_step,
+    }
+    logger.debug(f"params: {params}")
+
+    router.start(state=state, **params)
 
 
 @app.command(
