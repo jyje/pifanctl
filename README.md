@@ -27,7 +27,7 @@ You should access the Raspberry Pi (ARM64) to run the following commands.
 
 ### 1.2. Run using Docker
 ```sh
-docker run -i ghcr.io/jyje/pifanctl:latest python main.py --help
+docker run --device /dev/gpiomem -it ghcr.io/jyje/pifanctl:latest python main.py --help
 ```
 
 ### 1.3. Run using Source Code

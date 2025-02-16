@@ -5,6 +5,7 @@ from typing_extensions import Annotated
 import pifanctl.router as router
 import pifanctl.enum as enum
 
+logger = logging.getLogger(__name__)
 
 app = typer.Typer(
     name = "pifanctl",
@@ -86,7 +87,7 @@ def common_callback(
     state["verbose"] = verbose
 
     # Show state
-    logging.debug(f"state: {state}")
+    logger.debug(f"state: {state}")
 
 
 @app.command(

@@ -1,12 +1,14 @@
 import glob, logging
 
+logger = logging.getLogger(__name__)
+
 try:
     import RPi.GPIO as GPIO
     RPI_DEVICE = True
 except Exception as e:
-    logging.info(f"Impossible to import RPi.GPIO: {e}")
+    logger.info(f"Impossible to import RPi.GPIO: {e}")
     
-    logging.info("Mock.GPIO will be used")
+    logger.info("Mock.GPIO will be used")
     import Mock.GPIO as GPIO
     RPI_DEVICE = False
 
@@ -14,9 +16,11 @@ except Exception as e:
 def get_temperature():
     if not RPI_DEVICE:
         import random
-        mean = 50
+        mean = -50
         std = 10
-        return [ random.gauss(mean, std) ]
+
+        value = random.gauss(mean, std)
+        return [ value ]
 
     file_list = glob.glob('/sys/class/thermal/thermal_zone*/temp')
     temp_array = []
@@ -25,5 +29,6 @@ def get_temperature():
             temp_raw = file.read().strip()
             temp = float(temp_raw)/1000
             temp_array.append(temp)
+            logger.debug(f"Temperature reading from {file_path}: {temp}°C")
 
     return temp_array
