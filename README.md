@@ -61,7 +61,9 @@ python ~/.pifanctl/sources/main.py status
 
 ## 3. CI/CD Pipeline
 
-This project uses GitHub Actions with Actions Runner Controller (ARC) for ARM64-based CI/CD pipeline. The builds are executed on self-hosted Raspberry Pi runners, ensuring native ARM64 compatibility.
+This project uses [GitHub Actions with Actions Runner Controller (ARC)](https://github.com/actions/actions-runner-controller) for ARM64-based CI/CD pipeline. The builds are executed on self-hosted Raspberry Pi runners, ensuring native ARM64 compatibility.
+
+You can check the environment of CI/CD pipeline in [app.jyje.live#stack](https://app.jyje.live#stack)
 
 ### 3.1. Workflow Structure
 
