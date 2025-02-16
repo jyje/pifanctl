@@ -27,7 +27,18 @@ You should access the Raspberry Pi (ARM64) to run the following commands.
 
 ### 1.2. Run using Docker
 ```sh
-docker run --privileged -it ghcr.io/jyje/pifanctl:latest python main.py --help
+docker run -it ghcr.io/jyje/pifanctl:latest python main.py --help
+```
+
+Then you can use the following command to control the fan:
+
+![result of `pifanctl --help`](docs/pifanctl-help.png)
+
+
+And you can run the following command to start the fan:
+
+```sh
+docker run --privileged -it ghcr.io/jyje/pifanctl-dev python main.py start
 ```
 
 Currently, `--privileged` is required to access and control the GPIO pins.
@@ -41,10 +52,6 @@ cd ~/.pifanctl/sources
 pip install --upgrade -r requirements.raspi.txt
 python ~/.pifanctl/sources/main.py --help
 ```
-
-Then you can use the following command to control the fan:
-
-![result of `pifanctl --help`](docs/pifanctl-help.png)
 
 
 ---
