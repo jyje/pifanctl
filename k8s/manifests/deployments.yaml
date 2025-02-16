@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pifanctl
+spec:
+  selector:
+    matchLabels:
+      app: pifanctl
+  template:
+    metadata:
+      labels:
+        app: pifanctl
+    spec:
+      containers:
+      - name: main
+        image: ghcr.io/jyje/pifanctl:latest
+        command: [sh, -c]
+        args:
+        - |
+          python main.py \
+            --log-level INFO \
+            start \
+              --target-temperature 50 \
+              --pwm-refresh-interval 10
+        resources:
+          limits:
+            memory: 128Mi
+            cpu: 500m
+        securityContext:
+          privileged: true
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      nodeSelector:
+        kubernetes.io/hostname: raspi-40 # change to your own hostname
