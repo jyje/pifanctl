@@ -14,13 +14,10 @@ spec:
       containers:
       - name: main
         image: ghcr.io/jyje/pifanctl:latest
-        command: [sh, -c]
-        args:
-        - |
-          python main.py \
-            --log-level DEBUG \
-            start
+        command: ["python", "main.py", "start"]
         env:
+        - name: LOG_LEVEL
+          value: "DEBUG"
         - name: PWM_REFRESH_INTERVAL
           value: "5"
         - name: TARGET_TEMPERATURE

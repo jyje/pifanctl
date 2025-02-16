@@ -45,6 +45,7 @@ def common_callback(
         enum.LogLevels,
         typer.Option(
             "--log-level", "-l",
+            envvar = "LOG_LEVEL",
             help = "Set the log level",
             autocompletion = enum.LogLevels.list,
         )
