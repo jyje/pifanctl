@@ -106,6 +106,7 @@ def start(
         int,
         typer.Option(
             "--pin", "-p",
+            envvar = "PIN",
             help = "Set the BCM pin number to drive the PWM fan",
         )
     ] = 18.0,
@@ -113,6 +114,7 @@ def start(
         float,
         typer.Option(
             "--target-temperature", "-t",
+            envvar = "TARGET_TEMPERATURE",
             help = "Set the target temperature. [unit: °C]",
         )
     ] = 50.0,
@@ -120,6 +122,7 @@ def start(
         int,
         typer.Option(
             "--pwm-frequency",
+            envvar = "PWM_FREQUENCY",
             help = "Set the PWM frequency. [unit: Hz]",
         )
     ] = 1000,
@@ -127,6 +130,7 @@ def start(
         float,
         typer.Option(
             "--pwm-refresh-interval",
+            envvar = "PWM_REFRESH_INTERVAL",
             help = "Set the PWM refresh interval. [unit: s]",
         )
     ] = 30.0,
@@ -134,6 +138,7 @@ def start(
         float,
         typer.Option(
             "--duty-cycle-initial",
+            envvar = "DUTY_CYCLE_INITIAL",
             help = "Set the initial duty cycle. [unit: %]",
         )
     ] = 0.0,
@@ -141,6 +146,7 @@ def start(
         float,
         typer.Option(
             "--duty-cycle-step",
+            envvar = "DUTY_CYCLE_STEP",
             help = "Set the duty cycle step. [unit: %]",
         )
     ] = 2.0,

@@ -18,10 +18,13 @@ spec:
         args:
         - |
           python main.py \
-            --log-level INFO \
-            start \
-              --target-temperature 50 \
-              --pwm-refresh-interval 10
+            --log-level DEBUG \
+            start
+        env:
+        - name: PWM_REFRESH_INTERVAL
+          value: "5"
+        - name: TARGET_TEMPERATURE
+          value: "45"
         resources:
           limits:
             memory: 128Mi
