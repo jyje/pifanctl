@@ -15,18 +15,22 @@
 
 🐳 **pifanctl** is a CLI tool for PWM fan control on Raspberry Pi. It can be easily run via **Docker** and **Kubernetes** and is optimized for ARM64 architecture. The project features a CI/CD pipeline using GitHub Actions with Actions Runner Controller (ARC), ensuring all builds are tested in actual Raspberry Pi environments. Please enjoy it!
 
+
+---
 ## 1. Run
+
+### 1.1. Requirements
+
+- Raspberry Pi (ARM64)
 
 You should access the Raspberry Pi (ARM64) to run the following commands.
 
-### 1.1. Run using Docker
-
+### 1.2. Run using Docker
 ```sh
 docker run -i ghcr.io/jyje/pifanctl:latest python main.py --help
 ```
 
-### 1.2. Run using Source
-
+### 1.3. Run using Source Code
 ```sh
 git clone https://github.com/jyje/pifanctl ~/.pifanctl
 cd ~/.pifanctl/sources
@@ -38,6 +42,8 @@ Then you can use the following command to control the fan:
 
 ![result of `pifanctl --help`](docs/pifanctl-help.png)
 
+
+---
 ## 2. Build
 
 If you want to build it yourself, you can do the following:
@@ -59,6 +65,8 @@ python ~/.pifanctl/sources/main.py --version
 python ~/.pifanctl/sources/main.py status
 ```
 
+
+---
 ## 3. CI/CD Pipeline
 
 This project uses [GitHub Actions with Actions Runner Controller (ARC)](https://github.com/actions/actions-runner-controller) for ARM64-based CI/CD pipeline. The builds are executed on self-hosted Raspberry Pi runners, ensuring native ARM64 compatibility.
@@ -97,11 +105,13 @@ You can check the environment of CI/CD pipeline in [app.jyje.live#stack](https:/
 4. Run automated tests on the built image
 
 
-
+---
 ## 4. Trouble Shooting
 
 Is there any problem? see [trouble-shooting.md](docs/trouble-shooting.md)
 
+
+---
 ## 5. References
 
 - [Official: Raspberry Pi Foundation](https://www.raspberrypi.org)
