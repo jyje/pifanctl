@@ -160,7 +160,7 @@ def start(
         "duty_cycle_initial": duty_cycle_initial,
         "duty_cycle_step": duty_cycle_step,
     }
-    logger.debug(f"params: {params}")
+    logger.info(f"Starting fan control with params: {params}")
 
     router.start(state=state, **params)
 
