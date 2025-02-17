@@ -61,6 +61,8 @@ You can check the logs of the pifanctl with the following command:
 kubectl logs -n pifanctl -l app=pifanctl
 ```
 
+![logs of `pifanctl`](docs/k8s-logs.png)
+
 ### 1.3. Run using Docker
 ```sh
 docker run -it ghcr.io/jyje/pifanctl:latest python main.py --help
