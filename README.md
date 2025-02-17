@@ -22,10 +22,22 @@
 ### 1.1. Requirements
 
 - Raspberry Pi (ARM64)
+- Python 3.8+
 
 You should access the Raspberry Pi (ARM64) to run the following commands.
 
-### 1.2. Run using Docker
+### 1.2. Install
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/jyje/pifanctl/main/install.sh -o install-pifanctl.sh
+chmod +x install-pifanctl.sh
+./install-pifanctl.sh
+rm install-pifanctl.sh
+```
+
+After installation, you can use the following command to control the fan, `pifanctl --help`
+
+### 1.3. Run using Docker
 ```sh
 docker run -it ghcr.io/jyje/pifanctl:latest python main.py --help
 ```
@@ -45,7 +57,7 @@ Currently, `--privileged` is required to access and control the GPIO pins.
 We will try to find a better solution in the future.
 
 
-### 1.3. Run using Source Code
+### 1.4. Run using Source Code
 ```sh
 git clone https://github.com/jyje/pifanctl ~/.pifanctl
 cd ~/.pifanctl/sources
