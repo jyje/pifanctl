@@ -1,6 +1,6 @@
 <div align="center">
 
-# pifanctl
+# pifanctl: A Raspberry Pi Fan Controller
 
 <img alt="pifanctl logo" src="docs/whale-cooling-pie.jpg" width="450" style="object-fit: contain; max-width: 100%; aspect-ratio: 16 / 9;">
 
