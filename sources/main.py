@@ -23,8 +23,8 @@ app = typer.Typer(
     context_settings = {"help_option_names": ["-h", "--help"]},
     help = """
     🥧 pifanctl: A CLI for PWM Fan Controlling of Raspberry Pi
-    \n 
-    \nProject Page: https://github.com/jyje/pifanctl
+    
+    Project Page: https://github.com/jyje/pifanctl
     """
 )
 
@@ -104,6 +104,7 @@ def common_callback(
 
 
 @app.command(
+    cls = TyperGroup,
     help = "Show current status"
 )
 def status(ctx: typer.Context):
@@ -111,6 +112,7 @@ def status(ctx: typer.Context):
 
 
 @app.command(
+    cls = TyperGroup,
     help = "Start fan control"
 )
 def start(
@@ -178,6 +180,7 @@ def start(
 
 
 @app.command(
+    cls = TyperGroup,
     help = "Stop fan control"
 )
 def stop(ctx: typer.Context):
@@ -185,6 +188,7 @@ def stop(ctx: typer.Context):
 
 
 @app.command(
+    cls = TyperGroup,
     help = "Set and enable fan control in system service"
 )
 def enable(ctx: typer.Context):
@@ -192,6 +196,7 @@ def enable(ctx: typer.Context):
 
 
 @app.command(
+    cls = TyperGroup,
     help = "Disable fan control from system service"
 )
 def disable(ctx: typer.Context):
@@ -199,6 +204,7 @@ def disable(ctx: typer.Context):
 
 
 @app.command(
+    cls = TyperGroup,
     help = "Manage a configuration of fan control"
 )
 def config(ctx: typer.Context):
