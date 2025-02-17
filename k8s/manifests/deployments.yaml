@@ -14,23 +14,25 @@ spec:
       containers:
       - name: main
         image: ghcr.io/jyje/pifanctl:latest
-        command: [sh, -c]
-        args:
-        - |
-          python main.py \
-            --log-level INFO \
-            start \
-              --target-temperature 50 \
-              --pwm-refresh-interval 10
+        command: ["python", "main.py", "start"]
+        env:
+        - name: PIN
+          value: "18"
+        - name: LOG_LEVEL
+          value: INFO
+        - name: PWM_REFRESH_INTERVAL
+          value: "30"
+        - name: TARGET_TEMPERATURE
+          value: "50"
         resources:
           limits:
             memory: 128Mi
             cpu: 500m
         securityContext:
           privileged: true
-      tolerations:
-        - key: node-role.kubernetes.io/control-plane
-          operator: Exists
-          effect: NoSchedule
-      nodeSelector:
-        kubernetes.io/hostname: raspi-40 # change to your own hostname
+      # tolerations:
+      #   - key: node-role.kubernetes.io/control-plane
+      #     operator: Exists
+      #     effect: NoSchedule
+      # nodeSelector:
+      #   kubernetes.io/hostname: raspi-40 # change to your own hostname

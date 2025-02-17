@@ -6,13 +6,25 @@ import pifanctl.router as router
 import pifanctl.enum as enum
 
 logger = logging.getLogger(__name__)
+class TyperGroup(typer.core.TyperGroup):
+    """
+    Custom TyperGroup
+    """
+
+    def get_usage(self, ctx: typer.Context) -> str:
+        usage = super().get_usage(ctx)
+        main_py_name = "main.py"
+        app_name = "pifanctl"
+        return usage.replace(main_py_name, app_name)
 
 app = typer.Typer(
+    cls = TyperGroup,
     name = "pifanctl",
+    context_settings = {"help_option_names": ["-h", "--help"]},
     help = """
-    🥧 A CLI for PWM Fan Controlling of Raspberry Pi
-
-    Project Page: https://github.com/jyje/pifanctl
+    🥧 pifanctl: A CLI for PWM Fan Controlling of Raspberry Pi
+    \n 
+    \nProject Page: https://github.com/jyje/pifanctl
     """
 )
 
@@ -34,7 +46,7 @@ def version_callback(value: bool):
     assert os.path.exists(VERSION_FILE_PATH), f"version file not found: {VERSION_FILE_PATH}"
 
     version = open(VERSION_FILE_PATH, "r").read().strip()
-    print(version)
+    typer.echo(version)
     raise typer.Exit()
 
 
@@ -45,6 +57,7 @@ def common_callback(
         enum.LogLevels,
         typer.Option(
             "--log-level", "-l",
+            envvar = "LOG_LEVEL",
             help = "Set the log level",
             autocompletion = enum.LogLevels.list,
         )
@@ -60,7 +73,7 @@ def common_callback(
         bool,
         typer.Option(
             "--version", "-V",
-            help = "Show version",
+            help = "Show version and exit",
             callback = version_callback,
         )
     ] = False,
@@ -106,6 +119,7 @@ def start(
         int,
         typer.Option(
             "--pin", "-p",
+            envvar = "PIN",
             help = "Set the BCM pin number to drive the PWM fan",
         )
     ] = 18.0,
@@ -113,6 +127,7 @@ def start(
         float,
         typer.Option(
             "--target-temperature", "-t",
+            envvar = "TARGET_TEMPERATURE",
             help = "Set the target temperature. [unit: °C]",
         )
     ] = 50.0,
@@ -120,6 +135,7 @@ def start(
         int,
         typer.Option(
             "--pwm-frequency",
+            envvar = "PWM_FREQUENCY",
             help = "Set the PWM frequency. [unit: Hz]",
         )
     ] = 1000,
@@ -127,6 +143,7 @@ def start(
         float,
         typer.Option(
             "--pwm-refresh-interval",
+            envvar = "PWM_REFRESH_INTERVAL",
             help = "Set the PWM refresh interval. [unit: s]",
         )
     ] = 30.0,
@@ -134,6 +151,7 @@ def start(
         float,
         typer.Option(
             "--duty-cycle-initial",
+            envvar = "DUTY_CYCLE_INITIAL",
             help = "Set the initial duty cycle. [unit: %]",
         )
     ] = 0.0,
@@ -141,6 +159,7 @@ def start(
         float,
         typer.Option(
             "--duty-cycle-step",
+            envvar = "DUTY_CYCLE_STEP",
             help = "Set the duty cycle step. [unit: %]",
         )
     ] = 2.0,
@@ -153,7 +172,7 @@ def start(
         "duty_cycle_initial": duty_cycle_initial,
         "duty_cycle_step": duty_cycle_step,
     }
-    logger.debug(f"params: {params}")
+    logger.info(f"Starting fan control with params: {params}")
 
     router.start(state=state, **params)
 
