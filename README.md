@@ -33,6 +33,9 @@ curl -fsSL https://raw.githubusercontent.com/jyje/pifanctl/main/install.sh -o in
 chmod +x install-pifanctl.sh
 ./install-pifanctl.sh
 rm install-pifanctl.sh
+
+## Uninstall
+# rm -rf $HOME/.pifanctl
 ```
 
 After installation, you can use the following command to control the fan, `pifanctl --help`

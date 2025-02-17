@@ -48,6 +48,10 @@ echo "[INFO] Cloning repository..."
 git clone -b $BRANCH https://github.com/jyje/pifanctl.git $INSTALL_DIR
 cd $INSTALL_DIR
 
+# Set version information
+echo "[INFO] Setting version information..."
+git rev-parse --short=7 HEAD > ${INSTALL_DIR}/sources/version
+
 # Create virtual environment
 echo "[INFO] Creating virtual environment..."
 cd "${INSTALL_DIR}/sources"
