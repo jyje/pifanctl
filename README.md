@@ -40,6 +40,27 @@ rm install-pifanctl.sh
 
 After installation, you can use the following command to control the fan, `pifanctl --help`
 
+### 1.3. Run on Kubernetes
+
+Run the following command to install the pifanctl on Kubernetes with Raspberry Pies and a PWM Fan.
+
+```sh
+kubectl create namespace pifanctl
+kubectl apply -n pifanctl -f https://raw.githubusercontent.com/jyje/pifanctl/main/k8s/manifests/deployments.yaml
+```
+
+You can check the status of the pifanctl with the following command:
+
+```sh
+kubectl get pods -n pifanctl
+```
+
+You can check the logs of the pifanctl with the following command:
+
+```sh
+kubectl logs -n pifanctl -l app=pifanctl
+```
+
 ### 1.3. Run using Docker
 ```sh
 docker run -it ghcr.io/jyje/pifanctl:latest python main.py --help
