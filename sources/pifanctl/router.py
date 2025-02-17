@@ -1,4 +1,5 @@
 import logging
+import typer
 
 from pifanctl.service import (
     get_temperature,
@@ -9,9 +10,9 @@ from pifanctl.service import (
 def status(state):
     temperature_array = get_temperature()
     if len(temperature_array) > 0:
-        print(f"Current temperature: {max(temperature_array):.3f} °C")
+        typer.echo(f"Current temperature: {max(temperature_array):.3f} °C")
     else:
-        print("No temperature data available")
+        typer.echo("No temperature data available")
 
 
 def start(

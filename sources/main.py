@@ -6,13 +6,25 @@ import pifanctl.router as router
 import pifanctl.enum as enum
 
 logger = logging.getLogger(__name__)
+class TyperGroup(typer.core.TyperGroup):
+    """
+    Custom TyperGroup
+    """
+
+    def get_usage(self, ctx: typer.Context) -> str:
+        usage = super().get_usage(ctx)
+        main_py_name = "main.py"
+        app_name = "pifanctl"
+        return usage.replace(main_py_name, app_name)
 
 app = typer.Typer(
+    cls = TyperGroup,
     name = "pifanctl",
+    context_settings = {"help_option_names": ["-h", "--help"]},
     help = """
-    🥧 A CLI for PWM Fan Controlling of Raspberry Pi
-
-    Project Page: https://github.com/jyje/pifanctl
+    🥧 pifanctl: A CLI for PWM Fan Controlling of Raspberry Pi
+    \n 
+    \nProject Page: https://github.com/jyje/pifanctl
     """
 )
 
@@ -34,7 +46,7 @@ def version_callback(value: bool):
     assert os.path.exists(VERSION_FILE_PATH), f"version file not found: {VERSION_FILE_PATH}"
 
     version = open(VERSION_FILE_PATH, "r").read().strip()
-    print(version)
+    typer.echo(version)
     raise typer.Exit()
 
 
@@ -61,7 +73,7 @@ def common_callback(
         bool,
         typer.Option(
             "--version", "-V",
-            help = "Show version",
+            help = "Show version and exit",
             callback = version_callback,
         )
     ] = False,
