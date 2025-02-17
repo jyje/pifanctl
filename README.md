@@ -26,7 +26,7 @@
 
 You should access the Raspberry Pi (ARM64) to run the following commands.
 
-### 1.2. Install
+### 1.2. OPTION 1: Install CLI like a package
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/jyje/pifanctl/main/install.sh -o install-pifanctl.sh
@@ -40,7 +40,30 @@ rm install-pifanctl.sh
 
 After installation, you can use the following command to control the fan, `pifanctl --help`
 
-### 1.3. Run on Kubernetes
+![CLI logs of 'pifanctl --help'](docs/cli-pifanctl-help.png)
+
+### 1.3. OPTION 2: Using Docker
+```sh
+docker run -it ghcr.io/jyje/pifanctl python main.py --help
+```
+
+Then you can use the following command to control the fan:
+
+![docker logs of `pifanctl --help`](docs/docker-pifanctl-help.png)
+
+
+And you can run the following command to start the fan:
+
+```sh
+docker run --privileged -it ghcr.io/jyje/pifanctl python main.py start
+```
+
+![Docker logs of 'pifanctl start'](docs/docker-pifanctl-logs.png)
+
+Currently, `--privileged` is required to access and control the GPIO pins.
+We will try to find a better solution in the future.
+
+### 1.4. OPTION 3: On Kubernetes
 
 Run the following command to install the pifanctl on Kubernetes with Raspberry Pies and a PWM Fan.
 
@@ -61,29 +84,10 @@ You can check the logs of the pifanctl with the following command:
 kubectl logs -n pifanctl -l app=pifanctl
 ```
 
-![logs of `pifanctl`](docs/k8s-logs.png)
-
-### 1.3. Run using Docker
-```sh
-docker run -it ghcr.io/jyje/pifanctl:latest python main.py --help
-```
-
-Then you can use the following command to control the fan:
-
-![result of `pifanctl --help`](docs/pifanctl-help.png)
+![Kubernetes logs of 'pifanctl start'](docs/k8s-pifanctl-logs.png)
 
 
-And you can run the following command to start the fan:
-
-```sh
-docker run --privileged -it ghcr.io/jyje/pifanctl-dev python main.py start
-```
-
-Currently, `--privileged` is required to access and control the GPIO pins.
-We will try to find a better solution in the future.
-
-
-### 1.4. Run using Source Code
+### 1.5. OPTION 4: Run Source Code
 ```sh
 git clone https://github.com/jyje/pifanctl ~/.pifanctl
 cd ~/.pifanctl/sources
