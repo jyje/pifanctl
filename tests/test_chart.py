@@ -135,3 +135,15 @@ def test_dashboard_namespace_can_differ_from_the_release():
     assert dashboard["metadata"]["namespace"] == "observability"
     default = [o for o in render("--set", "monitoring.grafanaDashboard.enabled=true") if o["metadata"]["name"].endswith("-dashboard")][0]
     assert default["metadata"]["namespace"] == "pifan"
+
+
+def test_controller_runs_as_root_because_the_image_does_not():
+    # The image defaults to a non-root user, but RPi.GPIO maps /dev/mem. Without
+    # this the controller crash-loops with "No access to /dev/mem" on real
+    # hardware, which no unit test can reproduce.
+    controller = by_name(render(), "DaemonSet")["t-pifanctl-controller-default"]
+    pod = controller["spec"]["template"]["spec"]
+    assert pod["securityContext"] == {"runAsUser": 0, "runAsNonRoot": False}
+    assert pod["containers"][0]["securityContext"]["privileged"] is True
+    agent = by_name(render(), "DaemonSet")["t-pifanctl-agent"]["spec"]["template"]["spec"]
+    assert agent["securityContext"]["runAsNonRoot"] is True

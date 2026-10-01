@@ -50,7 +50,7 @@ The `mock` driver only records the duty and never touches hardware. The `auto` a
 
 ## Runtime: the controller exits with "Cannot drive the fan"
 
-- `RPi.GPIO is not usable here`: the container or process has no access to GPIO. In Docker use `--privileged`; in Kubernetes the chart's controller already runs privileged. On a Raspberry Pi 5 `RPi.GPIO` does not work, use `--driver sysfs` (or leave `--driver auto`).
+- `RPi.GPIO is not usable here`: the container or process has no access to GPIO. In Docker use `--privileged --user 0` (the image runs as a non-root user, and `RPi.GPIO` needs `/dev/mem`); in Kubernetes the chart's controller already runs privileged. On a Raspberry Pi 5 `RPi.GPIO` does not work, use `--driver sysfs` (or leave `--driver auto`).
 - `/sys/class/pwm/pwmchip0 does not exist`: the kernel PWM overlay is not enabled. Add `dtoverlay=pwm-2chan` to `/boot/firmware/config.txt` and reboot.
 
 ## Runtime: the fan ignores a hot neighbour

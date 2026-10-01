@@ -52,7 +52,7 @@ python main.py start --driver mock
 
 ## 실행: 컨트롤러가 "Cannot drive the fan"으로 종료
 
-- `RPi.GPIO is not usable here`: 컨테이너나 프로세스가 GPIO에 접근할 수 없습니다. Docker에서는 `--privileged`를 쓰세요. Kubernetes에서는 차트의 컨트롤러가 이미 privileged로 실행됩니다. 라즈베리 파이 5에서는 `RPi.GPIO`가 동작하지 않으므로 `--driver sysfs`(또는 `--driver auto`)를 쓰세요.
+- `RPi.GPIO is not usable here`: 컨테이너나 프로세스가 GPIO에 접근할 수 없습니다. Docker에서는 `--privileged --user 0`을 쓰세요(이미지는 non-root 사용자로 실행되고 `RPi.GPIO`는 `/dev/mem`이 필요합니다). Kubernetes에서는 차트의 컨트롤러가 이미 privileged로 실행됩니다. 라즈베리 파이 5에서는 `RPi.GPIO`가 동작하지 않으므로 `--driver sysfs`(또는 `--driver auto`)를 쓰세요.
 - `/sys/class/pwm/pwmchip0 does not exist`: 커널 PWM 오버레이가 꺼져 있습니다. `/boot/firmware/config.txt`에 `dtoverlay=pwm-2chan`을 추가하고 재부팅하세요.
 
 ## 실행: 팬이 뜨거운 이웃 노드를 무시함

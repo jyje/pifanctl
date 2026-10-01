@@ -58,7 +58,7 @@ docker run -it ghcr.io/jyje/pifanctl python main.py --help
 docker run --privileged -it ghcr.io/jyje/pifanctl python main.py start
 ```
 
-핀 제어에는 GPIO 접근이 필요해서 `start`에는 `docker run --privileged`가 필요합니다. `agent`와 `status`는 권한 없이 실행되고, 이미지는 기본적으로 non-root 사용자로 실행됩니다.
+핀 제어에는 GPIO와 `/dev/mem` 접근이 필요해서 `start`에는 `docker run --privileged --user 0`이 필요합니다. `agent`와 `status`는 권한 없이 실행되고, 이미지는 기본적으로 non-root 사용자로 실행됩니다.
 
 ### 1.4. 옵션 3: Helm으로 Kubernetes에 설치 (권장)
 

@@ -5,7 +5,7 @@ description: >-
   temperatures to Prometheus, and a controller drives each fan from the hottest
   node.
 type: application
-version: 0.1.1
+version: 0.1.2
 appVersion: "0.2.0"
 home: https://github.com/jyje/pifanctl
 sources:
