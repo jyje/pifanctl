@@ -88,7 +88,6 @@ helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl \
 
   ```yaml
   controllers:
-    default: null          # drop the chart's default group
     pi4:
       nodeSelector: {pifanctl.jyje.online/fan: pi4}
       driver: rpigpio
@@ -98,7 +97,7 @@ helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl \
       pwmChannel: 2
   ```
 
-  A node must match at most one group. A group without a `nodeSelector` is rejected at render time, because it would run everywhere and fight over the pin.
+  A group's `nodeSelector` is used exactly as written, never merged with a default. With no groups declared, one `default` group runs on nodes labelled `pifanctl.jyje.online/fan=true`. A node must match at most one group, and a group without a `nodeSelector` is rejected at render time, because it would run everywhere and fight over the pin.
 - `monitoring`: an optional `ServiceMonitor`, a `PrometheusRule` (hot node, critical node, agent down, failsafe, fallback, no controller) with a recording rule, and a Grafana dashboard, either as a sidecar `ConfigMap` or as a grafana-operator `GrafanaDashboard`.
 - The image tag defaults to `v<appVersion>`, never `latest`. `values.schema.json` rejects unknown drivers and out-of-range duties, and `extraResources` renders any extra manifest with the release.
 
