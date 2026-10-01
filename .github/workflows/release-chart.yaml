@@ -24,11 +24,29 @@ jobs:
   release:
     runs-on: ubuntu-24.04
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: azure/setup-helm@v5
+      - name: Wait for the image the chart points at
+        # A new application version changes the chart's default image tag. The
+        # image is built by build-image-main, which can still be running.
+        run: |
+          version="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' sources/pifanctl/__init__.py)"
+          image="ghcr.io/${GITHUB_REPOSITORY}:v${version}"
+          for attempt in $(seq 1 40); do
+            if docker buildx imagetools inspect "${image}" >/dev/null 2>&1; then
+              echo "${image} exists"
+              exit 0
+            fi
+            echo "waiting for ${image} (${attempt}/40)"
+            sleep 15
+          done
+          echo "::error::${image} was not published, so the chart that uses it is not released"
+          exit 1
       - name: Log in to GitHub Container Registry
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -44,3 +62,7 @@ jobs:
           fi
           helm package charts/pifanctl --destination dist
           helm push "dist/pifanctl-${version}.tgz" "oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts"
+      - name: Tag and release the chart version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./scripts/release.sh chart

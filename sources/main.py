@@ -4,6 +4,7 @@ from typing import Annotated, Optional
 import typer
 
 import pifanctl.router as router
+from pifanctl import __version__
 import pifanctl.enum as enum
 from pifanctl.control import CurveConfig
 from pifanctl.sources import DEFAULT_PROMETHEUS_QUERY
@@ -60,7 +61,9 @@ def version_callback(value: bool):
     """
     Version callback
 
-    The version is set by value. The value is determined by the GitHub Actions workflow.
+    Prints the release version and, when the build recorded one, the commit it
+    was built from, for example ``0.2.0 (188b3e2)``. The commit comes from the
+    ``version`` file that the image build and ``install.sh`` write.
     """
 
     if not value:
@@ -70,8 +73,8 @@ def version_callback(value: bool):
 
     assert os.path.exists(VERSION_FILE_PATH), f"version file not found: {VERSION_FILE_PATH}"
 
-    version = open(VERSION_FILE_PATH, "r").read().strip()
-    typer.echo(version)
+    build = open(VERSION_FILE_PATH, "r").read().strip()
+    typer.echo(f"{__version__} ({build})" if build else __version__)
     raise typer.Exit()
 
 

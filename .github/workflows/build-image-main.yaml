@@ -29,3 +29,20 @@ jobs:
       image-suffix: ""
       tag-latest: true
       tag-release: true
+
+  # Tag and release the version this commit carries, after its image exists.
+  # Idempotent: it does nothing when the release is already there.
+  release:
+    needs: build
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Release the application version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./scripts/release.sh app

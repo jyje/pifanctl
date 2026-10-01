@@ -100,10 +100,12 @@ def test_agent_defaults(monkeypatch):
     assert args[2:4] == (5.0, 9101)
 
 
-def test_version_prints_the_version_file():
+def test_version_prints_the_release_and_the_build():
+    import pifanctl
+
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == 0
-    assert result.output.strip()
+    assert result.output.strip().startswith(f"{pifanctl.__version__} (")
 
 
 def test_start_builds_the_cluster_controller(monkeypatch, tmp_path):
