@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from typer.testing import CliRunner
 
@@ -6,6 +8,16 @@ from main import app
 from pifanctl.enum import Algorithms, Drivers, Sources
 
 runner = CliRunner()
+
+
+def plain(result) -> str:
+    """
+    Output as bare text. Under CI, rich adds colour codes and draws error
+    messages in a box that can wrap in the middle of an option name, so tests
+    compare with the colours, box characters and whitespace removed.
+    """
+    text = re.sub(r"\x1b\[[0-9;]*m", "", result.output)
+    return re.sub(r"[│╭╮╰╯─\s]", "", text)
 
 
 @pytest.fixture
@@ -63,14 +75,14 @@ def test_start_reads_the_environment(captured, monkeypatch):
 def test_invalid_curve_is_a_usage_error(captured):
     result = runner.invoke(app, ["start", "--temp-low", "80", "--temp-high", "60"])
     assert result.exit_code == 2
-    assert "temp_low" in result.output
+    assert "temp_low" in plain(result)
     assert captured == []
 
 
 def test_prometheus_source_needs_a_url():
     result = runner.invoke(app, ["start", "--driver", "mock", "--source", "prometheus"])
     assert result.exit_code == 2
-    assert "--prometheus-url" in result.output
+    assert "--prometheus-url" in plain(result)
 
 
 def test_real_driver_failure_stops_the_process():
