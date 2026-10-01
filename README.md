@@ -67,7 +67,7 @@ docker run --privileged -it ghcr.io/jyje/pifanctl python main.py start
 
 ![Docker logs of 'pifanctl start'](docs/docker-pifanctl-logs.png)
 
-Controlling the pin needs access to GPIO, so `docker run --privileged` is required for `start`. The `agent` and `status` commands run unprivileged, and the image runs as a non-root user by default.
+Controlling the pin needs access to GPIO and `/dev/mem`, so `start` needs `docker run --privileged --user 0`. The `agent` and `status` commands run unprivileged, and the image runs as a non-root user by default.
 
 
 ### 1.4. OPTION 3: On Kubernetes with Helm (recommended)
