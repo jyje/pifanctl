@@ -1,0 +1,4 @@
+self-hosted-runner:
+  labels:
+    # The in-cluster ARC runner scale set (jyje/cluster, github-arc-scale-set-jyje-pifanctl).
+    - r4spi-microk8s

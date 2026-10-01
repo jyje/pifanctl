@@ -35,35 +35,24 @@ pip install --upgrade -r requirements.raspi.txt
 # deactivate
 ```
 
-## Build: Mock.GPIO
+## Build: RPi.GPIO on a machine that is not a Raspberry Pi
 
-In non-Raspberry Pi OS, if you encounter like the following error:
+`RPi.GPIO` only builds and runs on Raspberry Pi OS. On a laptop, `pip install -r requirements.raspi.txt` fails while compiling it.
 
-```sh
-Building wheels for collected packages: RPi.GPIO
-  Building wheel for RPi.GPIO (pyproject.toml) ... error
-  error: subprocess-exited-with-error
-  
-  × Building wheel for RPi.GPIO (pyproject.toml) did not run successfully.
-  │ exit code: 1
-  ╰─> [27 lines of output]
-      running bdist_wheel
-      running build
-      running build_py
-      creating build/lib.macosx-15.3-arm64-cpython-313/RPi
-      copying RPi/__init__.py -> build/lib.macosx-15.3-arm64-cpython-313/RPi
-      creating build/lib.macosx-15.3-arm64-cpython-313/RPi/GPIO
-      copying RPi/GPIO/__init__.py -> build/lib.macosx-15.3-arm64-cpython-313/RPi/GPIO
-      running build_ext
-      building 'RPi._GPIO' extension
-      creating build/temp.macosx-15.3-arm64-cpython-313/source
-```
-
-This is because the `RPi.GPIO` is not available in non-Raspberry Pi OS. Then we can use `Mock.GPIO` instead to simulate the `RPi.GPIO` to control the fan.
-Simulating the `RPi.GPIO` is not proper way to control the fan. It is only for UX enhancement.
-
-So you can try the following command:
+For development use the mock requirements, which skip `RPi.GPIO`:
 
 ```sh
 pip install --upgrade -r requirements.mock.txt
+python main.py start --driver mock
 ```
+
+The `mock` driver only records the duty and never touches hardware. The `auto` and `rpigpio` drivers deliberately do **not** fall back to it: on a board where the GPIO library cannot be loaded, `pifanctl start` exits with an error instead of looking healthy while the fan stays uncontrolled.
+
+## Runtime: the controller exits with "Cannot drive the fan"
+
+- `RPi.GPIO is not usable here`: the container or process has no access to GPIO. In Docker use `--privileged`; in Kubernetes the chart's controller already runs privileged. On a Raspberry Pi 5 `RPi.GPIO` does not work, use `--driver sysfs` (or leave `--driver auto`).
+- `/sys/class/pwm/pwmchip0 does not exist`: the kernel PWM overlay is not enabled. Add `dtoverlay=pwm-2chan` to `/boot/firmware/config.txt` and reboot.
+
+## Runtime: the fan ignores a hot neighbour
+
+Check `pifanctl_control_source` (or the dashboard's "Where the controller got its temperature" panel). `local` means the controller could not reach Prometheus and only sees its own node. `failsafe` means no temperature could be read at all, and the fan is held at the failsafe duty.

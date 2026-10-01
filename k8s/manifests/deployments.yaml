@@ -1,3 +1,6 @@
+# Single node, no Prometheus: one controller on one node, reading its own
+# temperature. For a cluster (every node's temperature in Prometheus, fans that
+# follow the hottest node) use the Helm chart in charts/pifanctl instead.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,14 +9,18 @@ spec:
   selector:
     matchLabels:
       app: pifanctl
+  strategy:
+    # Never two controllers on one fan.
+    type: Recreate
   template:
     metadata:
       labels:
         app: pifanctl
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
       - name: main
-        image: ghcr.io/jyje/pifanctl:latest
+        image: ghcr.io/jyje/pifanctl:v0.2.0
         command: ["python", "main.py", "start"]
         env:
         - name: PIN
@@ -21,13 +28,17 @@ spec:
         - name: LOG_LEVEL
           value: INFO
         - name: PWM_REFRESH_INTERVAL
-          value: "30"
-        - name: TARGET_TEMPERATURE
+          value: "5"
+        - name: TEMP_LOW
           value: "50"
+        - name: TEMP_HIGH
+          value: "70"
         resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
           limits:
             memory: 128Mi
-            cpu: 500m
         securityContext:
           privileged: true
       # tolerations:
