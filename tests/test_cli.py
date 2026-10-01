@@ -98,3 +98,49 @@ def test_agent_defaults(monkeypatch):
     assert result.exit_code == 0, result.output
     (args,) = calls
     assert args[2:4] == (5.0, 9101)
+
+
+def test_version_prints_the_version_file():
+    result = runner.invoke(app, ["--version"])
+    assert result.exit_code == 0
+    assert result.output.strip()
+
+
+def test_start_builds_the_cluster_controller(monkeypatch, tmp_path):
+    """The wiring between the flags and the control loop, without running it."""
+    captured = {}
+    monkeypatch.setattr(router, "run_controller", lambda **kwargs: captured.update(kwargs))
+    monkeypatch.setattr(router, "serve", lambda *args, **kwargs: captured.setdefault("served", args[1]))
+    result = runner.invoke(app, [
+        "start", "--driver", "mock", "--source", "prometheus",
+        "--prometheus-url", "http://prom:9090", "--node", "node-a",
+        "--metrics-port", "9999", "--failsafe-duty", "80", "--exit-duty", "70",
+        "--thermal-path", str(tmp_path),
+    ])
+    assert result.exit_code == 0, result.output
+    assert captured["wants_cluster"] is True
+    assert (captured["failsafe_duty"], captured["exit_duty"]) == (80.0, 70.0)
+    assert captured["served"] == 9999
+    assert captured["controller"].__class__.__name__ == "CurveController"
+
+
+def test_start_with_the_step_algorithm_and_no_metrics(monkeypatch):
+    captured = {}
+    monkeypatch.setattr(router, "run_controller", lambda **kwargs: captured.update(kwargs))
+    result = runner.invoke(app, ["start", "--driver", "mock", "--algorithm", "step",
+                                 "--metrics-port", "0", "--target-temperature", "55"])
+    assert result.exit_code == 0, result.output
+    assert captured["controller"].__class__.__name__ == "StepController"
+    assert captured["controller"].target_temperature == 55.0
+    assert captured["metrics"] is None
+    assert captured["wants_cluster"] is False
+
+
+def test_agent_serves_metrics_and_runs_until_stopped(monkeypatch):
+    seen = {}
+    monkeypatch.setattr(router, "serve", lambda registry, port: seen.update(port=port))
+    monkeypatch.setattr(router, "run_agent", lambda metrics, path, interval, stop: seen.update(
+        node=metrics.node, interval=interval))
+    result = runner.invoke(app, ["agent", "--node", "node-a", "--interval", "2", "--metrics-port", "9100"])
+    assert result.exit_code == 0, result.output
+    assert seen == {"port": 9100, "node": "node-a", "interval": 2.0}

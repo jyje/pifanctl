@@ -259,7 +259,7 @@ pip install --upgrade -r requirements.raspi.txt
 
 ```sh
 pip install -r sources/requirements.dev.txt
-python -m pytest
+python -m pytest --cov=sources --cov-report=term-missing
 ```
 
 ```sh
