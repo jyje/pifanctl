@@ -70,7 +70,7 @@ def test_prometheus_url_switches_the_source():
     values = env(by_name(objects, "DaemonSet")["t-pifanctl-controller-default"])
     assert values["SOURCE"] == "prometheus"
     assert values["PROMETHEUS_URL"] == "http://prom:9090"
-    assert values["PROMETHEUS_QUERY"] == "max(pifanctl_temperature_celsius)"
+    assert values["PROMETHEUS_QUERY"] == "max by (node) (pifanctl_temperature_celsius)"
 
 
 def test_groups_override_defaults_per_hardware():
@@ -79,8 +79,8 @@ def test_groups_override_defaults_per_hardware():
     pi4, pi5 = env(sets["t-pifanctl-controller-pi4"]), env(sets["t-pifanctl-controller-pi5"])
     assert (pi4["DRIVER"], pi4["TEMP_LOW"]) == ("rpigpio", "55")
     assert (pi5["DRIVER"], pi5["TEMP_LOW"]) == ("sysfs", "50")
-    assert pi5["PROMETHEUS_QUERY"] == 'max(pifanctl_temperature_celsius{node=~"raspi-5.*"})'
-    assert pi4["PROMETHEUS_QUERY"] == "max(pifanctl_temperature_celsius)"
+    assert pi5["PROMETHEUS_QUERY"] == 'max by (node) (pifanctl_temperature_celsius{node=~"raspi-5.*"})'
+    assert pi4["PROMETHEUS_QUERY"] == "max by (node) (pifanctl_temperature_celsius)"
 
 
 def test_a_group_without_a_node_selector_is_rejected():

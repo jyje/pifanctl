@@ -48,6 +48,14 @@ def run_agent(
     logger.info("Agent stopped")
 
 
+def format_nodes(reading: Reading) -> str:
+    """Every known node's temperature, hottest first, with the followed node marked."""
+    ordered = sorted(reading.nodes.items(), key=lambda item: (-item[1], item[0]))
+    return " ".join(
+        f"{name}={value:.1f}{'*' if name == reading.driver else ''}" for name, value in ordered
+    )
+
+
 def run_controller(
     driver: PwmDriver,
     controller: Controller,
@@ -68,9 +76,17 @@ def run_controller(
     stopped controller no longer protects the board.
     """
     logger.info(f"Controller started with driver '{driver.name}', interval {interval}s")
+    seen: set[str] = set()
     try:
         while not stop.is_set():
             reading = read()
+
+            # A node that reported before and is gone now no longer counts
+            # towards the maximum: say so, because a hot node may be hiding.
+            if reading.source == "prometheus":
+                for node in sorted(seen - set(reading.nodes)):
+                    logger.warning(f"Node '{node}' stopped reporting and is not part of the maximum")
+                seen = set(reading.nodes)
 
             if reading.value is None:
                 duty = controller.force(failsafe_duty)
@@ -84,12 +100,14 @@ def run_controller(
                     if metrics:
                         metrics.fallback(reading.source)
                 logger.info(
-                    f"Duty: {duty:.1f}%, Temperature: {reading.value:.1f}°C, Source: {reading.source}"
+                    f"Duty: {duty:.1f}%, Temperature: {reading.value:.1f}°C, "
+                    f"Following: {reading.driver}, Source: {reading.source}, "
+                    f"Nodes: {format_nodes(reading)}"
                 )
 
             driver.set_duty(duty)
             if metrics:
-                metrics.observe(duty, reading.value, reading.source)
+                metrics.observe(duty, reading.value, reading.source, reading.driver)
             stop.wait(interval)
     finally:
         try:

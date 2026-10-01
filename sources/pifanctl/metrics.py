@@ -92,6 +92,12 @@ class ControllerMetrics:
             ["node", "source"],
             registry=self.registry,
         )
+        self.followed = Gauge(
+            "pifanctl_control_followed_node",
+            "1 for the node whose temperature the controller followed in the last cycle",
+            ["node", "followed"],
+            registry=self.registry,
+        )
         self.fallbacks = Counter(
             "pifanctl_control_fallbacks_total",
             "Cycles that could not use the cluster view and fell back",
@@ -108,8 +114,14 @@ class ControllerMetrics:
     def set_info(self, driver: str, algorithm: str) -> None:
         self.info.labels(node=self.node, version=__version__, driver=driver, algorithm=algorithm).set(1)
 
-    def observe(self, duty: float, temperature: Optional[float], source: str) -> None:
+    def observe(self, duty: float, temperature: Optional[float], source: str,
+                followed: Optional[str] = None) -> None:
         self.duty.labels(node=self.node).set(duty)
+        # Only the node followed now is exported, so the series reads as "who
+        # drives this fan" without a trail of nodes it used to follow.
+        self.followed.clear()
+        if followed is not None:
+            self.followed.labels(node=self.node, followed=followed).set(1)
         if temperature is not None:
             self.control_temperature.labels(node=self.node).set(temperature)
         for name in self.SOURCES:

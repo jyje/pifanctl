@@ -153,7 +153,7 @@ One fan usually cools several boards that sit in the same enclosure. The fan sho
 | --- | --- | --- | --- |
 | Agent | `pifanctl agent` | **every node** (DaemonSet) | Reads `/sys/class/thermal` and serves `pifanctl_*` metrics, labelled with `node` |
 | Prometheus | | the cluster | Scrapes and **retains** the temperatures |
-| Controller | `pifanctl start --source prometheus` | **nodes that have a fan** | Asks Prometheus for `max(pifanctl_temperature_celsius)` and drives the fan from it |
+| Controller | `pifanctl start --source prometheus` | **nodes that have a fan** | Asks Prometheus for `max by (node) (pifanctl_temperature_celsius)` and drives the fan from the hottest node |
 
 The controller never trusts a single source. Each cycle it acts on the highest of the cluster value and its own node's value, and it degrades safely:
 
@@ -172,6 +172,16 @@ pifanctl agent
 # on the node with the fan
 pifanctl start --source prometheus --prometheus-url http://prometheus:9090
 ```
+
+#### What the log tells you
+
+Every cycle logs what the fan reacted to and what every node reads, hottest first. The node it followed is marked with `*`:
+
+```
+INFO [2026-10-01 14:30:05Z] Duty: 86.3%, Temperature: 70.5°C, Following: raspi-51, Source: prometheus, Nodes: raspi-51=70.5* raspi-41=52.1 raspi-50=51.8 raspi-40=49.2
+```
+
+A node that reported before and then disappears is warned about once (`Node 'raspi-51' stopped reporting and is not part of the maximum`), because a silent node may be a hot one. The same facts are metrics: `pifanctl_control_followed_node` (the node being followed) and `pifanctl_control_temperature_celsius`.
 
 #### Temperature curve
 

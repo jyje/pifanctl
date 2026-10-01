@@ -93,7 +93,7 @@ def start(
     run_controller(
         driver=pwm,
         controller=controller,
-        read=make_resolver(local, cluster),
+        read=make_resolver(local, cluster, resolve_node_name(node)),
         metrics=metrics,
         interval=pwm_refresh_interval,
         failsafe_duty=failsafe_duty,

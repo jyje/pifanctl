@@ -131,7 +131,7 @@ python ~/.pifanctl/sources/main.py --help
 | --- | --- | --- | --- |
 | Agent | `pifanctl agent` | **모든 노드** (DaemonSet) | `/sys/class/thermal`을 읽어 `node` 라벨이 붙은 `pifanctl_*` 메트릭을 노출 |
 | Prometheus | | 클러스터 | 온도를 수집하고 **보관** |
-| Controller | `pifanctl start --source prometheus` | **팬이 달린 노드** | Prometheus에 `max(pifanctl_temperature_celsius)`를 질의해 그 값으로 팬 구동 |
+| Controller | `pifanctl start --source prometheus` | **팬이 달린 노드** | Prometheus에 `max by (node) (pifanctl_temperature_celsius)`를 질의해 가장 뜨거운 노드 기준으로 팬 구동 |
 
 컨트롤러는 한 가지 소스만 믿지 않습니다. 매 주기마다 클러스터 값과 자기 노드 값 중 **높은 쪽**으로 동작하고, 안전하게 단계적으로 물러납니다.
 
@@ -150,6 +150,16 @@ pifanctl agent
 # 팬이 달린 노드에서
 pifanctl start --source prometheus --prometheus-url http://prometheus:9090
 ```
+
+#### 로그로 알 수 있는 것
+
+매 주기마다 팬이 무엇에 반응했는지와 모든 노드의 온도를 높은 순으로 로그에 남깁니다. 따라간 노드에는 `*`가 붙습니다.
+
+```
+INFO [2026-10-01 14:30:05Z] Duty: 86.3%, Temperature: 70.5°C, Following: raspi-51, Source: prometheus, Nodes: raspi-51=70.5* raspi-41=52.1 raspi-50=51.8 raspi-40=49.2
+```
+
+보고하던 노드가 사라지면 한 번 경고합니다(`Node 'raspi-51' stopped reporting and is not part of the maximum`). 조용해진 노드가 뜨거운 노드일 수 있기 때문입니다. 같은 정보가 메트릭 `pifanctl_control_followed_node`(따라가는 노드)와 `pifanctl_control_temperature_celsius`로도 있습니다.
 
 #### 온도 곡선
 

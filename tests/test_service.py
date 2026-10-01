@@ -5,7 +5,7 @@ import pytest
 from pifanctl.control import CurveConfig, CurveController
 from pifanctl.drivers import MockDriver
 from pifanctl.metrics import AgentMetrics, ControllerMetrics
-from pifanctl.service import run_agent, run_controller
+from pifanctl.service import format_nodes, run_agent, run_controller
 from pifanctl.sources import Reading
 from pifanctl.thermal import Zone
 
@@ -114,3 +114,38 @@ def test_agent_drops_stale_values_and_counts_errors():
     assert get("pifanctl_node_temperature_max_celsius") is None
     assert get("pifanctl_temperature_celsius", zone="thermal_zone0", type="cpu") is None
     assert get("pifanctl_temperature_read_errors_total") == 1
+
+
+NODES = {"raspi-40": 49.2, "raspi-41": 52.1, "raspi-50": 51.8, "raspi-51": 70.5}
+
+
+def test_log_names_the_followed_node_and_every_node(caplog):
+    caplog.set_level("INFO")
+    reading = Reading(value=70.5, source="prometheus", nodes=NODES, driver="raspi-51")
+    run(CurveController(CurveConfig()), [reading], wants_cluster=True)
+    line = next(r.getMessage() for r in caplog.records if "Following" in r.getMessage())
+    assert "Temperature: 70.5°C" in line
+    assert "Following: raspi-51" in line
+    assert "Nodes: raspi-51=70.5* raspi-41=52.1 raspi-50=51.8 raspi-40=49.2" in line
+
+
+def test_format_nodes_lists_hottest_first_and_marks_the_followed_one():
+    reading = Reading(value=52.1, source="prometheus", nodes={"a": 50.0, "b": 52.1, "c": 52.1}, driver="b")
+    assert format_nodes(reading) == "b=52.1* c=52.1 a=50.0"
+
+
+def test_a_node_that_stops_reporting_is_warned_about_once(caplog):
+    caplog.set_level("WARNING")
+    full = Reading(value=70.5, source="prometheus", nodes=NODES, driver="raspi-51")
+    gone = Reading(value=52.1, source="prometheus", nodes={k: v for k, v in NODES.items() if k != "raspi-51"},
+                   driver="raspi-41")
+    run(CurveController(CurveConfig()), [full, gone, gone, gone], wants_cluster=True)
+    warnings = [r.getMessage() for r in caplog.records if "stopped reporting" in r.getMessage()]
+    assert warnings == ["Node 'raspi-51' stopped reporting and is not part of the maximum"]
+
+
+def test_only_the_followed_node_is_exported(curve):
+    _, metrics = run(curve, [Reading(value=70.5, source="prometheus", nodes=NODES, driver="raspi-51")],
+                     wants_cluster=True)
+    assert sample(metrics, "pifanctl_control_followed_node", followed="raspi-51") == 1
+    assert sample(metrics, "pifanctl_control_followed_node", followed="raspi-40") is None
