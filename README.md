@@ -278,7 +278,7 @@ Run the tests (they need no Raspberry Pi; the chart tests also need `helm`):
 
 ```sh
 pip install -r sources/requirements.dev.txt
-python -m pytest
+python -m pytest --cov=sources --cov-report=term-missing
 ```
 
 Then you can debug the source code with the following command:

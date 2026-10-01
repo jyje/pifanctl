@@ -149,3 +149,33 @@ def test_only_the_followed_node_is_exported(curve):
                      wants_cluster=True)
     assert sample(metrics, "pifanctl_control_followed_node", followed="raspi-51") == 1
     assert sample(metrics, "pifanctl_control_followed_node", followed="raspi-40") is None
+
+
+def test_signals_ask_the_loop_to_stop():
+    import os
+    import signal
+
+    from pifanctl.service import install_stop_handlers
+
+    stop = threading.Event()
+    previous = {s: signal.getsignal(s) for s in (signal.SIGTERM, signal.SIGINT)}
+    try:
+        install_stop_handlers(stop)
+        os.kill(os.getpid(), signal.SIGTERM)
+        assert stop.wait(1)
+        stop.clear()
+        os.kill(os.getpid(), signal.SIGINT)
+        assert stop.wait(1)
+    finally:
+        for number, handler in previous.items():
+            signal.signal(number, handler)
+
+
+def test_node_name_prefers_the_flag_then_the_environment(monkeypatch):
+    from pifanctl.metrics import resolve_node_name
+
+    monkeypatch.setenv("NODE_NAME", "from-env")
+    assert resolve_node_name("from-flag") == "from-flag"
+    assert resolve_node_name() == "from-env"
+    monkeypatch.delenv("NODE_NAME")
+    assert resolve_node_name()  # falls back to the hostname
