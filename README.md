@@ -13,6 +13,7 @@
 [![CLI](https://img.shields.io/badge/CLI-orange?style=flat&logo=Typer&logoColor=white)](https://typer.tiangolo.com/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=Docker&logoColor=white)](https://docker.io)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat&logo=Kubernetes&logoColor=white)](https://kubernetes.io)<br/>
+[![CI status for pull requests](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml/badge.svg)](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml)
 [![CI status for main branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml/badge.svg?branch=main)](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml)
 [![CI status for develop branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml)
 [![GitHub Repo stars](https://img.shields.io/github/stars/jyje/pifanctl?style=flat&color=yellow&label=%F0%9F%8C%9F%20Stars)](https://github.com/jyje/pifanctl)
@@ -22,6 +23,26 @@
 
 🐳 **pifanctl** is a CLI tool for PWM fan control on Raspberry Pi, from a single board to a whole cluster. It runs as a plain CLI, in **Docker**, or on **Kubernetes** with a Helm chart, and is optimized for ARM64. In a cluster the fans follow the **hottest node**, and every node's temperature is kept in Prometheus. The project features a CI/CD pipeline using GitHub Actions with Actions Runner Controller (ARC), ensuring all builds are tested in actual Raspberry Pi environments. Please enjoy it!
 
+
+```mermaid
+flowchart LR
+  subgraph nodes["every node"]
+    A1["agent<br/>(DaemonSet)"]
+  end
+  A1 -- "pifanctl_temperature_celsius{node}" --> P[("Prometheus<br/>(retention)")]
+  P -- "max by (node)" --> C["controller<br/>(node with the fan)"]
+  C -- "PWM duty" --> F(("fan"))
+  P --> G["Grafana dashboard<br/>and alerts"]
+```
+
+| | Single board | Cluster |
+| --- | --- | --- |
+| Reads | its own thermal zones | every node, through Prometheus |
+| Drives the fan from | its own temperature | the hottest node |
+| History | none | kept in Prometheus, with a dashboard and alerts |
+| Install | `install.sh`, Docker, raw manifest | Helm chart |
+
+> **Status.** Cluster mode runs on a Raspberry Pi 4 cluster with the RPi.GPIO driver. The kernel PWM driver for Raspberry Pi 5 is covered by tests against a fake sysfs tree, but has not been run on a Pi 5 with a fan yet.
 
 ---
 ## 1. Run
@@ -45,27 +66,42 @@ rm install-pifanctl.sh
 # rm -rf $HOME/.pifanctl
 ```
 
-After installation, you can use the following command to control the fan, `pifanctl --help`
+After installation, run `pifanctl --help`:
 
-![CLI logs of 'pifanctl --help'](docs/cli-pifanctl-help.png)
+```
+ Usage: pifanctl [OPTIONS] COMMAND [ARGS]...
+
+ 🥧 pifanctl: A CLI for PWM Fan Controlling of Raspberry Pi
+
+ Run `agent` on every node to publish temperatures, and `start` on the node
+ that has the fan. With `--source prometheus` the fan follows the hottest
+ node of the cluster.
+
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ status  Show current temperatures                                            │
+│ agent   Publish this node's temperatures as Prometheus metrics               │
+│ start   Start fan control                                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+Driving the pin needs root, so start the controller with `sudo pifanctl start`. `pifanctl status` and `pifanctl agent` do not.
 
 ### 1.3. OPTION 2: Using Docker
 ```sh
-docker run -it ghcr.io/jyje/pifanctl python main.py --help
+docker run --rm -it ghcr.io/jyje/pifanctl:latest python main.py --help
 ```
 
-Then you can use the following command to control the fan:
-
-![docker logs of `pifanctl --help`](docs/docker-pifanctl-help.png)
-
-
-And you can run the following command to start the fan:
+To start the fan:
 
 ```sh
-docker run --privileged -it ghcr.io/jyje/pifanctl python main.py start
+docker run --privileged --user 0 -it ghcr.io/jyje/pifanctl:latest python main.py start
 ```
 
-![Docker logs of 'pifanctl start'](docs/docker-pifanctl-logs.png)
+```
+INFO [2026-10-01 14:30:00Z] Detected 'Raspberry Pi 4 Model B Rev 1.5', using the RPi.GPIO driver
+INFO [2026-10-01 14:30:00Z] Controller started with driver 'rpigpio', interval 5.0s
+INFO [2026-10-01 14:30:00Z] Duty: 36.6%, Temperature: 51.9°C, Following: raspberrypi, Source: local, Nodes: raspberrypi=51.9*
+```
 
 Controlling the pin needs access to GPIO and `/dev/mem`, so `start` needs `docker run --privileged --user 0`. The `agent` and `status` commands run unprivileged, and the image runs as a non-root user by default.
 
@@ -75,7 +111,7 @@ Controlling the pin needs access to GPIO and `/dev/mem`, so `start` needs `docke
 ```sh
 kubectl label node <the-node-with-the-fan> pifanctl.jyje.online/fan=true
 
-helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl \
+helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.2 \
   --namespace pifanctl --create-namespace \
   --set prometheus.url=http://prometheus-operated.monitoring.svc:9090 \
   --set monitoring.serviceMonitor.enabled=true \
@@ -83,7 +119,10 @@ helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl \
   --set monitoring.grafanaDashboard.enabled=true
 ```
 
+Prerequisites: a Prometheus reachable from the controller. The `monitoring.*` options need the Prometheus Operator CRDs (`ServiceMonitor`, `PrometheusRule`), and a `GrafanaDashboard` needs grafana-operator. Set `monitoring.*.labels` to whatever your Prometheus selects on (for example `release: prometheus`).
+
 - `agent`: a DaemonSet on every node (tolerates every taint), non-root, read-only root filesystem, no privileges.
+- `controller`: runs as root and privileged, because driving GPIO needs `/dev/mem`. It only runs on the nodes you select, and stops at full speed.
 - `controllers`: a map of named groups. Each group is a DaemonSet limited by its own `nodeSelector` and merged over `controllerDefaults`, so nodes with different hardware live in one release:
 
   ```yaml
@@ -102,6 +141,21 @@ helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl \
 - The image tag defaults to `v<appVersion>`, never `latest`. `values.schema.json` rejects unknown drivers and out-of-range duties, and `extraResources` renders any extra manifest with the release.
 
 See [`charts/pifanctl/values.yaml`](charts/pifanctl/values.yaml) for every option and [`charts/pifanctl/ci`](charts/pifanctl/ci) for tested examples.
+
+#### Metrics and alerts
+
+| Metric | From | Meaning |
+| --- | --- | --- |
+| `pifanctl_temperature_celsius{node,zone,type}` | agent (`:9101`) | One series per thermal zone |
+| `pifanctl_node_temperature_max_celsius{node}` | agent | Hottest zone of the node |
+| `pifanctl_temperature_read_errors_total{node}` | agent | Reads that found no thermal zone |
+| `pifanctl_fan_duty_percent{node}` | controller (`:9102`) | Duty currently applied |
+| `pifanctl_control_temperature_celsius{node}` | controller | Temperature the fan acted on |
+| `pifanctl_control_followed_node{node,followed}` | controller | The node being followed |
+| `pifanctl_control_source{node,source}` | controller | `prometheus`, `local` or `failsafe` |
+| `pifanctl_control_fallbacks_total{node,to}` | controller | Cycles that could not use the cluster view |
+
+With `monitoring.prometheusRule.enabled` the chart alerts on: a node above 75 °C for 10 minutes, a node above 82 °C, an agent that is not scraped, a controller on failsafe, a controller that fell back to its own node, and no controller reporting at all.
 
 #### Retention
 
@@ -132,7 +186,6 @@ You can check the logs of the pifanctl with the following command:
 kubectl logs -n pifanctl -l app=pifanctl
 ```
 
-![Kubernetes logs of 'pifanctl start'](docs/k8s-pifanctl-logs.png)
 
 
 ### 1.6. OPTION 5: Run Source Code
@@ -177,10 +230,10 @@ pifanctl start --source prometheus --prometheus-url http://prometheus:9090
 Every cycle logs what the fan reacted to and what every node reads, hottest first. The node it followed is marked with `*`:
 
 ```
-INFO [2026-10-01 14:30:05Z] Duty: 86.3%, Temperature: 70.5°C, Following: raspi-51, Source: prometheus, Nodes: raspi-51=70.5* raspi-41=52.1 raspi-50=51.8 raspi-40=49.2
+INFO [2026-10-01 14:30:05Z] Duty: 86.3%, Temperature: 70.5°C, Following: node-c, Source: prometheus, Nodes: node-c=70.5* node-b=52.1 node-d=51.8 node-a=49.2
 ```
 
-A node that reported before and then disappears is warned about once (`Node 'raspi-51' stopped reporting and is not part of the maximum`), because a silent node may be a hot one. The same facts are metrics: `pifanctl_control_followed_node` (the node being followed) and `pifanctl_control_temperature_celsius`.
+A node that reported before and then disappears is warned about once (`Node 'node-c' stopped reporting and is not part of the maximum`), because a silent node may be a hot one. The same facts are metrics: `pifanctl_control_followed_node` (the node being followed) and `pifanctl_control_temperature_celsius`.
 
 #### Temperature curve
 
@@ -242,7 +295,7 @@ python ~/.pifanctl/sources/main.py status
 
 This project uses [GitHub Actions with Actions Runner Controller (ARC)](https://github.com/actions/actions-runner-controller) for ARM64-based CI/CD pipeline. The builds are executed on self-hosted Raspberry Pi runners, ensuring native ARM64 compatibility.
 
-You can check the environment of CI/CD pipeline in [app.jyje.live#stack](https://app.jyje.live#stack)
+You can check the environment of CI/CD pipeline in [app.jyje.online#stack](https://app.jyje.online/#stack)
 
 ### 3.1. Workflow Structure
 
