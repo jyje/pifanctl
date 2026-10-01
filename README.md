@@ -111,7 +111,7 @@ Controlling the pin needs access to GPIO and `/dev/mem`, so `start` needs `docke
 ```sh
 kubectl label node <the-node-with-the-fan> pifanctl.jyje.online/fan=true
 
-helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.2 \
+helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.3 \
   --namespace pifanctl --create-namespace \
   --set prometheus.url=http://prometheus-operated.monitoring.svc:9090 \
   --set monitoring.serviceMonitor.enabled=true \
@@ -318,8 +318,22 @@ The three image workflows share one reusable workflow, `_build-image.yaml`.
 
 ### 3.3. Releasing
 
-- Application: bump `__version__` in `sources/pifanctl/__init__.py` and `appVersion` in `charts/pifanctl/Chart.yaml` together (a test checks that they match), then merge to `main`.
-- Chart: bump `version` in `charts/pifanctl/Chart.yaml` for any chart change. `release-chart` publishes it.
+The version lives in two places, and a pull request that changes what ships has to bump it:
+
+| Changed | Bump | Checked by |
+| --- | --- | --- |
+| `sources/main.py` or `sources/pifanctl/` | `__version__` in `sources/pifanctl/__init__.py`, and `appVersion` in `charts/pifanctl/Chart.yaml` | the `Version bump` job |
+| `charts/pifanctl/` (not its `ci/` value sets) | `version` in `charts/pifanctl/Chart.yaml`. A new application version changes `appVersion`, so it needs a new chart version too | the `Version bump` job |
+
+Also update the image tag in `k8s/manifests/deployments.yaml` and the chart version in the install command above; a test fails when they drift.
+
+Merging to `main` does the rest:
+
+1. `build-image-main` publishes `latest`, the commit tag, and `v<version>` the first time a version appears.
+2. After the image exists, it creates the git tag `v<version>` and a GitHub release with generated notes.
+3. `release-chart` waits for the image the chart points at, publishes the chart to `oci://ghcr.io/jyje/charts/pifanctl`, and creates the tag `chart-v<version>` and its release.
+
+Each step skips what already exists, so re-running a failed workflow is safe. Application releases are tagged `v*` and chart releases `chart-v*`.
 
 ---
 ## 4. Trouble Shooting

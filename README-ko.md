@@ -106,7 +106,7 @@ INFO [2026-10-01 14:30:00Z] Duty: 36.6%, Temperature: 51.9°C, Following: raspbe
 ```sh
 kubectl label node <팬이-달린-노드> pifanctl.jyje.online/fan=true
 
-helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.2 \
+helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.3 \
   --namespace pifanctl --create-namespace \
   --set prometheus.url=http://prometheus-operated.monitoring.svc:9090 \
   --set monitoring.serviceMonitor.enabled=true \
@@ -296,8 +296,22 @@ CI/CD 환경은 [app.jyje.online#stack](https://app.jyje.online/#stack)에서 �
 
 ### 3.3. 릴리스
 
-- 애플리케이션: `sources/pifanctl/__init__.py`의 `__version__`과 `charts/pifanctl/Chart.yaml`의 `appVersion`을 함께 올리고(일치 여부를 테스트가 확인) `main`에 병합합니다.
-- 차트: 차트가 바뀌면 `charts/pifanctl/Chart.yaml`의 `version`을 올립니다. `release-chart`가 발행합니다.
+버전은 두 곳에 있으며, 배포되는 것을 바꾸는 풀 리퀘스트는 버전을 올려야 합니다.
+
+| 변경 | 올릴 것 | 확인 |
+| --- | --- | --- |
+| `sources/main.py` 또는 `sources/pifanctl/` | `sources/pifanctl/__init__.py`의 `__version__`과 `charts/pifanctl/Chart.yaml`의 `appVersion` | `Version bump` 잡 |
+| `charts/pifanctl/` (`ci/` 값 파일 제외) | `charts/pifanctl/Chart.yaml`의 `version`. 애플리케이션 버전이 새로우면 `appVersion`이 바뀌므로 차트 버전도 새로워야 합니다 | `Version bump` 잡 |
+
+`k8s/manifests/deployments.yaml`의 이미지 태그와 위 설치 명령의 차트 버전도 함께 바꾸세요. 어긋나면 테스트가 실패합니다.
+
+`main`에 병합하면 나머지는 자동입니다.
+
+1. `build-image-main`이 `latest`, 커밋 태그, 그리고 버전이 처음 나타날 때 `v<version>`을 발행합니다.
+2. 이미지가 생긴 뒤 git 태그 `v<version>`과 자동 생성 노트가 붙은 GitHub 릴리스를 만듭니다.
+3. `release-chart`가 차트가 가리키는 이미지를 기다린 뒤 `oci://ghcr.io/jyje/charts/pifanctl`에 차트를 발행하고, 태그 `chart-v<version>`과 릴리스를 만듭니다.
+
+각 단계는 이미 있는 것을 건너뛰므로 실패한 워크플로를 다시 실행해도 안전합니다. 애플리케이션 릴리스는 `v*`, 차트 릴리스는 `chart-v*` 태그를 씁니다.
 
 ---
 ## 4. 문제 해결

@@ -147,3 +147,12 @@ def test_controller_runs_as_root_because_the_image_does_not():
     assert pod["containers"][0]["securityContext"]["privileged"] is True
     agent = by_name(render(), "DaemonSet")["t-pifanctl-agent"]["spec"]["template"]["spec"]
     assert agent["securityContext"]["runAsNonRoot"] is True
+
+
+def test_the_raw_manifest_and_the_install_command_follow_the_release():
+    chart = yaml.safe_load((CHART / "Chart.yaml").read_text())
+    manifest = (CHART.parent.parent / "k8s" / "manifests" / "deployments.yaml").read_text()
+    assert f"ghcr.io/jyje/pifanctl:v{pifanctl.__version__}" in manifest
+    for readme in ("README.md", "README-ko.md"):
+        text = (CHART.parent.parent / readme).read_text()
+        assert f"--version {chart['version']}" in text, f"{readme} installs a different chart version"

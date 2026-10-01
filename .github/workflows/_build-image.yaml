@@ -50,25 +50,13 @@ jobs:
           TAG_RELEASE: ${{ inputs.tag-release }}
         run: |
           short_sha="${GITHUB_SHA::7}"
-          echo "short_sha=${short_sha}" >> "$GITHUB_OUTPUT"
           echo "${short_sha}" > ./sources/version
-
+          version="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' sources/pifanctl/__init__.py)"
           {
+            echo "short_sha=${short_sha}"
+            echo "version=${version}"
             echo "tags<<EOF"
-            echo "${IMAGE}:${short_sha}"
-            if [ "${TAG_LATEST}" = "true" ]; then
-              echo "${IMAGE}:latest"
-            fi
-            if [ "${TAG_RELEASE}" = "true" ]; then
-              version="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' sources/pifanctl/__init__.py)"
-              # A release tag is published once. Later commits of the same
-              # version only move `latest` and their own SHA tag.
-              if docker buildx imagetools inspect "${IMAGE}:v${version}" >/dev/null 2>&1; then
-                echo "::notice::${IMAGE}:v${version} already exists, leaving it untouched"
-              else
-                echo "${IMAGE}:v${version}"
-              fi
-            fi
+            SHORT_SHA="${short_sha}" VERSION="${version}" ./scripts/image-tags.sh
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
@@ -88,7 +76,7 @@ jobs:
       - name: Test image version
         run: |
           version="$(docker run --rm "${IMAGE}:${{ steps.tags.outputs.short_sha }}" python main.py --version)"
-          test "${version}" = "${{ steps.tags.outputs.short_sha }}"
+          test "${version}" = "${{ steps.tags.outputs.version }} (${{ steps.tags.outputs.short_sha }})"
 
       - name: Test image runs unprivileged and refuses to fake hardware
         run: |
