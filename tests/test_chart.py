@@ -73,6 +73,14 @@ def test_prometheus_url_switches_the_source():
     assert values["PROMETHEUS_QUERY"] == "max by (node) (pifanctl_temperature_celsius)"
 
 
+def test_a_groups_node_selector_replaces_instead_of_merging():
+    # Helm merges maps, so a selector written for a group must not pick up
+    # the chart's fan label: that combination matches no node at all.
+    sets = by_name(render("--set", "controllers.default.nodeSelector.kubernetes\\.io/hostname=node-a"), "DaemonSet")
+    selector = sets["t-pifanctl-controller-default"]["spec"]["template"]["spec"]["nodeSelector"]
+    assert selector == {"kubernetes.io/hostname": "node-a"}
+
+
 def test_groups_override_defaults_per_hardware():
     sets = by_name(render(values="mixed-hardware-values.yaml"), "DaemonSet")
     assert "t-pifanctl-controller-default" not in sets
@@ -90,7 +98,8 @@ def test_a_group_without_a_node_selector_is_rejected():
 
 
 def test_prometheus_source_without_a_url_is_rejected():
-    out = subprocess.run(["helm", "template", "t", str(CHART), "--set", "controllers.default.source=prometheus"],
+    out = subprocess.run(["helm", "template", "t", str(CHART), "--set", "controllers.default.nodeSelector.a=b",
+                          "--set", "controllers.default.source=prometheus"],
                          capture_output=True, text=True)
     assert out.returncode != 0 and "prometheus.url is required" in out.stderr
 

@@ -78,7 +78,6 @@ helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl \
 
   ```yaml
   controllers:
-    default: null          # 차트 기본 그룹 제거
     pi4:
       nodeSelector: {pifanctl.jyje.online/fan: pi4}
       driver: rpigpio
@@ -88,7 +87,7 @@ helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl \
       pwmChannel: 2
   ```
 
-  노드는 최대 한 그룹에만 일치해야 합니다. `nodeSelector`가 없는 그룹은 모든 노드에서 실행되어 핀을 두고 다툴 수 있으므로 렌더링 단계에서 거부됩니다.
+  그룹의 `nodeSelector`는 기본값과 병합되지 않고 적은 그대로 쓰입니다. 그룹을 선언하지 않으면 `pifanctl.jyje.online/fan=true` 라벨이 붙은 노드에서 `default` 그룹 하나가 실행됩니다. 노드는 최대 한 그룹에만 일치해야 하며, `nodeSelector`가 없는 그룹은 모든 노드에서 실행되어 핀을 두고 다툴 수 있으므로 렌더링 단계에서 거부됩니다.
 - `monitoring`: 선택 사항인 `ServiceMonitor`, `PrometheusRule`(뜨거운 노드, 위험 온도, agent 중단, failsafe, 폴백, 컨트롤러 없음)과 recording rule, 그리고 Grafana 대시보드(사이드카용 `ConfigMap` 또는 grafana-operator `GrafanaDashboard`).
 - 이미지 태그는 기본값이 `v<appVersion>`이며 `latest`는 쓰지 않습니다. `values.schema.json`이 알 수 없는 드라이버나 범위를 벗어난 duty를 거부하고, `extraResources`로 추가 매니페스트를 릴리스와 함께 렌더링할 수 있습니다.
 
