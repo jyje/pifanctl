@@ -13,6 +13,7 @@
 [![CLI](https://img.shields.io/badge/CLI-orange?style=flat&logo=Typer&logoColor=white)](https://typer.tiangolo.com/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=Docker&logoColor=white)](https://docker.io)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat&logo=Kubernetes&logoColor=white)](https://kubernetes.io)<br/>
+[![CI status for pull requests](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml/badge.svg)](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml)
 [![CI status for main branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml/badge.svg?branch=main)](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml)
 [![CI status for develop branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml)
 [![GitHub Repo stars](https://img.shields.io/github/stars/jyje/pifanctl?style=flat&color=yellow&label=%F0%9F%8C%9F%20Stars)](https://github.com/jyje/pifanctl)
@@ -21,6 +22,26 @@
 </div>
 
 🐳 **pifanctl**은 라즈베리 파이의 PWM 팬을 제어하는 CLI입니다. 보드 한 대부터 클러스터 전체까지 지원하며, 일반 CLI, **Docker**, 또는 Helm 차트를 이용한 **Kubernetes**로 실행할 수 있고 ARM64에 최적화되어 있습니다. 클러스터에서는 팬이 **가장 뜨거운 노드**를 기준으로 동작하고, 모든 노드의 온도가 Prometheus에 보관됩니다. GitHub Actions와 Actions Runner Controller(ARC)로 구성한 CI/CD를 사용하므로 모든 빌드가 실제 라즈베리 파이에서 테스트됩니다.
+
+```mermaid
+flowchart LR
+  subgraph nodes["모든 노드"]
+    A1["agent<br/>(DaemonSet)"]
+  end
+  A1 -- "pifanctl_temperature_celsius{node}" --> P[("Prometheus<br/>(보관)")]
+  P -- "max by (node)" --> C["controller<br/>(팬이 달린 노드)"]
+  C -- "PWM duty" --> F(("팬"))
+  P --> G["Grafana 대시보드<br/>와 알림"]
+```
+
+| | 보드 한 대 | 클러스터 |
+| --- | --- | --- |
+| 읽는 곳 | 자기 열 영역 | Prometheus를 통한 모든 노드 |
+| 팬 구동 기준 | 자기 온도 | 가장 뜨거운 노드 |
+| 이력 | 없음 | Prometheus에 보관, 대시보드와 알림 제공 |
+| 설치 | `install.sh`, Docker, 원시 매니페스트 | Helm 차트 |
+
+> **상태.** 클러스터 모드는 라즈베리 파이 4 클러스터에서 RPi.GPIO 드라이버로 운영 중입니다. 라즈베리 파이 5용 커널 PWM 드라이버는 가짜 sysfs 트리를 이용한 테스트로만 검증했고, 팬이 달린 Pi 5에서는 아직 실행해 보지 못했습니다.
 
 ---
 ## 1. 실행
@@ -46,16 +67,36 @@ rm install-pifanctl.sh
 
 설치 후 `pifanctl --help`로 사용법을 확인하세요.
 
+```
+ Usage: pifanctl [OPTIONS] COMMAND [ARGS]...
+
+ 🥧 pifanctl: A CLI for PWM Fan Controlling of Raspberry Pi
+
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ status  Show current temperatures                                            │
+│ agent   Publish this node's temperatures as Prometheus metrics               │
+│ start   Start fan control                                                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+```
+
+핀을 구동하려면 root가 필요하므로 컨트롤러는 `sudo pifanctl start`로 시작하세요. `pifanctl status`와 `pifanctl agent`는 필요 없습니다.
+
 ### 1.3. 옵션 2: Docker
 
 ```sh
-docker run -it ghcr.io/jyje/pifanctl python main.py --help
+docker run --rm -it ghcr.io/jyje/pifanctl:latest python main.py --help
 ```
 
 팬을 구동하려면:
 
 ```sh
-docker run --privileged -it ghcr.io/jyje/pifanctl python main.py start
+docker run --privileged --user 0 -it ghcr.io/jyje/pifanctl:latest python main.py start
+```
+
+```
+INFO [2026-10-01 14:30:00Z] Detected 'Raspberry Pi 4 Model B Rev 1.5', using the RPi.GPIO driver
+INFO [2026-10-01 14:30:00Z] Controller started with driver 'rpigpio', interval 5.0s
+INFO [2026-10-01 14:30:00Z] Duty: 36.6%, Temperature: 51.9°C, Following: raspberrypi, Source: local, Nodes: raspberrypi=51.9*
 ```
 
 핀 제어에는 GPIO와 `/dev/mem` 접근이 필요해서 `start`에는 `docker run --privileged --user 0`이 필요합니다. `agent`와 `status`는 권한 없이 실행되고, 이미지는 기본적으로 non-root 사용자로 실행됩니다.
@@ -65,7 +106,7 @@ docker run --privileged -it ghcr.io/jyje/pifanctl python main.py start
 ```sh
 kubectl label node <팬이-달린-노드> pifanctl.jyje.online/fan=true
 
-helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl \
+helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.2 \
   --namespace pifanctl --create-namespace \
   --set prometheus.url=http://prometheus-operated.monitoring.svc:9090 \
   --set monitoring.serviceMonitor.enabled=true \
@@ -73,7 +114,10 @@ helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl \
   --set monitoring.grafanaDashboard.enabled=true
 ```
 
+사전 조건: 컨트롤러에서 접근 가능한 Prometheus. `monitoring.*` 옵션에는 Prometheus Operator CRD(`ServiceMonitor`, `PrometheusRule`)가, `GrafanaDashboard`에는 grafana-operator가 필요합니다. `monitoring.*.labels`는 Prometheus가 선택하는 라벨(예: `release: prometheus`)로 지정하세요.
+
 - `agent`: 모든 노드에서 도는 DaemonSet (모든 taint 허용), non-root, 읽기 전용 루트 파일시스템, 권한 없음.
+- `controller`: GPIO 구동에 `/dev/mem`이 필요해서 root와 privileged로 실행됩니다. 선택한 노드에서만 실행되고, 멈출 때는 최대 속도로 남습니다.
 - `controllers`: 이름 있는 그룹의 맵입니다. 각 그룹은 자신의 `nodeSelector`로 한정된 DaemonSet이고 `controllerDefaults` 위에 덮어써지므로, 하드웨어가 다른 노드를 한 릴리스에 함께 선언할 수 있습니다.
 
   ```yaml
@@ -92,6 +136,21 @@ helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl \
 - 이미지 태그는 기본값이 `v<appVersion>`이며 `latest`는 쓰지 않습니다. `values.schema.json`이 알 수 없는 드라이버나 범위를 벗어난 duty를 거부하고, `extraResources`로 추가 매니페스트를 릴리스와 함께 렌더링할 수 있습니다.
 
 모든 옵션은 [`charts/pifanctl/values.yaml`](charts/pifanctl/values.yaml), 검증된 예시는 [`charts/pifanctl/ci`](charts/pifanctl/ci)를 보세요.
+
+#### 메트릭과 알림
+
+| 메트릭 | 출처 | 의미 |
+| --- | --- | --- |
+| `pifanctl_temperature_celsius{node,zone,type}` | agent (`:9101`) | 열 영역마다 시계열 하나 |
+| `pifanctl_node_temperature_max_celsius{node}` | agent | 노드에서 가장 뜨거운 영역 |
+| `pifanctl_temperature_read_errors_total{node}` | agent | 열 영역을 찾지 못한 읽기 횟수 |
+| `pifanctl_fan_duty_percent{node}` | controller (`:9102`) | 현재 적용 중인 duty |
+| `pifanctl_control_temperature_celsius{node}` | controller | 팬이 반응한 온도 |
+| `pifanctl_control_followed_node{node,followed}` | controller | 따라가는 노드 |
+| `pifanctl_control_source{node,source}` | controller | `prometheus`, `local`, `failsafe` |
+| `pifanctl_control_fallbacks_total{node,to}` | controller | 클러스터 값을 못 써서 물러난 주기 수 |
+
+`monitoring.prometheusRule.enabled`를 켜면 다음에 알림이 옵니다: 노드가 10분간 75 °C 초과, 노드가 82 °C 초과, agent 수집 중단, 컨트롤러 failsafe, 컨트롤러가 자기 노드로 폴백, 보고하는 컨트롤러가 전혀 없음.
 
 #### 보관(Retention)
 
@@ -155,10 +214,10 @@ pifanctl start --source prometheus --prometheus-url http://prometheus:9090
 매 주기마다 팬이 무엇에 반응했는지와 모든 노드의 온도를 높은 순으로 로그에 남깁니다. 따라간 노드에는 `*`가 붙습니다.
 
 ```
-INFO [2026-10-01 14:30:05Z] Duty: 86.3%, Temperature: 70.5°C, Following: raspi-51, Source: prometheus, Nodes: raspi-51=70.5* raspi-41=52.1 raspi-50=51.8 raspi-40=49.2
+INFO [2026-10-01 14:30:05Z] Duty: 86.3%, Temperature: 70.5°C, Following: node-c, Source: prometheus, Nodes: node-c=70.5* node-b=52.1 node-d=51.8 node-a=49.2
 ```
 
-보고하던 노드가 사라지면 한 번 경고합니다(`Node 'raspi-51' stopped reporting and is not part of the maximum`). 조용해진 노드가 뜨거운 노드일 수 있기 때문입니다. 같은 정보가 메트릭 `pifanctl_control_followed_node`(따라가는 노드)와 `pifanctl_control_temperature_celsius`로도 있습니다.
+보고하던 노드가 사라지면 한 번 경고합니다(`Node 'node-c' stopped reporting and is not part of the maximum`). 조용해진 노드가 뜨거운 노드일 수 있기 때문입니다. 같은 정보가 메트릭 `pifanctl_control_followed_node`(따라가는 노드)와 `pifanctl_control_temperature_celsius`로도 있습니다.
 
 #### 온도 곡선
 
@@ -213,6 +272,8 @@ python ~/.pifanctl/sources/main.py status
 ## 3. CI/CD 파이프라인
 
 ARM64 CI/CD에 [GitHub Actions와 Actions Runner Controller (ARC)](https://github.com/actions/actions-runner-controller)를 사용합니다. 빌드는 자체 호스팅 라즈베리 파이 러너에서 실행되어 ARM64 호환성을 네이티브로 보장합니다.
+
+CI/CD 환경은 [app.jyje.online#stack](https://app.jyje.online/#stack)에서 확인할 수 있습니다.
 
 ### 3.1. 워크플로 구성
 
