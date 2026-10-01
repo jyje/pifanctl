@@ -15,6 +15,7 @@ monitoring:
     enabled: true
     mode: grafanaOperator
     folder: Hardware
+    namespace: observability
     instanceSelector:
       matchLabels:
         dashboards: r4spi

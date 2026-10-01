@@ -119,3 +119,10 @@ def test_dashboard_is_embedded_unchanged():
     objects = render("--set", "monitoring.grafanaDashboard.enabled=true")
     config_map = by_name(objects, "ConfigMap")["t-pifanctl-dashboard"]
     assert json.loads(config_map["data"]["pifanctl.json"]) == expected
+
+
+def test_dashboard_namespace_can_differ_from_the_release():
+    dashboard = [o for o in render(values="prometheus-values.yaml") if o["kind"] == "GrafanaDashboard"][0]
+    assert dashboard["metadata"]["namespace"] == "observability"
+    default = [o for o in render("--set", "monitoring.grafanaDashboard.enabled=true") if o["metadata"]["name"].endswith("-dashboard")][0]
+    assert default["metadata"]["namespace"] == "pifan"

@@ -152,6 +152,9 @@ monitoring:
     labels:
       grafana_dashboard: "1"
     folder: ""
+    # Namespace of the dashboard object. Defaults to the release namespace; set it
+    # when the Grafana sidecar or grafana-operator only watches another one.
+    namespace: ""
     # grafanaOperator mode: which Grafana instances receive the dashboard.
     instanceSelector: {}
 
