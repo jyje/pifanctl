@@ -1,0 +1,46 @@
+name: release-chart
+
+# Publishes the chart as an OCI artifact when charts/pifanctl/Chart.yaml gets a
+# version that has not been published yet:
+#   helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version <version>
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - charts/pifanctl/**
+      - .github/workflows/release-chart.yaml
+
+concurrency:
+  group: release-chart
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: azure/setup-helm@v5
+      - name: Log in to GitHub Container Registry
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.actor }}
+        run: echo "$TOKEN" | helm registry login ghcr.io --username "$ACTOR" --password-stdin
+      - name: Package and push a new version
+        run: |
+          version="$(helm show chart charts/pifanctl | sed -n 's/^version: //p')"
+          ref="oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts/pifanctl"
+          if helm show chart "${ref}" --version "${version}" >/dev/null 2>&1; then
+            echo "::notice::chart ${version} is already published, nothing to do"
+            exit 0
+          fi
+          helm package charts/pifanctl --destination dist
+          helm push "dist/pifanctl-${version}.tgz" "oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts"

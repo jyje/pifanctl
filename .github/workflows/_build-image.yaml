@@ -1,0 +1,100 @@
+name: _build-image
+
+# Reusable: build the ARM64 image on the in-cluster ARC runner, test it, and
+# publish it. Called by build-image-{main,develop,issue}.yaml.
+
+on:
+  workflow_call:
+    inputs:
+      image-suffix:
+        description: Package name suffix, for example "-dev"
+        type: string
+        default: ""
+      tag-latest:
+        description: Also publish the `latest` tag
+        type: boolean
+        default: false
+      tag-release:
+        description: Also publish v<version> once, if that tag does not exist yet
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-testing:
+    name: 🏗️ Build and testing
+    runs-on:
+      labels: r4spi-microk8s # Self-hosted ARM64 runner (ARC)
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE: ghcr.io/${{ github.repository }}${{ inputs.image-suffix }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute tags
+        id: tags
+        env:
+          TAG_LATEST: ${{ inputs.tag-latest }}
+          TAG_RELEASE: ${{ inputs.tag-release }}
+        run: |
+          short_sha="${GITHUB_SHA::7}"
+          echo "short_sha=${short_sha}" >> "$GITHUB_OUTPUT"
+          echo "${short_sha}" > ./sources/version
+
+          {
+            echo "tags<<EOF"
+            echo "${IMAGE}:${short_sha}"
+            if [ "${TAG_LATEST}" = "true" ]; then
+              echo "${IMAGE}:latest"
+            fi
+            if [ "${TAG_RELEASE}" = "true" ]; then
+              version="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' sources/pifanctl/__init__.py)"
+              # A release tag is published once. Later commits of the same
+              # version only move `latest` and their own SHA tag.
+              if docker buildx imagetools inspect "${IMAGE}:v${version}" >/dev/null 2>&1; then
+                echo "::notice::${IMAGE}:v${version} already exists, leaving it untouched"
+              else
+                echo "${IMAGE}:v${version}"
+              fi
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build/Publish as GitHub Package
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./docker/all.dockerfile
+          platforms: linux/arm64
+          push: true
+          provenance: false
+          tags: ${{ steps.tags.outputs.tags }}
+
+      - name: Test image default
+        run: docker run --rm -i "${IMAGE}:${{ steps.tags.outputs.short_sha }}"
+
+      - name: Test image version
+        run: |
+          version="$(docker run --rm "${IMAGE}:${{ steps.tags.outputs.short_sha }}" python main.py --version)"
+          test "${version}" = "${{ steps.tags.outputs.short_sha }}"
+
+      - name: Test image runs unprivileged and refuses to fake hardware
+        run: |
+          image="${IMAGE}:${{ steps.tags.outputs.short_sha }}"
+          test "$(docker run --rm "${image}" id -u)" != "0"
+          if docker run --rm "${image}" python main.py start --driver rpigpio; then
+            echo "the real GPIO driver must fail when there is no GPIO" >&2
+            exit 1
+          fi

@@ -2,6 +2,8 @@
 
 # pifanctl: A Raspberry Pi Fan Controller
 
+**English** | [한국어](README-ko.md)
+
 <img alt="pifanctl logo" src="docs/whale-cooling-pie.jpg" width="450" style="object-fit: contain; max-width: 100%; aspect-ratio: 16 / 9;">
 
 🥧 A CLI for **PWM Fan Controlling** of **Raspberry Pi**
@@ -18,7 +20,7 @@
 
 </div>
 
-🐳 **pifanctl** is a CLI tool for PWM fan control on Raspberry Pi. It can be easily run via **Docker** and **Kubernetes** and is optimized for ARM64 architecture. The project features a CI/CD pipeline using GitHub Actions with Actions Runner Controller (ARC), ensuring all builds are tested in actual Raspberry Pi environments. Please enjoy it!
+🐳 **pifanctl** is a CLI tool for PWM fan control on Raspberry Pi, from a single board to a whole cluster. It runs as a plain CLI, in **Docker**, or on **Kubernetes** with a Helm chart, and is optimized for ARM64. In a cluster the fans follow the **hottest node**, and every node's temperature is kept in Prometheus. The project features a CI/CD pipeline using GitHub Actions with Actions Runner Controller (ARC), ensuring all builds are tested in actual Raspberry Pi environments. Please enjoy it!
 
 
 ---
@@ -27,7 +29,7 @@
 ### 1.1. Requirements
 
 - Raspberry Pi (ARM64)
-- Python 3.8+
+- Python 3.10+
 
 You should access the Raspberry Pi (ARM64) to run the following commands.
 
@@ -65,10 +67,52 @@ docker run --privileged -it ghcr.io/jyje/pifanctl python main.py start
 
 ![Docker logs of 'pifanctl start'](docs/docker-pifanctl-logs.png)
 
-Currently, `--privileged` is required to access and control the GPIO pins.
-We will try to find a better solution in the future.
+Controlling the pin needs access to GPIO, so `docker run --privileged` is required for `start`. The `agent` and `status` commands run unprivileged, and the image runs as a non-root user by default.
 
-### 1.4. OPTION 3: On Kubernetes
+
+### 1.4. OPTION 3: On Kubernetes with Helm (recommended)
+
+```sh
+kubectl label node <the-node-with-the-fan> pifanctl.jyje.online/fan=true
+
+helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl \
+  --namespace pifanctl --create-namespace \
+  --set prometheus.url=http://prometheus-operated.monitoring.svc:9090 \
+  --set monitoring.serviceMonitor.enabled=true \
+  --set monitoring.prometheusRule.enabled=true \
+  --set monitoring.grafanaDashboard.enabled=true
+```
+
+- `agent`: a DaemonSet on every node (tolerates every taint), non-root, read-only root filesystem, no privileges.
+- `controllers`: a map of named groups. Each group is a DaemonSet limited by its own `nodeSelector` and merged over `controllerDefaults`, so nodes with different hardware live in one release:
+
+  ```yaml
+  controllers:
+    default: null          # drop the chart's default group
+    pi4:
+      nodeSelector: {pifanctl.jyje.online/fan: pi4}
+      driver: rpigpio
+    pi5:
+      nodeSelector: {pifanctl.jyje.online/fan: pi5}
+      driver: sysfs
+      pwmChannel: 2
+  ```
+
+  A node must match at most one group. A group without a `nodeSelector` is rejected at render time, because it would run everywhere and fight over the pin.
+- `monitoring`: an optional `ServiceMonitor`, a `PrometheusRule` (hot node, critical node, agent down, failsafe, fallback, no controller) with a recording rule, and a Grafana dashboard, either as a sidecar `ConfigMap` or as a grafana-operator `GrafanaDashboard`.
+- The image tag defaults to `v<appVersion>`, never `latest`. `values.schema.json` rejects unknown drivers and out-of-range duties, and `extraResources` renders any extra manifest with the release.
+
+See [`charts/pifanctl/values.yaml`](charts/pifanctl/values.yaml) for every option and [`charts/pifanctl/ci`](charts/pifanctl/ci) for tested examples.
+
+#### Retention
+
+Temperatures are only as useful as their history. The chart exports metrics but does not own Prometheus, so keep them with the Prometheus settings:
+
+- Set `retention` for the period you want to look back over, and `retentionSize` slightly below the volume size so the TSDB can never fill its disk.
+- `pifanctl:node_temperature_max_celsius:max` (recording rule) is one series for the whole cluster. If you downsample or federate to a long-term store, this is the series to send.
+- A node count in the single digits costs a few hundred kilobytes per month: the retention budget is decided by the other workloads, not by pifanctl.
+
+### 1.5. OPTION 4: On Kubernetes, raw manifest (one node, no Prometheus)
 
 Run the following command to install the pifanctl on Kubernetes with Raspberry Pies and a PWM Fan.
 
@@ -92,13 +136,76 @@ kubectl logs -n pifanctl -l app=pifanctl
 ![Kubernetes logs of 'pifanctl start'](docs/k8s-pifanctl-logs.png)
 
 
-### 1.5. OPTION 4: Run Source Code
+### 1.6. OPTION 5: Run Source Code
 ```sh
 git clone https://github.com/jyje/pifanctl ~/.pifanctl
 cd ~/.pifanctl/sources
 pip install --upgrade -r requirements.raspi.txt
 python ~/.pifanctl/sources/main.py --help
 ```
+
+
+### 1.7. Cluster mode: one fan, many nodes
+
+One fan usually cools several boards that sit in the same enclosure. The fan should follow the hottest of them, not the board it happens to be wired to.
+
+| Role | Command | Runs on | What it does |
+| --- | --- | --- | --- |
+| Agent | `pifanctl agent` | **every node** (DaemonSet) | Reads `/sys/class/thermal` and serves `pifanctl_*` metrics, labelled with `node` |
+| Prometheus | | the cluster | Scrapes and **retains** the temperatures |
+| Controller | `pifanctl start --source prometheus` | **nodes that have a fan** | Asks Prometheus for `max by (node) (pifanctl_temperature_celsius)` and drives the fan from the hottest node |
+
+The controller never trusts a single source. Each cycle it acts on the highest of the cluster value and its own node's value, and it degrades safely:
+
+1. Prometheus answers: use `max(cluster, local)`.
+2. Prometheus is down or empty: use the local temperature, count a fallback.
+3. Nothing is readable: run the fan at `--failsafe-duty` (default 100%).
+
+When the controller stops (SIGTERM, pod eviction) the fan is left at `--exit-duty` (default 100%), because a stopped controller no longer protects the board.
+
+With `--source local` (the default) nothing is shared and a node controls only its own fan, exactly like a single board.
+
+```sh
+# on every node
+pifanctl agent
+
+# on the node with the fan
+pifanctl start --source prometheus --prometheus-url http://prometheus:9090
+```
+
+#### What the log tells you
+
+Every cycle logs what the fan reacted to and what every node reads, hottest first. The node it followed is marked with `*`:
+
+```
+INFO [2026-10-01 14:30:05Z] Duty: 86.3%, Temperature: 70.5°C, Following: raspi-51, Source: prometheus, Nodes: raspi-51=70.5* raspi-41=52.1 raspi-50=51.8 raspi-40=49.2
+```
+
+A node that reported before and then disappears is warned about once (`Node 'raspi-51' stopped reporting and is not part of the maximum`), because a silent node may be a hot one. The same facts are metrics: `pifanctl_control_followed_node` (the node being followed) and `pifanctl_control_temperature_celsius`.
+
+#### Temperature curve
+
+`--algorithm curve` (the default) maps temperature to duty. It rises immediately and falls in steps (`--duty-down-step`), which is the hysteresis that keeps the fan from toggling around the threshold.
+
+| Temperature | Duty |
+| --- | --- |
+| below `--temp-low` (50 °C) | `--duty-idle` (0%) |
+| `--temp-low` | `--duty-start` (30%) |
+| between | linear ramp |
+| `--temp-high` (70 °C) and above | `--duty-max` (100%) |
+
+`--algorithm step` keeps the original behaviour (`--target-temperature`, `--duty-cycle-step`).
+
+#### Drivers
+
+| `--driver` | Use |
+| --- | --- |
+| `auto` (default) | Kernel PWM on Raspberry Pi 5, RPi.GPIO elsewhere. **Never the mock**: without real hardware the process exits with an error instead of pretending to cool |
+| `rpigpio` | Software PWM on `--pin` (Raspberry Pi 4 and older) |
+| `sysfs` | Kernel hardware PWM in `/sys/class/pwm` (`--pwm-chip`, `--pwm-channel`); needs the PWM overlay, for example `dtoverlay=pwm-2chan` |
+| `mock` | Development only |
+
+Every option is also an environment variable, listed in `pifanctl start --help`.
 
 
 ---
@@ -113,6 +220,13 @@ If you want to build it yourself, you can do the following:
 git clone https://github.com/jyje/pifanctl ~/.pifanctl
 cd ~/.pifanctl/sources
 pip install --upgrade -r requirements.raspi.txt
+```
+
+Run the tests (they need no Raspberry Pi; the chart tests also need `helm`):
+
+```sh
+pip install -r sources/requirements.dev.txt
+python -m pytest
 ```
 
 Then you can debug the source code with the following command:
@@ -133,35 +247,27 @@ You can check the environment of CI/CD pipeline in [app.jyje.live#stack](https:/
 
 ### 3.1. Workflow Structure
 
-- **Main Branch (`build-image-main.yaml`)**
-  - Builds and publishes to `ghcr.io/jyje/pifanctl:latest`
-  - Tags with commit SHA
-  - Runs on production-ready code
+| Workflow | Trigger | What it does |
+| --- | --- | --- |
+| `ci` | every pull request | Lints the workflows, runs the tests on Python 3.10, 3.11 and 3.14, lints and schema-validates the chart (kubeconform, `promtool`), and builds the ARM64 image on the in-cluster runner without pushing |
+| `build-image-main` | push to `main` | Publishes `ghcr.io/jyje/pifanctl:latest`, the commit SHA tag and `v<version>` (once per version) |
+| `build-image-develop` | push to `develop` | Publishes `ghcr.io/jyje/pifanctl-dev:latest` and the SHA tag |
+| `build-image-issue` | push to `issue-**` | Publishes `ghcr.io/jyje/pifanctl-issue:<sha>` for temporary testing |
+| `release-chart` | push to `main` touching `charts/pifanctl` | Publishes the chart to `oci://ghcr.io/jyje/charts/pifanctl` when its version is new |
 
-- **Develop Branch (`build-image-develop.yaml`)**
-  - Builds and publishes to `ghcr.io/jyje/pifanctl-dev:latest`
-  - Used for development and testing
-
-- **Issue Branches (`build-image-issue.yaml`)**
-  - Builds and publishes to `ghcr.io/jyje/pifanctl-issue:latest`
-  - Builds feature branches with pattern `issue-**`
-  - Tags only with commit SHA for temporary testing
+The three image workflows share one reusable workflow, `_build-image.yaml`.
 
 ### 3.2. Key Features
 
-- Native ARM64 builds using self-hosted runners (**`r4spi-microk8s`**)
-- Automatic version tagging using commit SHA
-- Skip CI option with **`--no-ci`** flag in commit messages
-- GitHub Container Registry (ghcr.io) integration
-- Automated testing of built images
+- Native ARM64 builds using self-hosted runners (**`r4spi-microk8s`**, an [ARC](https://github.com/actions/actions-runner-controller) runner scale set in the cluster). Pull requests from forks never run on it
+- Skip CI option with **`--no-ci`** in a commit message, evaluated by the workflow engine and never interpolated into a shell script
+- GitHub Container Registry (ghcr.io) integration, with immutable `v<version>` tags
+- The built image is tested: it prints its version, runs unprivileged, and refuses to start the real GPIO driver where there is no GPIO
 
-### 3.3. Build Process
+### 3.3. Releasing
 
-1. Initialize and check for CI skip flag
-2. Build Docker image for ARM64 platform
-3. Push to GitHub Container Registry
-4. Run automated tests on the built image
-
+- Application: bump `__version__` in `sources/pifanctl/__init__.py` and `appVersion` in `charts/pifanctl/Chart.yaml` together (a test checks that they match), then merge to `main`.
+- Chart: bump `version` in `charts/pifanctl/Chart.yaml` for any chart change. `release-chart` publishes it.
 
 ---
 ## 4. Trouble Shooting

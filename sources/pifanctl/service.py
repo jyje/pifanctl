@@ -1,80 +1,117 @@
-import time, glob, logging
+import logging
+import signal
+import threading
+from typing import Callable, Optional, Protocol
+
+from pifanctl.drivers import PwmDriver
+from pifanctl.metrics import AgentMetrics, ControllerMetrics
+from pifanctl.sources import Reading
+from pifanctl.thermal import read_zones
 
 logger = logging.getLogger(__name__)
 
-try:
-    import RPi.GPIO as GPIO
-    RPI_DEVICE = True
-except Exception as e:
-    logger.info(f"Impossible to import RPi.GPIO: {e}")
-    
-    logger.info("Mock.GPIO will be used")
-    import Mock.GPIO as GPIO
-    RPI_DEVICE = False
+
+class Controller(Protocol):
+    duty: float
+
+    def update(self, temperature: float) -> float: ...
+
+    def force(self, duty: float) -> float: ...
 
 
-def get_temperature():
-    if not RPI_DEVICE:
-        import random
-        mean = -50
-        std = 10
+def install_stop_handlers(stop: threading.Event) -> None:
+    """Turn SIGTERM and SIGINT into a request to leave the loop cleanly."""
+    def _handler(signum, _frame):
+        logger.info(f"Received signal {signum}, stopping")
+        stop.set()
 
-        value = random.gauss(mean, std)
-        return [ value ]
-
-    file_list = glob.glob('/sys/class/thermal/thermal_zone*/temp')
-    temp_array = []
-    for file_path in file_list:
-        with open(file_path, 'r') as file:
-            temp_raw = file.read().strip()
-            temp = float(temp_raw)/1000
-            temp_array.append(temp)
-            logger.debug(f"Temperature reading from {file_path}: {temp}°C")
-
-    assert len(temp_array) > 0, "No temperature data available"
-
-    return temp_array
+    signal.signal(signal.SIGTERM, _handler)
+    signal.signal(signal.SIGINT, _handler)
 
 
-def set_pwm_fan(
-    pin: int,
-    pwm_frequency: int,
-    duty_cycle_initial: float,
-):
-    set_warnings = False
-    set_mode = GPIO.BCM
-    setup_direction = GPIO.OUT
-
-    GPIO.setwarnings(set_warnings)
-    GPIO.cleanup()
-    GPIO.setmode(set_mode)
-    GPIO.setup(pin, setup_direction)
-
-    pwm = GPIO.PWM(pin, pwm_frequency)
-    pwm.start(duty_cycle_initial)
-
-    return pwm
-
-
-def run_pwm_fan(
-    fan: GPIO.PWM,
-    target_temperature: float,
-    pwm_refresh_interval: float,
-    duty_cycle_initial: float,
-    duty_cycle_step: float,
-):
-    duty_cycle = duty_cycle_initial
-
-    while True:
-        current_temperature = max(get_temperature())
-
-        if current_temperature > target_temperature:
-            duty_cycle = min(100, duty_cycle + duty_cycle_step)
+def run_agent(
+    metrics: AgentMetrics,
+    thermal_path: str,
+    interval: float,
+    stop: threading.Event,
+) -> None:
+    """Publish this node's temperatures until asked to stop."""
+    logger.info(f"Agent started for node '{metrics.node}', interval {interval}s")
+    while not stop.is_set():
+        zones = read_zones(thermal_path)
+        metrics.observe(zones)
+        if zones:
+            logger.debug(f"Hottest zone: {max(z.celsius for z in zones):.1f}°C")
         else:
-            duty_cycle = max(0, duty_cycle - duty_cycle_step)
+            logger.warning("No readable thermal zone")
+        stop.wait(interval)
+    logger.info("Agent stopped")
 
-        fan.ChangeDutyCycle(duty_cycle)
 
-        logger.info(f"Duty: {duty_cycle:.1f}%, Temperature: {current_temperature:.1f}°C")
+def format_nodes(reading: Reading) -> str:
+    """Every known node's temperature, hottest first, with the followed node marked."""
+    ordered = sorted(reading.nodes.items(), key=lambda item: (-item[1], item[0]))
+    return " ".join(
+        f"{name}={value:.1f}{'*' if name == reading.driver else ''}" for name, value in ordered
+    )
 
-        time.sleep(pwm_refresh_interval)
+
+def run_controller(
+    driver: PwmDriver,
+    controller: Controller,
+    read: Callable[[], Reading],
+    metrics: Optional[ControllerMetrics],
+    interval: float,
+    failsafe_duty: float,
+    exit_duty: float,
+    stop: threading.Event,
+    wants_cluster: bool = False,
+) -> None:
+    """
+    Drive the fan until asked to stop.
+
+    When no temperature can be read the fan goes to ``failsafe_duty``: a fan
+    stuck at a low duty because its sensor died is the dangerous failure. On
+    exit the fan is left at ``exit_duty`` (full speed by default), because a
+    stopped controller no longer protects the board.
+    """
+    logger.info(f"Controller started with driver '{driver.name}', interval {interval}s")
+    seen: set[str] = set()
+    try:
+        while not stop.is_set():
+            reading = read()
+
+            # A node that reported before and is gone now no longer counts
+            # towards the maximum: say so, because a hot node may be hiding.
+            if reading.source == "prometheus":
+                for node in sorted(seen - set(reading.nodes)):
+                    logger.warning(f"Node '{node}' stopped reporting and is not part of the maximum")
+                seen = set(reading.nodes)
+
+            if reading.value is None:
+                duty = controller.force(failsafe_duty)
+                logger.error(f"No temperature available ({reading.reason}); failsafe duty {duty:.1f}%")
+                if metrics:
+                    metrics.fallback("failsafe")
+            else:
+                duty = controller.update(reading.value)
+                if wants_cluster and reading.source != "prometheus":
+                    logger.warning(f"Cluster view unavailable ({reading.reason}); using local temperature")
+                    if metrics:
+                        metrics.fallback(reading.source)
+                logger.info(
+                    f"Duty: {duty:.1f}%, Temperature: {reading.value:.1f}°C, "
+                    f"Following: {reading.driver}, Source: {reading.source}, "
+                    f"Nodes: {format_nodes(reading)}"
+                )
+
+            driver.set_duty(duty)
+            if metrics:
+                metrics.observe(duty, reading.value, reading.source, reading.driver)
+            stop.wait(interval)
+    finally:
+        try:
+            driver.set_duty(exit_duty)
+            logger.info(f"Controller stopped, fan left at {exit_duty:.1f}%")
+        finally:
+            driver.close()
