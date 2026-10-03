@@ -305,10 +305,10 @@ You can check the environment of CI/CD pipeline in [app.jyje.online#stack](https
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
 | `ci` | every pull request | Lints the workflows, runs tests on every stable Python minor release from 3.10 through 3.14, lints and schema-validates the chart (kubeconform, `promtool`), and builds the ARM64 image on the in-cluster runner without pushing |
-| `build-image-main` | push to `main` | Publishes `ghcr.io/jyje/pifanctl:latest`, the commit SHA tag and `v<version>` (once per version) |
+| `build-image-main` | push to `main` | Publishes the commit SHA tag and `v<version>` (once per version); stable versions also update `latest` |
 | `build-image-develop` | push to `develop` | Publishes `ghcr.io/jyje/pifanctl-dev:latest` and the SHA tag |
 | `build-image-issue` | push to `issue-**` | Publishes `ghcr.io/jyje/pifanctl-issue:<sha>` for temporary testing |
-| `release-chart` | push to `main` touching `charts/pifanctl` | Publishes the chart to `oci://ghcr.io/jyje/charts/pifanctl` when its version is new |
+| `release-chart` | push to `main` touching either chart | Publishes new `pifanctl` and `pifanctl-operator` charts to `oci://ghcr.io/jyje/charts/` |
 
 The three image workflows share one reusable workflow, `_build-image.yaml`.
 
@@ -321,22 +321,22 @@ The three image workflows share one reusable workflow, `_build-image.yaml`.
 
 ### 3.3. Releasing
 
-The version lives in two places, and a pull request that changes what ships has to bump it:
+Application and chart versions are tracked separately. A pull request that changes what ships has to bump the relevant versions:
 
 | Changed | Bump | Checked by |
 | --- | --- | --- |
-| `sources/main.py` or `sources/pifanctl/` | `__version__` in `sources/pifanctl/__init__.py`, and `appVersion` in `charts/pifanctl/Chart.yaml` | the `Version bump` job |
-| `charts/pifanctl/` (not its `ci/` value sets) | `version` in `charts/pifanctl/Chart.yaml`. A new application version changes `appVersion`, so it needs a new chart version too | the `Version bump` job |
+| `sources/main.py` or `sources/pifanctl/` | `__version__` in `sources/pifanctl/__init__.py`, and `appVersion` in both chart manifests | the `Version bump` job |
+| Either directory under `charts/` (not its `ci/` value sets) | `version` in the affected `Chart.yaml`. A new application version changes `appVersion`, so both charts need new versions | the `Version bump` job |
 
 Also update the image tag in `k8s/manifests/deployments.yaml` and the chart version in the install command above; a test fails when they drift.
 
 Merging to `main` does the rest:
 
-1. `build-image-main` publishes `latest`, the commit tag, and `v<version>` the first time a version appears.
+1. `build-image-main` publishes the commit tag and `v<version>` the first time a version appears. Stable versions also update `latest`; alpha versions leave it unchanged.
 2. After the image exists, it creates the git tag `v<version>` and a GitHub release with generated notes.
-3. `release-chart` waits for the image the chart points at, publishes the chart to `oci://ghcr.io/jyje/charts/pifanctl`, and creates the tag `chart-v<version>` and its release.
+3. `release-chart` waits for the referenced image, publishes both charts to `oci://ghcr.io/jyje/charts/`, and creates `chart-v<version>` or `operator-chart-v<version>` tags and releases.
 
-Each step skips what already exists, so re-running a failed workflow is safe. Application releases are tagged `v*` and chart releases `chart-v*`.
+Each step skips what already exists, so re-running a failed workflow is safe. Application releases are tagged `v*`; chart releases use `chart-v*` and `operator-chart-v*`. Alpha versions are GitHub prereleases.
 
 ---
 ## 4. Trouble Shooting

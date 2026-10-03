@@ -34,13 +34,8 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 ## 대기 체크리스트
 
-### 08. 종합 검증과 PR
-
-- [ ] CI 결과 확인 및 실패 수정
-- [ ] 완료 기록과 최종 요약에 검증 범위를 정확하게 보고
-
-완료 조건: 실제 구현을 검토 가능한 PR로 제공한다. 실물 검증 전 정식 v1 릴리스를
-완료했다고 주장하지 않는다.
+단계 01~08의 구현·mock 검증·커밋·PR 제출을 완료하여 대기 항목을 제거했다.
+아래 출시 게이트는 실제 운영 검증이 필요하므로 유지한다.
 
 ## 실제 운영에서 남을 출시 게이트
 
@@ -52,6 +47,7 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 - [ ] 전기적 fail-open/독립 팬 전원 조건 문서화 후 v1.0.0 출시
 
 ## 완료 기록
+
 | 단계 | 변경 및 검증 | 커밋 |
 | --- | --- | --- |
 | 사전 설계 | CRD/예시/한영 설계, PR #40 CI 성공. 아직 runtime 없음 | `e31e183` |
@@ -66,7 +62,8 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 | 08-a | 다섯 Python 버전에서 218 tests/93.88~93.91%. 실제 client와 mock HTTP/공유 랙 시나리오 통합 테스트로 인자·상태 함수 충돌 수정. 마지막 견고성 수정 후 3.14 218 tests/93.48%. kubeconform K8s1.30/1.33 + actionlint 통과 | `f8e6dcb` |
 | 08-b | PR #41 생성/attachment. 첫 원격 CI의 9개 job 성공. 보드별/여러 팬/watch 복구 테스트 추가 후 로컬3.14 224 tests/95.69%. 느린 조회와 독립적인 watchdog latch 추가, focused 22 tests 및 전체3.14 227 tests/95.65% passed. 조회 지연도 sample age에 반영. 해당 커밋의 원격 CI 9개 job 모두 성공 | `f08e04e` |
 | 08-c | namespace/operatorId 소유권으로 다른 namespace의 동명 operator 인수 거부. 18 focused tests passed; 마지막 코드의 다섯 Python 버전 전체 검증 완료. 228 tests passed, coverage 95.66~95.68%. 해당 커밋 CI 9개 job 모두 성공 | `33f5955` |
-| 08-d | ConfigMap owner-reference admission에 필요한 finalizer update를 입력 ConfigMap 한 개로 제한. Helm 렌더 회귀 검사 및 background 삭제 경로 한영 명시 | `🛠️ fix(chart): authorize configmap owner finalizers` |
+| 08-d | ConfigMap owner-reference admission에 필요한 finalizer update를 입력 ConfigMap 한 개로 제한. Helm 렌더 12 tests/lint 및 전체3.14 228 tests/95.66%. background 삭제 경로 한영 명시. 원격 CI 9개 job 성공 | `92a142b` |
+| 08 완료 | 다섯 Python 버전/90% gate 회귀 방지, 228 tests, 원격 coverage 95.72~95.74%. ARM64/chart/workflow/version 포함 9개 job 성공. 한영 README의 alpha와 두 차트 릴리스 설명 동기화. #39/#41 증거 갱신 | `📄 docs(v1): record completed runtime verification` |
 
 ### 검증 중 발견해 수정한 회귀
 
@@ -75,3 +72,11 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 - 통합 테스트: Kubernetes36의 call_api는 response_types_map을 요구함. fake adapter만으로 놓친 인자 문제를 실제 client+가짜 HTTP에서 발견하고 수정함.
 - operator HTTP snapshot과 topology snapshot의 함수명 충돌을 분리함.
+
+## 검증 증거
+
+- [런타임 및 RBAC 변경 CI](https://github.com/jyje/pifanctl/actions/runs/37123255182): Python3.10~3.14와 ARM64 포함 9개 job 성공.
+- [이전 런타임 CI](https://github.com/jyje/pifanctl/actions/runs/37122808616): 각 버전 228 tests, coverage 95.72~95.74%.
+- 로컬 macOS: Python3.10~3.14 각 228 tests, coverage 95.66~95.68%. 마지막 RBAC 변경 후3.14 전체 228 tests/95.66% 재검증.
+- kubeconform은 정적 schema 검증이며 API 서버의 admission/CEL/defaulting 검증은 아니다.
+- PR #40에는 설계/CRD/시나리오 SVG·PNG, PR #41에는 실제 alpha 구현과 순차 커밋이 있다. PR #40을 먼저 검토하는 stacked PR 구성이다.

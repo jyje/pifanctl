@@ -283,10 +283,10 @@ CI/CD 환경은 [app.jyje.online#stack](https://app.jyje.online/#stack)에서 �
 | 워크플로 | 트리거 | 하는 일 |
 | --- | --- | --- |
 | `ci` | 모든 풀 리퀘스트 | 워크플로 lint, 정식 출시된 Python 마이너 버전 3.10-3.14 전체에서 테스트, 차트 lint와 스키마 검증(kubeconform, `promtool`), 클러스터 내 러너에서 ARM64 이미지를 푸시 없이 빌드 |
-| `build-image-main` | `main` push | `ghcr.io/jyje/pifanctl:latest`, 커밋 SHA 태그, `v<version>`(버전당 한 번) 발행 |
+| `build-image-main` | `main` push | 커밋 SHA 태그와 `v<version>`(버전당 한 번) 발행. 정식 버전만 `latest` 갱신 |
 | `build-image-develop` | `develop` push | `ghcr.io/jyje/pifanctl-dev:latest`와 SHA 태그 발행 |
 | `build-image-issue` | `issue-**` push | 임시 테스트용 `ghcr.io/jyje/pifanctl-issue:<sha>` 발행 |
-| `release-chart` | `charts/pifanctl`을 바꾼 `main` push | 버전이 새로울 때 `oci://ghcr.io/jyje/charts/pifanctl`에 차트 발행 |
+| `release-chart` | 두 차트 중 하나를 바꾼 `main` push | 새 `pifanctl`, `pifanctl-operator` 차트를 `oci://ghcr.io/jyje/charts/`에 발행 |
 
 세 이미지 워크플로는 재사용 워크플로 `_build-image.yaml` 하나를 공유합니다.
 
@@ -299,22 +299,22 @@ CI/CD 환경은 [app.jyje.online#stack](https://app.jyje.online/#stack)에서 �
 
 ### 3.3. 릴리스
 
-버전은 두 곳에 있으며, 배포되는 것을 바꾸는 풀 리퀘스트는 버전을 올려야 합니다.
+앱과 각 차트의 버전을 따로 관리합니다. 배포되는 것을 바꾸는 풀 리퀘스트는 해당 버전을 올려야 합니다.
 
 | 변경 | 올릴 것 | 확인 |
 | --- | --- | --- |
-| `sources/main.py` 또는 `sources/pifanctl/` | `sources/pifanctl/__init__.py`의 `__version__`과 `charts/pifanctl/Chart.yaml`의 `appVersion` | `Version bump` 잡 |
-| `charts/pifanctl/` (`ci/` 값 파일 제외) | `charts/pifanctl/Chart.yaml`의 `version`. 애플리케이션 버전이 새로우면 `appVersion`이 바뀌므로 차트 버전도 새로워야 합니다 | `Version bump` 잡 |
+| `sources/main.py` 또는 `sources/pifanctl/` | `sources/pifanctl/__init__.py`의 `__version__`과 두 차트 manifest의 `appVersion` | `Version bump` 잡 |
+| `charts/`의 각 차트 디렉터리 (`ci/` 값 파일 제외) | 해당 `Chart.yaml`의 `version`. 앱 버전이 새로우면 `appVersion`이 바뀌므로 두 차트 버전도 새로워야 합니다 | `Version bump` 잡 |
 
 `k8s/manifests/deployments.yaml`의 이미지 태그와 위 설치 명령의 차트 버전도 함께 바꾸세요. 어긋나면 테스트가 실패합니다.
 
 `main`에 병합하면 나머지는 자동입니다.
 
-1. `build-image-main`이 `latest`, 커밋 태그, 그리고 버전이 처음 나타날 때 `v<version>`을 발행합니다.
+1. `build-image-main`이 커밋 태그와 버전이 처음 나타날 때 `v<version>`을 발행합니다. 정식 버전만 `latest`를 갱신하고 alpha는 유지합니다.
 2. 이미지가 생긴 뒤 git 태그 `v<version>`과 자동 생성 노트가 붙은 GitHub 릴리스를 만듭니다.
-3. `release-chart`가 차트가 가리키는 이미지를 기다린 뒤 `oci://ghcr.io/jyje/charts/pifanctl`에 차트를 발행하고, 태그 `chart-v<version>`과 릴리스를 만듭니다.
+3. `release-chart`가 이미지를 기다린 뒤 두 차트를 `oci://ghcr.io/jyje/charts/`에 발행하고 `chart-v<version>` 또는 `operator-chart-v<version>` 태그와 릴리스를 만듭니다.
 
-각 단계는 이미 있는 것을 건너뛰므로 실패한 워크플로를 다시 실행해도 안전합니다. 애플리케이션 릴리스는 `v*`, 차트 릴리스는 `chart-v*` 태그를 씁니다.
+각 단계는 이미 있는 것을 건너뛰므로 실패한 워크플로를 다시 실행해도 안전합니다. 앱 릴리스는 `v*`, 차트는 `chart-v*`와 `operator-chart-v*` 태그를 씁니다. alpha는 GitHub prerelease로 발행합니다.
 
 ---
 ## 4. 문제 해결
