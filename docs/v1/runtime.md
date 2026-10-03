@@ -127,6 +127,10 @@ One worker Deployment per actuator Node has Recreate/replicas=1, required name
 and actual hostname affinity, and a plan containing Node UID. Workers have no
 Kubernetes credentials. Leader loss stops heartbeat refresh.
 
+CR-mode ownership records `namespace/operatorId`, so an identical ID in another
+namespace cannot adopt the same CRs. This alpha uses one CR-mode installation
+for the cluster-wide topology; replicas share its Lease.
+
 ConfigMap directory projection can lag. The worker checks separate plan and
 heartbeat files, matching hash and UID, allowing at most five seconds future
 skew. **Watchdog default: 120 seconds**, chosen to tolerate common projection

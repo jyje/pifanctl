@@ -129,6 +129,12 @@ def test_duplicate_operators_and_adoption(setup):
     with pytest.raises(TopologyError): o.reconcile()
 
 
+def test_same_id_in_other_namespace_cannot_adopt_crs(setup):
+    k, o = setup; o.reconcile()
+    other = Operator(k, namespace='other-system', operator_id=o.id)
+    with pytest.raises(TopologyError, match='another operator'): other.reconcile()
+
+
 def reporter(k, o, ready=True):
     def read(worker, now):
         p = json.loads(k.get(o.core + '/configmaps/' + worker + '-plan')['data']['plan.json'])

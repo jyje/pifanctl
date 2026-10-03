@@ -124,6 +124,10 @@ CR과 Node 목록은 별도 API 조회이므로 여러 객체를 동시에 바�
 배치됩니다. 실제 hostname 라벨과 Node 이름 affinity, plan의 Node UID를 확인합니다.
 worker에는 Kubernetes 토큰이 없고 leader 상실 시 heartbeat 갱신이 중단됩니다.
 
+CR 소유권은 `namespace/operatorId`로 기록합니다. 다른 namespace에서 같은 ID를
+사용해도 인수할 수 없습니다. alpha의 cluster-wide CR 토폴로지는 설치 한 개가
+담당하고, 그 설치의 replicas가 Lease를 공유합니다.
+
 ConfigMap 디렉터리 전달에는 지연이 있습니다. worker는 plan과 별도의 heartbeat를
 읽고 hash/UID를 비교합니다. 미래 시각은 최대 5초 허용합니다.
 **watchdog 기본값은 120초**입니다. 실제 projection 지연을 측정해야 하며, 전달이

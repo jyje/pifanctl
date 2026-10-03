@@ -73,7 +73,7 @@ def worker_deployment(namespace, operator_id, node, uid, hostname, config, image
               'app.kubernetes.io/component': 'worker'}
     return {'apiVersion': 'apps/v1', 'kind': 'Deployment',
         'metadata': {'name': worker, 'namespace': namespace, 'labels': labels,
-                     'annotations': {OWNER: operator_id}, 'ownerReferences': [owner]},
+                     'annotations': {OWNER: namespace + '/' + operator_id}, 'ownerReferences': [owner]},
         'spec': {'replicas': 1, 'strategy': {'type': 'Recreate'},
             'selector': {'matchLabels': {'pifanctl.jyje.online/node': worker}},
             'template': {'metadata': {'labels': labels}, 'spec': {
@@ -104,6 +104,7 @@ class Operator:
     def __init__(self, kube, namespace='pifanctl', operator_id='pifanctl', input_configmap=None,
                  image=None, report_reader=None):
         self.kube, self.namespace, self.id = kube, namespace, operator_id
+        self.identity = namespace + '/' + operator_id
         self.input_configmap = input_configmap
         self.image = image or f'ghcr.io/jyje/pifanctl:v{__version__}'
         self.core = f'/api/v1/namespaces/{name(namespace)}'
@@ -136,19 +137,19 @@ class Operator:
 
     def protect(self, item, path):
         m = item['metadata']; annotations = m.get('annotations', {})
-        if annotations.get(OWNER) not in (None, self.id):
+        if annotations.get(OWNER) not in (None, self.identity):
             raise TopologyError(f"{item['kind']}/{m['name']} belongs to another operator")
-        if FINALIZER not in m.get('finalizers', []) or annotations.get(OWNER) != self.id:
+        if FINALIZER not in m.get('finalizers', []) or annotations.get(OWNER) != self.identity:
             if m.get('deletionTimestamp'): raise TopologyError('cannot adopt a deleting resource')
             self.patch(path, {'metadata': {'resourceVersion': m['resourceVersion'],
-                'annotations': {OWNER: self.id}, 'finalizers': m.get('finalizers', []) + ([] if FINALIZER in m.get('finalizers', []) else [FINALIZER])}})
+                'annotations': {OWNER: self.identity}, 'finalizers': m.get('finalizers', []) + ([] if FINALIZER in m.get('finalizers', []) else [FINALIZER])}})
 
     def managed(self, collection, desired):
         path = collection + '/' + name(desired['metadata']['name'])
         old = self.kube.optional(path)
         if old:
             m = old['metadata']
-            if m.get('annotations', {}).get(OWNER) != self.id:
+            if m.get('annotations', {}).get(OWNER) != self.identity:
                 raise TopologyError(f"refusing to adopt {desired['kind']}/{m['name']}")
             if m.get('deletionTimestamp'): raise TopologyError('managed workload is deleting')
             # Preserve foreign annotations and avoid no-op API writes.
@@ -193,7 +194,7 @@ class Operator:
             self.protect(item, path)
         configs = self.kube.items(self.core + '/configmaps')
         configs = {c['metadata'].get('annotations', {}).get('pifanctl.jyje.online/nodeName'): c for c in configs
-                   if c['metadata'].get('annotations', {}).get(OWNER) == self.id and 'plan.json' in c.get('data', {})}
+                   if c['metadata'].get('annotations', {}).get(OWNER) == self.identity and 'plan.json' in c.get('data', {})}
         previous = {}; self.prior_zones = {}
         for node, config in configs.items():
             prior = json.loads(config['data']['plan.json'])
@@ -235,7 +236,7 @@ class Operator:
             if len(plan_text.encode()) > MAX_BYTES:
                 raise TopologyError('worker plan exceeds 900 KB; split the actuator topology')
             cm = {'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': config, 'namespace': self.namespace,
-                  'labels': {'pifanctl.jyje.online/node': worker}, 'annotations': {OWNER: self.id, 'pifanctl.jyje.online/nodeName': node}, 'ownerReferences': [owner]},
+                  'labels': {'pifanctl.jyje.online/node': worker}, 'annotations': {OWNER: self.identity, 'pifanctl.jyje.online/nodeName': node}, 'ownerReferences': [owner]},
                   'data': {'plan.json': plan_text,
                            'heartbeat.json': json.dumps({'time': now, 'healthy': True, 'planHash': desired['hash'], 'nodeUID': desired['nodeUID']})}}
             # Revalidate leadership immediately before each workload/heartbeat write.
@@ -311,7 +312,7 @@ class Operator:
                 status_name = 'pifanctl-status-' + digest(source['metadata']['name'])[:16]
                 self.managed(self.core + '/configmaps', {'apiVersion': 'v1', 'kind': 'ConfigMap',
                 'metadata': {'name': status_name, 'namespace': self.namespace,
-                             'annotations': {OWNER: self.id}, 'ownerReferences': [owner]},
+                             'annotations': {OWNER: self.identity}, 'ownerReferences': [owner]},
                 'data': {'status.json': json.dumps(statuses, sort_keys=True)}})
                 self.last_status[key] = (now, signature)
         # First acknowledge empty plans, then delete workloads. Persist the hash
@@ -328,7 +329,7 @@ class Operator:
             deployment = self.apps + '/deployments/' + worker
             old = self.kube.optional(deployment)
             if old:
-                if old['metadata'].get('annotations', {}).get(OWNER) != self.id:
+                if old['metadata'].get('annotations', {}).get(OWNER) != self.identity:
                     raise TopologyError('refusing to delete a foreign workload')
                 self.write('DELETE', deployment, {'apiVersion': 'v1', 'kind': 'DeleteOptions',
                     'propagationPolicy': 'Foreground', 'preconditions': {'uid': old['metadata']['uid']}})

@@ -2,7 +2,7 @@
 
 ## 목표와 범위
 
-현재 앱은 v0.2.1이다. 목표는 노드 라벨 또는 이름으로 냉각 대상을 선택하고,
+작업 시작 시 앱은 v0.2.1이었다. 목표는 노드 라벨 또는 이름으로 냉각 대상을 선택하고,
 CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 실제 worker, Kubernetes operator, kubeconfig-aware CLI, Helm 패키징을 구현한다.
 실물 팬이나 운영 클러스터는 이 작업 중 변경하지 않는다. 자동 검증은 mock driver,
@@ -66,7 +66,9 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 | 08-a | 다섯 Python 버전에서 218 tests/93.88~93.91%. 실제 client와 mock HTTP/공유 랙 시나리오 통합 테스트로 인자·상태 함수 충돌 수정. 마지막 견고성 수정 후 3.14 218 tests/93.48%. kubeconform K8s1.30/1.33 + actionlint 통과 | `f8e6dcb` |
 
-| 08-b | PR #41 생성/attachment. 첫 원격 CI의 9개 job 성공. 보드별/여러 팬/watch 복구 테스트 추가 후 로컬3.14 224 tests/95.69%. 느린 조회와 독립적인 watchdog latch 추가, focused 22 tests 및 전체3.14 227 tests/95.65% passed. 조회 지연도 sample age에 반영. 새 커밋 CI 재확인 중 | `🛡️ fix(worker): enforce an independent safety watchdog` |
+| 08-b | PR #41 생성/attachment. 첫 원격 CI의 9개 job 성공. 보드별/여러 팬/watch 복구 테스트 추가 후 로컬3.14 224 tests/95.69%. 느린 조회와 독립적인 watchdog latch 추가, focused 22 tests 및 전체3.14 227 tests/95.65% passed. 조회 지연도 sample age에 반영. 해당 커밋의 원격 CI 9개 job 모두 성공 | `f08e04e` |
+
+| 08-c | namespace/operatorId 소유권으로 다른 namespace의 동명 operator 인수 거부. 18 focused tests passed; 마지막 코드의 다섯 Python 버전 전체 검증 완료. PR 최종 CI 확인 중 | `🐛 fix(operator): scope installation ownership by namespace` |
 
 ### 검증 중 발견해 수정한 회귀
 
