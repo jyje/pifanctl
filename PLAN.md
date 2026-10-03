@@ -34,18 +34,6 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 ## 대기 체크리스트
 
-### 02. 센서 freshness와 완전한 온도 입력
-
-- [ ] agent에 마지막 성공 센서 읽기 timestamp metric 추가
-- [ ] 온도와 timestamp를 동일한 metric labels로 대응
-- [ ] 노드별 유한한 온도와 허용 나이를 확인한 뒤 구역 최고값 계산
-- [ ] 일부 멤버 누락, stale/future timestamp, 쿼리 실패에서 local로 대체하지 않음
-- [ ] worker 로컬 온도는 추가 안전 하한, 읽기 실패는 failsafe
-- [ ] 서로 다른 구역은 분리, 공유 팬은 구역 합집합을 사용
-- [ ] 가짜 Prometheus/센서로 정상·고온·일부 누락·stale·outage 테스트
-
-완료 조건: 불완전한 원격 구역을 로컬 온도만으로 정상 취급하지 않는다.
-
 ### 03. PWM worker와 cooperative host lock
 
 - [ ] 노드당 worker 한 개, 한 worker가 해당 노드의 여러 팬 제어
@@ -146,4 +134,6 @@ namespace/Node labels를 수정하지 않는다.
 | 사전 설계 | CRD/예시/한영 설계, PR #40 CI 성공. 아직 runtime 없음 | `e31e183` |
 | 도해/버전 정정 | SVG→PNG 16쌍, 한영 README 8개 시나리오씩, v1 경로/표기. PNG 시각 확인, diff check | `dc01b03` |
 
-| 01 | 스키마/defaults, YAML 엄격 검증, label/name planner, 충돌/failsafe와 hash. 기존 및 새 테스트 153 passed (coverage는 종합 단계). 앱/기존 chart alpha 버전 동기화 | `✨ feat(topology): add validated cooling plans` |
+| 01 | 스키마/defaults, YAML 엄격 검증, label/name planner, 충돌/failsafe와 hash. 기존 및 새 테스트 153 passed (coverage는 종합 단계). 앱/기존 chart alpha 버전 동기화 | `03290da` |
+
+| 02 | agent read timestamp, exact-label freshness, complete zone/local floor, missing/stale/outage. 30 telemetry/service tests passed | `✨ feat(telemetry): require fresh complete cooling inputs` |
