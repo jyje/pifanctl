@@ -130,7 +130,13 @@ spec:
                         minimum: 0
                         maximum: 100
                         default: 5
-                    default: {}
+                    default:
+                      temperatureLow: 50
+                      temperatureHigh: 70
+                      dutyIdle: 0
+                      dutyStart: 30
+                      dutyMax: 100
+                      dutyDownStep: 5
                     x-kubernetes-validations:
                     - rule: self.temperatureLow < self.temperatureHigh
                       message: temperatureLow must be below temperatureHigh

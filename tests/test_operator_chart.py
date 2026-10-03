@@ -74,6 +74,16 @@ def test_packaged_schema_crd_parity():
         assert model == spec
 
 
+def test_curve_default_supplies_cel_operands():
+    # The API server validates the default object itself before nested defaults.
+    # CEL expressions use these fields directly, so an empty default is invalid.
+    for folder in (CHART / 'crds', Path('design/v1/crds')):
+        crd = yaml.safe_load((folder / 'fans.yaml').read_text())
+        curve = crd['spec']['versions'][0]['schema']['openAPIV3Schema']['properties']['spec']['properties']['control']['properties']['curve']
+        assert curve['default'] == {key: prop['default'] for key, prop in curve['properties'].items()}
+        assert curve['default'] == SCHEMAS['Fan']['properties']['control']['properties']['curve']['default']
+
+
 def test_topology_helm_matches_file():
     from pifanctl.topology.model import parse
     from pifanctl.topology.planner import plan

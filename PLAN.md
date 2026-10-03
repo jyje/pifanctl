@@ -63,7 +63,8 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 | 08-b | PR #41 생성/attachment. 첫 원격 CI의 9개 job 성공. 보드별/여러 팬/watch 복구 테스트 추가 후 로컬3.14 224 tests/95.69%. 느린 조회와 독립적인 watchdog latch 추가, focused 22 tests 및 전체3.14 227 tests/95.65% passed. 조회 지연도 sample age에 반영. 해당 커밋의 원격 CI 9개 job 모두 성공 | `f08e04e` |
 | 08-c | namespace/operatorId 소유권으로 다른 namespace의 동명 operator 인수 거부. 18 focused tests passed; 마지막 코드의 다섯 Python 버전 전체 검증 완료. 228 tests passed, coverage 95.66~95.68%. 해당 커밋 CI 9개 job 모두 성공 | `33f5955` |
 | 08-d | ConfigMap owner-reference admission에 필요한 finalizer update를 입력 ConfigMap 한 개로 제한. Helm 렌더 12 tests/lint 및 전체3.14 228 tests/95.66%. background 삭제 경로 한영 명시. 원격 CI 9개 job 성공 | `92a142b` |
-| 08 완료 | 다섯 Python 버전/90% gate 회귀 방지, 228 tests, 원격 coverage 95.72~95.74%. ARM64/chart/workflow/version 포함 9개 job 성공. 한영 README의 alpha와 두 차트 릴리스 설명 동기화. #39/#41 증거 갱신 | `📄 docs(v1): record completed runtime verification` |
+| 08 완료 | 다섯 Python 버전/90% gate 회귀 방지, 228 tests, 원격 coverage 95.72~95.74%. ARM64/chart/workflow/version 포함 9개 job 성공. 한영 README의 alpha와 두 차트 릴리스 설명 동기화. #39/#41 증거 갱신 | `0296adf` |
+| 후속 CRD 검증 | API 서버가 curve의 빈 기본값을 CEL operand 누락으로 거부함. curve 기본값을 명시적으로 채우고 CRD 두 복사본/런타임 schema 동기화. 실제 API defaulting 및 잘못된 곡선·immutable 변경 5건 거부 확인. 로컬3.14 229 tests/95.66% | `🛠️ fix(crd): materialize curve defaults before cel validation` |
 
 ### 검증 중 발견해 수정한 회귀
 
