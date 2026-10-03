@@ -163,6 +163,11 @@ fan or guarantee power-loss cooling.
 ## 06: retire and migrate
 
 Remove zones/Fans or the input ConfigMap while the operator remains running.
+Use `kubectl delete ... --cascade=background` (the default). Foreground garbage
+collection can remove owned workers before the release acknowledgement and
+leave the application's finalizer pending; it is not a supported retirement path
+in this alpha. ConfigMap mode grants `update` on the input ConfigMap's finalizers
+for [owner-reference admission](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#ownerreferencespermissionenforcement).
 It publishes replacement plans and waits for matching worker acknowledgements.
 A fan with no zone stays at 100%. Removing a Fan drives full duty, closes its
 driver, and acknowledges a plan without that fan. For the last fan, the worker

@@ -157,7 +157,12 @@ duty는 명령 PWM이며 RPM이 아닙니다. 팬이 물리적으로 멈추거�
 
 ## 06: 삭제와 이관을 진행합니다
 
-operator가 실행 중일 때 zone/Fan/입력 ConfigMap을 삭제합니다. 대체 plan의 적용
+operator가 실행 중일 때 zone/Fan/입력 ConfigMap을 삭제합니다.
+`kubectl delete ... --cascade=background` 기본값을 사용합니다. foreground GC는
+release 확인 전에 worker를 삭제하여 앱 finalizer가 대기할 수 있으므로 alpha의
+지원 삭제 경로가 아닙니다. ConfigMap 모드는
+[owner-reference admission](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#ownerreferencespermissionenforcement)을
+위해 입력 ConfigMap의 finalizers에만 update 권한을 추가합니다. 대체 plan의 적용
 확인을 기다리고, 구역이 없는 Fan은 100%를 유지합니다. Fan 삭제는 full duty와
 드라이버 close를 거쳐 Fan이 없는 plan을 확인합니다. 마지막 Fan이면 Deployment를
 삭제하고 Pod가 사라져야 finalizer를 제거합니다. 빈 plan의 확인 기록은 ConfigMap에

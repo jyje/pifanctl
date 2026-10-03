@@ -63,12 +63,10 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 | 05 | Lease leadership, CR/ConfigMap planner, exact Node/UID worker Deployment+plan/heartbeat, protected ownership and watch/resync. 6 fake API tests passed. Agent managed/reuse deployment is packaged in stage 07 | `3aa1018` |
 | 06 | observed hash/UID status, rate limits/events, finalizers, primary transfer and durable empty-plan acknowledgements. 11 fake API tests passed; unreachable worker stays pending | `b0bdc82` |
 | 07 | operator chart/RBAC/NetworkPolicy/agents/CRDs, 한영 runtime/migration, alpha prerelease·latest 보호, 로컬 YAML reload·sticky member UID. Helm lint 두 입력 모드/토폴로지, kubeconform operator 9 + worker 1, actionlint, Python3.10 49 focused tests passed. CI3.10~3.14 보존 회귀 테스트 추가 | `3921b92` |
-
 | 08-a | 다섯 Python 버전에서 218 tests/93.88~93.91%. 실제 client와 mock HTTP/공유 랙 시나리오 통합 테스트로 인자·상태 함수 충돌 수정. 마지막 견고성 수정 후 3.14 218 tests/93.48%. kubeconform K8s1.30/1.33 + actionlint 통과 | `f8e6dcb` |
-
 | 08-b | PR #41 생성/attachment. 첫 원격 CI의 9개 job 성공. 보드별/여러 팬/watch 복구 테스트 추가 후 로컬3.14 224 tests/95.69%. 느린 조회와 독립적인 watchdog latch 추가, focused 22 tests 및 전체3.14 227 tests/95.65% passed. 조회 지연도 sample age에 반영. 해당 커밋의 원격 CI 9개 job 모두 성공 | `f08e04e` |
-
-| 08-c | namespace/operatorId 소유권으로 다른 namespace의 동명 operator 인수 거부. 18 focused tests passed; 마지막 코드의 다섯 Python 버전 전체 검증 완료. PR 최종 CI 확인 중 | `🐛 fix(operator): scope installation ownership by namespace` |
+| 08-c | namespace/operatorId 소유권으로 다른 namespace의 동명 operator 인수 거부. 18 focused tests passed; 마지막 코드의 다섯 Python 버전 전체 검증 완료. 228 tests passed, coverage 95.66~95.68%. 해당 커밋 CI 9개 job 모두 성공 | `33f5955` |
+| 08-d | ConfigMap owner-reference admission에 필요한 finalizer update를 입력 ConfigMap 한 개로 제한. Helm 렌더 회귀 검사 및 background 삭제 경로 한영 명시 | `🛠️ fix(chart): authorize configmap owner finalizers` |
 
 ### 검증 중 발견해 수정한 회귀
 

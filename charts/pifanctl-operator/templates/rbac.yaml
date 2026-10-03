@@ -39,6 +39,13 @@ rules:
   - apiGroups: [""]
     resources: [configmaps]
     verbs: [get, list, create, patch, delete]
+  {{- if eq .Values.input.mode "configMap" }}
+  # Required by OwnerReferencesPermissionEnforcement for blockOwnerDeletion.
+  - apiGroups: [""]
+    resources: [configmaps/finalizers]
+    resourceNames: [{{ .Values.input.configMapName | quote }}]
+    verbs: [update]
+  {{- end }}
   - apiGroups: [""]
     resources: [events]
     verbs: [create]

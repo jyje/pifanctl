@@ -29,6 +29,8 @@ def test_default_operator_chart():
     assert c['readinessProbe']['httpGet']['path'] == '/readyz'
     assert len([o for o in objects if o['kind'] == 'CustomResourceDefinition']) == 2
     assert any(o['kind'] == 'NetworkPolicy' for o in objects)
+    role = next(o for o in objects if o['kind'] == 'Role')
+    assert not any('configmaps/finalizers' in r['resources'] for r in role['rules'])
 
 
 def test_configmap_reuse_no_cr_write_permissions():
@@ -38,6 +40,10 @@ def test_configmap_reuse_no_cr_write_permissions():
     assert role['rules'] == [{'apiGroups': [''], 'resources': ['nodes'], 'verbs': ['get', 'list', 'watch']}]
     role = next(o for o in objects if o['kind'] == 'Role')
     assert not any('secrets' in r['resources'] for r in role['rules'])
+    assert next(r for r in role['rules'] if 'configmaps/finalizers' in r['resources']) == {
+        'apiGroups': [''], 'resources': ['configmaps/finalizers'],
+        'resourceNames': ['topology'], 'verbs': ['update'],
+    }
 
 
 def test_agent_monitor_and_security():
