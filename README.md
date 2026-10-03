@@ -1,10 +1,10 @@
 <div align="center">
 
-# pifanctl: A Raspberry Pi Fan Controller
+# pifanctl: Raspberry Pi Cluster Fan Control, the Kubernetes Way
 
 <img alt="Cartoon Raspberry Pi rack with one shared PWM fan and a Kubernetes whale mascot" src="docs/pifanctl-cluster-sticker-concept-1.png" width="560" style="object-fit: contain; max-width: 100%;">
 
-🥧 A CLI for **PWM Fan Controlling** of **Raspberry Pi**
+🥧 One controller node. One shared rack fan. The hottest node sets its speed.
 
 [![Python Typer](https://img.shields.io/badge/Typer-3776AB?style=flat&logo=Python&logoColor=white&label=Python)](https://typer.tiangolo.com/)
 [![GitHub ARC](https://img.shields.io/badge/GitHub%20ARC-2088FF?style=flat&logo=GitHub%20Actions&logoColor=white&label=CI)](https://github.com/actions/actions-runner-controller)
@@ -20,9 +20,9 @@
 
 </div>
 
-🐳 **pifanctl** is a CLI tool for PWM fan control on Raspberry Pi, from a single board to a whole cluster. Its primary cluster use case is one centrally controlled rack fan cooling several boards together: the shared fan follows the **hottest node**, and every node's temperature is kept in Prometheus. It runs as a plain CLI, in **Docker**, or on **Kubernetes** with a Helm chart, and is optimized for ARM64. The project features a CI/CD pipeline using GitHub Actions with Actions Runner Controller (ARC), ensuring all builds are tested in actual Raspberry Pi environments.
+🐳 **pifanctl** (Pi Fan Control) runs its controller on one Raspberry Pi node wired to the rack's shared PWM fan. An agent on every cluster node reports temperatures to Prometheus, and the controller drives the fan according to the **hottest node**. Deploy it with Helm on Kubernetes or run it as a CLI or Docker container. See the [jyje/cluster deployment](https://github.com/jyje/cluster/blob/main/clusters/r4spi/apps/pifanctl.yaml) for an example. pifanctl is optimized for ARM64, and its GitHub Actions CI/CD builds are tested on Raspberry Pi runners managed by Actions Runner Controller (ARC).
 
-The project illustration style is a friendly cartoon of an open Raspberry Pi rack, one shared central fan, and a Kubernetes ecosystem whale mascot. The boards lie flat on their shelves, turned toward the rack depth so their ports and cables face away from the fan. It represents cluster-wide shared cooling, not a separate fan on every board, and omits the Raspberry Pi logo. Single-board fan control is supported too. [See the illustration style and all three sticker concepts](docs/illustration-style.md).
+The sticker shows the same cluster setup: an abstract rack, one shared front fan, boards with rear-facing ports, and a whale mascot from the Kubernetes ecosystem. The Raspberry Pi logo is omitted. [See the illustration style and all three sticker concepts](docs/illustration-style.md).
 
 
 ```mermaid
@@ -36,13 +36,11 @@ flowchart LR
   P --> G["Grafana dashboard<br/>and alerts"]
 ```
 
-| | Single board | Cluster |
+| Component | Runs on | Role |
 | --- | --- | --- |
-| Reads | its own thermal zones | every node, through Prometheus |
-| Drives the fan from | its own temperature | the hottest node |
-| Cooling arrangement | one board and its fan | one shared rack fan cools multiple boards |
-| History | none | kept in Prometheus, with a dashboard and alerts |
-| Install | `install.sh`, Docker, raw manifest | Helm chart |
+| Agent | every cluster node | Publishes that node's temperature |
+| Prometheus | the cluster | Retains node temperatures and provides the hottest-node value |
+| Controller | one Raspberry Pi with GPIO wired to the shared fan | Sets the shared fan's PWM from the hottest node |
 
 > **Status.** Cluster mode runs on a Raspberry Pi 4 cluster with the RPi.GPIO driver. The kernel PWM driver for Raspberry Pi 5 is covered by tests against a fake sysfs tree, but has not been run on a Pi 5 with a fan yet.
 
