@@ -1,11 +1,11 @@
-# v2: cooling topology and operator design
+# v1: cooling topology and operator design
 
 **English** | [한국어](README-ko.md)
 
 **Status: design proposal.** The CRDs, example YAML, topology rendering chart and
 RBAC are review artifacts. The operator, worker configuration reload, topology
 planner and CLI commands below are not implemented. This is a roadmap for the
-application's v2, not a v2 release. The first CRD API is `v1alpha1`; application
+application's v1, not a v1 release. The first CRD API is `v1alpha1`; application
 major versions and Kubernetes API versions have separate lifecycles.
 
 Implementation roadmap: [issue #39](https://github.com/jyje/pifanctl/issues/39).
@@ -20,7 +20,7 @@ group query is possible, but membership and fan assignments are not explicit
 resources. Missing remote samples are excluded; a failed remote query falls back
 to local temperature. Neither behavior proves a shared rack is safely cooled.
 
-v2 makes physical cooling relationships explicit. Two fans cooling four boards
+v1 makes physical cooling relationships explicit. Two fans cooling four boards
 each must follow their own four boards. A fan connected to `pi-01` can cool other
 nodes, and `pi-01` can simultaneously be a cooling member. One PWM fan per Pi is
 the same model with a one-node zone and a fan on that node.
@@ -114,11 +114,11 @@ separately from desired `spec`.
 | One fan cools several logical zones | Several zones reference the same Fan; worker uses their member union |
 | Standalone Pi without Kubernetes | Same List YAML with explicit nodeNames, local telemetry and one selected fan |
 
-See [two racks](../../design/v2/examples/two-racks.yaml),
-[per-node fans](../../design/v2/examples/per-node.yaml),
-[multiple fans](../../design/v2/examples/multi-fan.yaml) and
-[standalone](../../design/v2/examples/standalone.yaml).
-The [kernel PWM example](../../design/v2/examples/sysfs.yaml) illustrates a Pi 5
+See [two racks](../../design/v1/examples/two-racks.yaml),
+[per-node fans](../../design/v1/examples/per-node.yaml),
+[multiple fans](../../design/v1/examples/multi-fan.yaml) and
+[standalone](../../design/v1/examples/standalone.yaml).
+The [kernel PWM example](../../design/v1/examples/sysfs.yaml) illustrates a Pi 5
 sysfs configuration; its overlay and physical channel still need hardware verification.
 
 Proposed membership labels for the two-rack example:
@@ -170,8 +170,8 @@ same plan. Its output status includes input resourceVersion and topology hash;
 it is not another desired-state source. Switching modes requires a controlled
 handover. CRDs and ConfigMaps must never run competing controllers on the same fan.
 
-The [experimental Helm chart](../../design/v2/helm) renders either native CRs or
-the equivalent [ConfigMap](../../design/v2/examples/configmap.yaml). It emits no
+The [experimental Helm chart](../../design/v1/helm) renders either native CRs or
+the equivalent [ConfigMap](../../design/v1/examples/configmap.yaml). It emits no
 operator or worker workload, and is separate from the published production chart.
 The future operator chart owns deployment settings, pinned images and input mode;
 the topology chart or GitOps owns cooling configuration. CRD installation and
@@ -237,7 +237,7 @@ silently declare convergence.
 - Fetch only resolved nodes with correctly escaped exact identities. Preserve
   node labels and sample timestamps; do not reduce a Prometheus query to one
   scalar before checking completeness. A recent scrape timestamp alone does not
-  prove a recent sensor read; v2 adds `pifanctl_temperature_observed_timestamp_seconds`.
+  prove a recent sensor read; v1 adds `pifanctl_temperature_observed_timestamp_seconds`.
 - Compute a zone maximum only if every expected member has a finite, recent
   sample. Reject future timestamps beyond a small defined clock-skew allowance.
   Any incomplete zone forces all its fans to 100%, even if other zones are healthy.
@@ -288,7 +288,7 @@ temperatures in Prometheus. Emit alerts for incomplete membership, stale data,
 failed reconciliation, stalled deletion and missing workers. Avoid config hashes
 as unbounded metric labels.
 
-[Proposed RBAC](../../design/v2/operator/rbac.yaml) grants read-only Node access,
+[Proposed RBAC](../../design/v1/operator/rbac.yaml) grants read-only Node access,
 topology status/finalizer updates and workload/config management only in the
 operator namespace. It cannot create CRDs, change Node labels, read Secrets or
 create namespaces. Native CR specs are updated only to manage finalizers; the
@@ -343,16 +343,16 @@ overrides and stop-at-zero commands are deferred until a safe override API exist
    each fan cools. Translate existing group query assumptions into explicit zones.
 2. Create labels/topology and compare a read-only plan with the inventory. Keep
    legacy controllers running while the plan is only being inspected.
-3. Add freshness metrics and v2 shared schema/planner/file loading. Exercise
+3. Add freshness metrics and v1 shared schema/planner/file loading. Exercise
    offline and mock behavior before Kubernetes reconciliation.
 4. Implement node workers, host locks, hot reload and safety watchdogs. Validate
    real Pi 4 GPIO and Pi 5 sysfs behavior, including abrupt process/node failure.
 5. Implement operator, status, finalizers, ConfigMap mode, CLI and kubectl wrapper.
    Use dry-run and mock workers in a disposable Kubernetes cluster first.
 6. Hand over one fan at a time: leave full duty, stop its legacy controller and
-   verify no old PWM writer remains, then enable the v2 worker. Do not run both.
-   Roll back by stopping v2, releasing the claim, then restoring the legacy config.
-7. Publish v2 images and operator/topology charts only after hardware and failure
+   verify no old PWM writer remains, then enable the v1 worker. Do not run both.
+   Roll back by stopping v1, releasing the claim, then restoring the legacy config.
+7. Publish v1 images and operator/topology charts only after hardware and failure
    acceptance criteria pass. Do not bump the current application for design files.
 
 Acceptance criteria for implementation:

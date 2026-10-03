@@ -1,12 +1,12 @@
-# v2: 냉각 토폴로지와 오퍼레이터 설계
+# v1: 냉각 토폴로지와 오퍼레이터 설계
 
 [English](README.md) | **한국어**
 
 **설계 제안 단계입니다.** 이번 리소스는 CRD, YAML 예시, 토폴로지를 렌더링하는
 Helm 차트와 RBAC입니다. 실제 오퍼레이터, worker의 설정 재로딩, 토폴로지 planner,
-아래의 새 CLI 명령은 아직 구현하지 않았습니다. 애플리케이션 v2를 위한 설계이며
-v2 출시가 아닙니다. 첫 CRD API는 `v1alpha1`입니다. 애플리케이션 버전과 Kubernetes
-API 버전은 별도로 관리합니다. [리소스 검토 방법](../../design/v2/README.md).
+아래의 새 CLI 명령은 아직 구현하지 않았습니다. 애플리케이션 v1를 위한 설계이며
+v1 출시가 아닙니다. 첫 CRD API는 `v1alpha1`입니다. 애플리케이션 버전과 Kubernetes
+API 버전은 별도로 관리합니다. [리소스 검토 방법](../../design/v1/README.md).
 
 후속 구현 로드맵: [이슈 #39](https://github.com/jyje/pifanctl/issues/39).
 
@@ -20,7 +20,7 @@ Helm에서 controller 그룹마다 노드 선택, 하드웨어, Prometheus 쿼�
 수동 쿼리로 온도 대상을 좁힐 수 있지만, 어떤 노드를 어떤 팬이 식히는지 명시적인
 모델이 없습니다. 원격 샘플이 없어지면 최대값에서 제외하고, 원격 쿼리가 실패하면
 로컬 온도로 대체합니다. 공유 팬이 식히는 다른 보드의 상태를 보장하는 방식은
-아니므로 v2에서는 멤버십과 데이터 완전성을 함께 관리합니다.
+아니므로 v1에서는 멤버십과 데이터 완전성을 함께 관리합니다.
 
 ## 2. 재설계 판단: 라벨과 리소스를 함께 사용
 
@@ -98,11 +98,11 @@ planner에서도 수행합니다. Node 라벨 key/value의 문법도 검증합�
 | 팬 하나가 여러 구역 냉각 | 여러 CoolingZone에서 같은 Fan 참조, 대상 합집합의 최고 온도 |
 | Kubernetes 없는 단일 Pi | 같은 List YAML, nodeNames와 local telemetry, 로컬 worker |
 
-[랙 두 개](../../design/v2/examples/two-racks.yaml),
-[노드별 팬](../../design/v2/examples/per-node.yaml),
-[여러 팬](../../design/v2/examples/multi-fan.yaml),
-[단일 Pi](../../design/v2/examples/standalone.yaml) 예시를 제공합니다.
-[커널 PWM 예시](../../design/v2/examples/sysfs.yaml)는 Pi 5의 sysfs 구성을 보여주며
+[랙 두 개](../../design/v1/examples/two-racks.yaml),
+[노드별 팬](../../design/v1/examples/per-node.yaml),
+[여러 팬](../../design/v1/examples/multi-fan.yaml),
+[단일 Pi](../../design/v1/examples/standalone.yaml) 예시를 제공합니다.
+[커널 PWM 예시](../../design/v1/examples/sysfs.yaml)는 Pi 5의 sysfs 구성을 보여주며
 overlay와 물리 채널은 실제 하드웨어에서 확인해야 합니다.
 
 랙 두 개의 멤버십 예시:
@@ -134,8 +134,8 @@ ConfigMap 내용은 메모리에서 같은 plan으로 해석하고 CR로 복제�
 resourceVersion과 topology hash를 넣습니다. 같은 팬에 서로 다른 입력 모드의
 worker가 동시에 실행되면 안 됩니다. 모드 변경도 제어권 인계가 필요합니다.
 
-[설계용 Helm 차트](../../design/v2/helm)는 CR 또는 동등한
-[ConfigMap](../../design/v2/examples/configmap.yaml)을 렌더링합니다. 현재 배포용
+[설계용 Helm 차트](../../design/v1/helm)는 CR 또는 동등한
+[ConfigMap](../../design/v1/examples/configmap.yaml)을 렌더링합니다. 현재 배포용
 차트와 별도이며 operator나 worker를 실행하지 않습니다. 향후 operator 차트는
 이미지/배치/입력 모드를 담당하고, 토폴로지 차트나 GitOps는 냉각 구성을 담당합니다.
 CRD 설치/갱신/삭제는 명시적으로 관리하고 Helm 삭제와 함께 자동 제거하지 않습니다.
@@ -224,7 +224,7 @@ ConfigurationApplied, Degraded conditions와 구체적인 실패 이유를 제�
 heartbeat metrics와 장애 알림을 추가합니다. 설정 hash를 무제한 metric label로
 사용하지 않습니다.
 
-[제안 RBAC](../../design/v2/operator/rbac.yaml)는 Node 읽기, CR 상태/finalizer 갱신,
+[제안 RBAC](../../design/v1/operator/rbac.yaml)는 Node 읽기, CR 상태/finalizer 갱신,
 operator namespace 안의 workload/config 관리만 허용합니다. CRD 생성, Node 라벨
 수정, Secret 조회, namespace 생성 권한은 없습니다. finalizer를 위한 patch 권한은
 RBAC만으로 metadata에 한정할 수 없으므로 앱 동작과 필요시 admission으로 제한합니다.
@@ -267,7 +267,7 @@ apply는 CR 모드를 대상으로 합니다. ConfigMap 모드는 List를 topolo
 편집하고 CLI가 Helm/Argo의 소유권을 강제로 가져오지 않습니다. 수동 duty와
 팬 정지 명령은 안전한 override API 설계 이후로 미룹니다.
 
-## 8. 단계별 구현과 v2 출시 조건
+## 8. 단계별 구현과 v1 출시 조건
 
 1. 실물 배선, 제어 노드, 핀/채널, 팬마다 식히는 보드를 조사하고 기존 그룹 쿼리를
    명시적인 CoolingZone으로 변환합니다.
@@ -277,10 +277,10 @@ apply는 CR 모드를 대상으로 합니다. ConfigMap 모드는 List를 topolo
    정상/강제 종료 및 전원 장애를 실물에서 검증합니다.
 5. operator, 상태, finalizer, ConfigMap 모드, CLI와 wrapper를 구현하고 임시 클러스터의
    dry-run과 mock worker부터 확인합니다.
-6. 팬별로 full duty → legacy 중단 → writer 해제 확인 → v2 실행을 순서대로 진행합니다.
-   롤백은 v2 중단과 claim 해제 이후 legacy 복원 순서입니다.
-7. 다음 기준이 통과한 후 v2 이미지와 차트를 출시합니다. 설계 파일만으로 현재
-   앱 버전을 v2로 올리지 않습니다.
+6. 팬별로 full duty → legacy 중단 → writer 해제 확인 → v1 실행을 순서대로 진행합니다.
+   롤백은 v1 중단과 claim 해제 이후 legacy 복원 순서입니다.
+7. 다음 기준이 통과한 후 v1 이미지와 차트를 출시합니다. 설계 파일만으로 현재
+   앱 버전을 v1로 올리지 않습니다.
 
 - [ ] 두 구역 각각 네 대의 온도가 자기 팬에만 반영됨
 - [ ] 보드별 팬, 노드당 여러 팬, 여러 구역이 공유하는 팬 지원

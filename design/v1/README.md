@@ -1,11 +1,11 @@
-# v2 design resources
+# v1 design resources
 
 **Proposal only.** These files define an API and render topology examples. They
 do not implement an operator, config reload, grouped fan control, or a new CLI.
 The released application and `charts/pifanctl` remain at their current versions.
 Do not deploy these resources as an upgrade to a running cooling installation.
 
-Read the [design](../../docs/v2/README.md) or [한국어 설계](../../docs/v2/README-ko.md).
+Read the [design](../../docs/v1/README.md) or [한국어 설계](../../docs/v1/README-ko.md).
 
 | Directory | Contents |
 | --- | --- |
@@ -19,11 +19,11 @@ Read the [design](../../docs/v2/README.md) or [한국어 설계](../../docs/v2/R
 These commands work today and make no changes to a cluster:
 
 ```sh
-helm lint design/v2/helm -f design/v2/examples/helm-values.yaml
-helm template topology design/v2/helm -n pifanctl-system \
-  -f design/v2/examples/helm-values.yaml
-helm template topology design/v2/helm -n pifanctl-system \
-  -f design/v2/examples/helm-values.yaml --set mode=configMap
+helm lint design/v1/helm -f design/v1/examples/helm-values.yaml
+helm template topology design/v1/helm -n pifanctl-system \
+  -f design/v1/examples/helm-values.yaml
+helm template topology design/v1/helm -n pifanctl-system \
+  -f design/v1/examples/helm-values.yaml --set mode=configMap
 ```
 
 The chart requires all referenced fans in the same values file. For independently
@@ -38,11 +38,11 @@ needs to be exercised before implementation; local rendering is not that check.
 
 ```sh
 # Run only against an explicitly selected disposable cluster.
-kubectl --context <review-cluster> apply -f design/v2/crds/
+kubectl --context <review-cluster> apply -f design/v1/crds/
 kubectl --context <review-cluster> wait --for=condition=Established \
   crd/fans.pifanctl.jyje.online crd/coolingzones.pifanctl.jyje.online
 kubectl --context <review-cluster> apply --dry-run=server --validate=strict \
-  -f design/v2/examples/two-racks.yaml
+  -f design/v1/examples/two-racks.yaml
 ```
 
 CRDs alone do not turn fans. No live cluster is required to review this proposal.

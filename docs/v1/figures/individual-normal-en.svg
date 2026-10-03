@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="940" viewBox="0 0 960 940">
+<title>pifanctl cooling systems manual: individual / normal</title>
+<desc>Design illustration with example temperatures. Front fans, rear ports, physical PWM wiring and logical control flow.</desc>
+<style>text{font-family:Arial,"Apple SD Gothic Neo",sans-serif;font-size:16px;fill:#20272d}.small{font-size:13px;fill:#69737b}.heading{font-size:24px;font-weight:600}.section{font-size:16px;font-weight:600}.frame{stroke:#d4dade;stroke-width:1.5;fill:none}.board{stroke:#20272d;stroke-width:1;fill:#fff}.port{fill:#eef1f3;stroke:#20272d;stroke-width:1}.wire{stroke:#5a9dd5;stroke-width:1.6;fill:none}.air{stroke:#c59664;stroke-width:1.6;stroke-dasharray:5 4;fill:none}.fan{stroke:#20272d;stroke-width:1;fill:none}.rule{stroke:#d4dade;stroke-width:1}</style>
+<rect width="960" height="940" fill="#fff"/>
+<text x="28" y="27" class="small" text-anchor="start">PIFANCTL / SYSTEM DESCRIPTION</text>
+<text x="932" y="27" class="small" text-anchor="end">21-00 / v1 design</text>
+<text x="28" y="62" class="heading" text-anchor="start">Cluster cooling system</text>
+<text x="28" y="93" class="" text-anchor="start">Per-board fans: 8 fans / 8 Pis</text>
+<text x="932" y="93" class="" text-anchor="end">NORMAL</text>
+<text x="28" y="137" class="section" text-anchor="start">FIG. 1 / Physical layout: side elevation</text>
+<text x="932" y="137" class="small" text-anchor="end">Example values / no live device</text>
+<text x="28" y="174" class="" text-anchor="start">Pi 1..4 / per-board</text>
+<text x="452" y="174" class="small" text-anchor="end">4 members</text>
+<text x="46" y="217" class="small" text-anchor="start">FRONT</text>
+<text x="394" y="217" class="small" text-anchor="start">REAR</text>
+<path d="M106 237 V419 H420 V237 M106 237 H420" class="frame"/>
+<rect x="116" y="251" width="282" height="27" class="board"/>
+<text x="124" y="270" class="" text-anchor="start">pi-01</text>
+<text x="389" y="270" class="" text-anchor="end">51 °C</text>
+<rect x="398" y="257" width="8" height="15" class="port"/>
+<path d="M406 264 H429" class="frame"/>
+<circle cx="58" cy="265" r="16" class="fan"/>
+<g transform="translate(50 257) scale(.667)" stroke="#20272d" stroke-width="1.5" fill="none"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z"/></g>
+<path d="M76 265 H106 m-5 -3 l5 3 -5 3" class="air"/>
+<path d="M406 271 H438 V284 H58 V277" class="wire"/>
+<rect x="116" y="293" width="282" height="27" class="board"/>
+<text x="124" y="312" class="" text-anchor="start">pi-02</text>
+<text x="389" y="312" class="" text-anchor="end">55 °C</text>
+<rect x="398" y="299" width="8" height="15" class="port"/>
+<path d="M406 306 H429" class="frame"/>
+<circle cx="58" cy="307" r="16" class="fan"/>
+<g transform="translate(50 299) scale(.667)" stroke="#20272d" stroke-width="1.5" fill="none"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z"/></g>
+<path d="M76 307 H106 m-5 -3 l5 3 -5 3" class="air"/>
+<path d="M406 313 H438 V326 H58 V319" class="wire"/>
+<rect x="116" y="335" width="282" height="27" class="board"/>
+<text x="124" y="354" class="" text-anchor="start">pi-03</text>
+<text x="389" y="354" class="" text-anchor="end">62 °C</text>
+<rect x="398" y="341" width="8" height="15" class="port"/>
+<path d="M406 348 H429" class="frame"/>
+<circle cx="58" cy="349" r="16" class="fan"/>
+<g transform="translate(50 341) scale(.667)" stroke="#20272d" stroke-width="1.5" fill="none"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z"/></g>
+<path d="M76 349 H106 m-5 -3 l5 3 -5 3" class="air"/>
+<path d="M406 355 H438 V368 H58 V361" class="wire"/>
+<rect x="116" y="377" width="282" height="27" class="board"/>
+<text x="124" y="396" class="" text-anchor="start">pi-04</text>
+<text x="389" y="396" class="" text-anchor="end">57 °C</text>
+<rect x="398" y="383" width="8" height="15" class="port"/>
+<path d="M406 390 H429" class="frame"/>
+<circle cx="58" cy="391" r="16" class="fan"/>
+<g transform="translate(50 383) scale(.667)" stroke="#20272d" stroke-width="1.5" fill="none"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z"/></g>
+<path d="M76 391 H106 m-5 -3 l5 3 -5 3" class="air"/>
+<path d="M406 397 H438 V410 H58 V403" class="wire"/>
+<text x="240.0" y="457" class="" text-anchor="middle">Each Pi: worker → its own fan</text>
+<text x="240.0" y="477" class="" text-anchor="middle">Single-node CoolingZone × 4</text>
+<text x="28" y="510" class="" text-anchor="start">fan-pi-01: 33.5%</text>
+<text x="248" y="510" class="" text-anchor="start">fan-pi-02: 47.5%</text>
+<text x="28" y="535" class="" text-anchor="start">fan-pi-03: 72%</text>
+<text x="248" y="535" class="" text-anchor="start">fan-pi-04: 54.5%</text>
+<text x="508" y="174" class="" text-anchor="start">Pi 5..8 / per-board</text>
+<text x="932" y="174" class="small" text-anchor="end">4 members</text>
+<text x="526" y="217" class="small" text-anchor="start">FRONT</text>
+<text x="874" y="217" class="small" text-anchor="start">REAR</text>
+<path d="M586 237 V419 H900 V237 M586 237 H900" class="frame"/>
+<rect x="596" y="251" width="282" height="27" class="board"/>
+<text x="604" y="270" class="" text-anchor="start">pi-05</text>
+<text x="869" y="270" class="" text-anchor="end">49 °C</text>
+<rect x="878" y="257" width="8" height="15" class="port"/>
+<path d="M886 264 H909" class="frame"/>
+<circle cx="538" cy="265" r="16" class="fan"/>
+<g transform="translate(530 257) scale(.667)" stroke="#20272d" stroke-width="1.5" fill="none"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z"/></g>
+<path d="M556 265 H586 m-5 -3 l5 3 -5 3" class="air"/>
+<path d="M886 271 H918 V284 H538 V277" class="wire"/>
+<rect x="596" y="293" width="282" height="27" class="board"/>
+<text x="604" y="312" class="" text-anchor="start">pi-06</text>
+<text x="869" y="312" class="" text-anchor="end">53 °C</text>
+<rect x="878" y="299" width="8" height="15" class="port"/>
+<path d="M886 306 H909" class="frame"/>
+<circle cx="538" cy="307" r="16" class="fan"/>
+<g transform="translate(530 299) scale(.667)" stroke="#20272d" stroke-width="1.5" fill="none"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z"/></g>
+<path d="M556 307 H586 m-5 -3 l5 3 -5 3" class="air"/>
+<path d="M886 313 H918 V326 H538 V319" class="wire"/>
+<rect x="596" y="335" width="282" height="27" class="board"/>
+<text x="604" y="354" class="" text-anchor="start">pi-07</text>
+<text x="869" y="354" class="" text-anchor="end">55 °C</text>
+<rect x="878" y="341" width="8" height="15" class="port"/>
+<path d="M886 348 H909" class="frame"/>
+<circle cx="538" cy="349" r="16" class="fan"/>
+<g transform="translate(530 341) scale(.667)" stroke="#20272d" stroke-width="1.5" fill="none"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z"/></g>
+<path d="M556 349 H586 m-5 -3 l5 3 -5 3" class="air"/>
+<path d="M886 355 H918 V368 H538 V361" class="wire"/>
+<rect x="596" y="377" width="282" height="27" class="board"/>
+<text x="604" y="396" class="" text-anchor="start">pi-08</text>
+<text x="869" y="396" class="" text-anchor="end">54 °C</text>
+<rect x="878" y="383" width="8" height="15" class="port"/>
+<path d="M886 390 H909" class="frame"/>
+<circle cx="538" cy="391" r="16" class="fan"/>
+<g transform="translate(530 383) scale(.667)" stroke="#20272d" stroke-width="1.5" fill="none"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618l1.45-5.412Z"/></g>
+<path d="M556 391 H586 m-5 -3 l5 3 -5 3" class="air"/>
+<path d="M886 397 H918 V410 H538 V403" class="wire"/>
+<text x="720.0" y="457" class="" text-anchor="middle">Each Pi: worker → its own fan</text>
+<text x="720.0" y="477" class="" text-anchor="middle">Single-node CoolingZone × 4</text>
+<text x="508" y="510" class="" text-anchor="start">fan-pi-05: 0%</text>
+<text x="728" y="510" class="" text-anchor="start">fan-pi-06: 40.5%</text>
+<text x="508" y="535" class="" text-anchor="start">fan-pi-07: 47.5%</text>
+<text x="728" y="535" class="" text-anchor="start">fan-pi-08: 44%</text>
+<path d="M28 564 H56" class="wire"/>
+<text x="65" y="569" class="small" text-anchor="start">PWM wiring</text>
+<path d="M190 564 H218" class="air"/>
+<text x="227" y="569" class="small" text-anchor="start">Airflow</text>
+<text x="340" y="569" class="small" text-anchor="start">Flat boards / rear-facing ports</text>
+<text x="28" y="602" class="" text-anchor="start">NORMAL / Each fan follows its own board.</text>
+<path d="M28 623 H932" class="rule"/>
+<text x="28" y="653" class="section" text-anchor="start">FIG. 2 / Logical configuration and control signals</text>
+<text x="28" y="681" class="small" text-anchor="start">① SELECT MEMBERS</text>
+<text x="28" y="708" class="" text-anchor="start">Node labels / names</text>
+<text x="340" y="681" class="small" text-anchor="start">② COOLING GROUP</text>
+<text x="340" y="708" class="" text-anchor="start">CoolingZone</text>
+<text x="650" y="681" class="small" text-anchor="start">③ ASSIGN ACTUATORS</text>
+<text x="650" y="708" class="" text-anchor="start">Fan / fanRefs</text>
+<text x="290" y="703" class="" text-anchor="start">→</text>
+<text x="605" y="703" class="" text-anchor="start">→</text>
+<text x="28" y="741" class="" text-anchor="start">Config: YAML / ConfigMap / CRD → operator → node plan → worker</text>
+<text x="28" y="769" class="" text-anchor="start">Temperature: Node agents → Prometheus → worker → PWM</text>
+<path d="M28 788 H932" class="rule"/>
+<text x="28" y="817" class="section" text-anchor="start">FIG. 3 / Automatic control sequence</text>
+<text x="28" y="846" class="small" text-anchor="start">01 / SELECT</text>
+<text x="28" y="872" class="" text-anchor="start">1 board per fan</text>
+<text x="263" y="846" class="small" text-anchor="start">02 / VERIFY</text>
+<text x="263" y="872" class="" text-anchor="start">Data and plan valid</text>
+<text x="498" y="846" class="small" text-anchor="start">03 / COMPUTE</text>
+<text x="498" y="872" class="" text-anchor="start">Maximum temperature</text>
+<text x="733" y="846" class="small" text-anchor="start">04 / COMMAND</text>
+<text x="733" y="872" class="" text-anchor="start">Curve → PWM duty</text>
+<text x="28" y="918" class="small" text-anchor="start">Design example / steady-state target duty / down-ramp omitted / not measured RPM</text>
+</svg>
