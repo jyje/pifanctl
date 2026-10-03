@@ -175,3 +175,19 @@ release 확인 전에 worker를 삭제하여 앱 finalizer가 대기할 수 있�
 legacy 복원 순서입니다. 리소스 삭제가 끝나기 전에 operator를 uninstall하지 않습니다.
 Node/전원 고장, 실제 Pi 4/Pi 5 PWM, API 서버 CEL/defaulting, fleet 부하는 PLAN.md의
 출시 게이트입니다. 이번 구현 작업은 운영 클러스터를 변경하지 않았습니다.
+
+## 오래된 클러스터 CA와 런타임 호환성
+
+Python 3.13 이후의 엄격한 X.509 검증은 필수 extension이 없는 예전 CA를 거부할
+수 있습니다. 인증서와 호스트명 검증은 켜둡니다. CA 갱신을 별도 계획하면서 지원
+대상인 Python 3.12 런타임으로 실험용 이미지를 만들 수 있습니다.
+
+```sh
+gh workflow run build-image-issue.yaml --ref YOUR_BRANCH -f python-version=3.12
+```
+
+이미지는 `ghcr.io/jyje/pifanctl-issue:<sha>-py312`이며 latest나 릴리스 태그를
+발행할 수 없습니다. operator chart의 image repository/tag를 이 이미지로 지정하고,
+operator Ready를 확인한 뒤 물리 Fan을 할당합니다. 기본 이미지는 Python 3.14이고,
+CI는 계속 Python 3.10-3.14 전체를 검사합니다.
+[Python SSL 문서](https://docs.python.org/3/library/ssl.html#ssl.create_default_context)를 참고합니다.

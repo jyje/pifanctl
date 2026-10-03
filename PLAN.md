@@ -64,7 +64,8 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 | 08-c | namespace/operatorId 소유권으로 다른 namespace의 동명 operator 인수 거부. 18 focused tests passed; 마지막 코드의 다섯 Python 버전 전체 검증 완료. 228 tests passed, coverage 95.66~95.68%. 해당 커밋 CI 9개 job 모두 성공 | `33f5955` |
 | 08-d | ConfigMap owner-reference admission에 필요한 finalizer update를 입력 ConfigMap 한 개로 제한. Helm 렌더 12 tests/lint 및 전체3.14 228 tests/95.66%. background 삭제 경로 한영 명시. 원격 CI 9개 job 성공 | `92a142b` |
 | 08 완료 | 다섯 Python 버전/90% gate 회귀 방지, 228 tests, 원격 coverage 95.72~95.74%. ARM64/chart/workflow/version 포함 9개 job 성공. 한영 README의 alpha와 두 차트 릴리스 설명 동기화. #39/#41 증거 갱신 | `0296adf` |
-| 후속 CRD 검증 | API 서버가 curve의 빈 기본값을 CEL operand 누락으로 거부함. curve 기본값을 명시적으로 채우고 CRD 두 복사본/런타임 schema 동기화. 실제 API defaulting 및 잘못된 곡선·immutable 변경 5건 거부 확인. 로컬3.14 229 tests/95.66% | `🛠️ fix(crd): materialize curve defaults before cel validation` |
+| 후속 CRD 검증 | API 서버가 curve의 빈 기본값을 CEL operand 누락으로 거부함. curve 기본값을 명시적으로 채우고 CRD 두 복사본/런타임 schema 동기화. 실제 API defaulting 및 잘못된 곡선·immutable 변경 5건 거부 확인. 로컬3.14 229 tests/95.66% | `4a9cfe7` |
+| 후속 이미지 검증 | 엄격한 X.509 검증과 legacy CA 호환성을 위한 지원 Python runtime 선택 추가. SHA-py312처럼 태그를 분리하고 alternate runtime의 latest/release 발행 차단. CI matrix는3.10~3.14 유지. actionlint 및 전체3.14 233 tests/95.66% 통과 | `🔨 build(image): isolate supported python runtime variants` |
 
 ### 검증 중 발견해 수정한 회귀
 

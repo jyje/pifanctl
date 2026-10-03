@@ -10,6 +10,10 @@ on:
         description: Package name suffix, for example "-dev"
         type: string
         default: ""
+      python-version:
+        description: Supported Python runtime; alternate runtimes use distinct experimental tags
+        type: string
+        default: '3.14'
       tag-latest:
         description: Also publish the `latest` tag
         type: boolean
@@ -48,8 +52,20 @@ jobs:
         env:
           TAG_LATEST: ${{ inputs.tag-latest }}
           TAG_RELEASE: ${{ inputs.tag-release }}
+          PYTHON_VERSION: ${{ inputs.python-version }}
         run: |
+          case "${PYTHON_VERSION}" in
+            3.10|3.11|3.12|3.13|3.14) ;;
+            *) echo 'unsupported Python runtime' >&2; exit 1 ;;
+          esac
           short_sha="${GITHUB_SHA::7}"
+          if [ "${PYTHON_VERSION}" != '3.14' ]; then
+            if [ "${TAG_LATEST}" = true ] || [ "${TAG_RELEASE}" = true ]; then
+              echo 'alternate runtimes are experimental and cannot publish release/latest tags' >&2
+              exit 1
+            fi
+            short_sha="${short_sha}-py${PYTHON_VERSION//./}"
+          fi
           echo "${short_sha}" > ./sources/version
           version="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' sources/pifanctl/__init__.py)"
           {
@@ -66,6 +82,7 @@ jobs:
           context: .
           file: ./docker/all.dockerfile
           platforms: linux/arm64
+          build-args: PYTHON_VERSION=${{ inputs.python-version }}
           push: true
           provenance: false
           tags: ${{ steps.tags.outputs.tags }}

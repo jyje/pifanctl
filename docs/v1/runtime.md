@@ -183,3 +183,20 @@ time**. Roll back by stopping the alpha and releasing its lock before restoring
 the legacy controller. Do not uninstall the operator before resources finish
 release. Node/power loss, real Pi 4/Pi 5 PWM, server CEL/defaulting and fleet load
 remain acceptance gates in PLAN.md. No operating cluster was changed by this work.
+
+## Runtime compatibility with legacy cluster CAs
+
+Python 3.13+ enables stricter X.509 validation that can reject a legacy cluster
+CA missing required extensions. Keep certificate and hostname verification
+enabled. An isolated experimental image can use the supported Python 3.12
+runtime while CA modernization is planned separately:
+
+```sh
+gh workflow run build-image-issue.yaml --ref YOUR_BRANCH -f python-version=3.12
+```
+
+That image uses `ghcr.io/jyje/pifanctl-issue:<sha>-py312`; it cannot publish
+`latest` or release tags. Set the operator chart's image repository/tag to the
+published variant and verify operator readiness before assigning a physical Fan.
+The default image remains Python 3.14, and CI still tests Python 3.10-3.14.
+See the [Python SSL documentation](https://docs.python.org/3/library/ssl.html#ssl.create_default_context).

@@ -2,6 +2,12 @@ name: build-image-issue
 
 on:
   workflow_dispatch:
+    inputs:
+      python-version:
+        description: Python runtime for the isolated experimental image
+        type: choice
+        default: '3.14'
+        options: ['3.10', '3.11', '3.12', '3.13', '3.14']
   push:
     branches:
       - 'issue-**'
@@ -29,3 +35,4 @@ jobs:
       image-suffix: "-issue"
       tag-latest: false
       tag-release: false
+      python-version: ${{ inputs.python-version || '3.14' }}
