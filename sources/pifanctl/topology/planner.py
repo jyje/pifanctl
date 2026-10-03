@@ -2,7 +2,7 @@ import copy
 from pifanctl.topology.model import TopologyError, digest, matches, normalize
 
 
-def plan(resources, nodes=None):
+def plan(resources, nodes=None, previous=None):
     """Pure planner. Invalid relationships produce fail-safe plans, not omissions."""
     resources = normalize(resources)
     fans = {o['metadata']['name']: o for o in resources if o['kind'] == 'Fan'}
@@ -36,11 +36,22 @@ def plan(resources, nodes=None):
             fan['issues'].append('MixedHardwareDrivers')
     for name, zone in zones.items():
         s = zone['spec']
+        membership_key = digest([zone['metadata'].get('uid', ''), s.get('nodeSelector'), s.get('nodeNames')])
+        prior = (previous or {}).get(name, {})
+        if prior.get('membershipKey') != membership_key: prior = {}
         if 'nodeSelector' in s:
             members = sorted(n for n, o in node_map.items() if matches(s['nodeSelector'], o['metadata'].get('labels', {})))
+            # Deleted Nodes may still be physical cooling members. Keep them
+            # missing until an explicit selector change or zone replacement.
+            members = sorted(set(members) | {n for n in prior.get('members', []) if n not in node_map})
         else:
             members = sorted(s['nodeNames'])
         issues = []
+        member_uids = {n: node_map.get(n, {}).get('metadata', {}).get('uid', '') for n in members}
+        for n, old_uid in prior.get('memberUIDs', {}).items():
+            if n in members and old_uid and member_uids[n] != old_uid:
+                if member_uids[n]: issues.append('NodeReplaced')
+                member_uids[n] = old_uid
         if not members: issues.append('EmptySelection')
         if live and any(n not in node_map for n in members): issues.append('MissingNode')
         if live and any(n in node_map and not any(c.get('type') == 'Ready' and c.get('status') == 'True' for c in node_map.get(n, {}).get('status', {}).get('conditions', [])) for n in members):
@@ -49,7 +60,8 @@ def plan(resources, nodes=None):
         if zone['metadata'].get('deletionTimestamp'): issues.append('DeletingZone')
         if s['telemetry']['source'] == 'local' and any(n in fans and fans[n]['spec']['nodeName'] != members[0] for n in s['fanRefs']):
             issues.append('InvalidLocalPlacement')
-        resolved = {'name': name, 'members': members, 'fanRefs': s['fanRefs'], 'telemetry': copy.deepcopy(s['telemetry']), 'issues': issues}
+        resolved = {'name': name, 'members': members, 'memberUIDs': member_uids, 'membershipKey': membership_key,
+                    'fanRefs': s['fanRefs'], 'telemetry': copy.deepcopy(s['telemetry']), 'issues': sorted(set(issues))}
         output['zones'][name] = resolved
         for fan in s['fanRefs']:
             if fan in output['fans']: output['fans'][fan]['zones'].append(copy.deepcopy(resolved))

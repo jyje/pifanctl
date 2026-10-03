@@ -159,7 +159,11 @@ def normalize(items):
                 if telemetry.get('prometheusURL') or len(spec.get('nodeNames', [])) != 1:
                     raise TopologyError('local source needs exactly one explicit node and no URL')
             else:
-                url = urlsplit(telemetry.get('prometheusURL', ''))
+                try:
+                    url = urlsplit(telemetry.get('prometheusURL', ''))
+                    if url.port is not None and url.port <= 0: raise ValueError('invalid port')
+                except ValueError as error:
+                    raise TopologyError('invalid prometheusURL') from error
                 if url.scheme not in ('http', 'https') or not url.hostname or url.username or url.password or url.fragment:
                     raise TopologyError('prometheusURL needs an HTTP(S) endpoint without credentials or fragment')
         result.append({**raw, 'metadata': copy.deepcopy(metadata), 'spec': spec})

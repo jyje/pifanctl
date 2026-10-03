@@ -99,7 +99,7 @@ def test_relationships_and_conflicts():
     p = plan([fan(), fan('fan-b'), zone(refs=['fan-a', 'absent'], nodes=['pi-b'])], [node()])
     assert 'HardwareConflict' in p['fans']['fan-a']['issues']
     assert 'NoCoolingZone' in p['fans']['fan-b']['issues']
-    assert p['zones']['rack']['issues'] == ['MissingNode', 'MissingFan']
+    assert p['zones']['rack']['issues'] == ['MissingFan', 'MissingNode']
     p = plan([fan(), fan('sys', hardware={'sysfs': {'chip': 0, 'channel': 2}})])
     assert all('MixedHardwareDrivers' in f['issues'] for f in p['fans'].values())
     p = plan([fan(), zone(telemetry={'source': 'local'}, nodes=['pi-b'])])
@@ -128,3 +128,18 @@ def test_examples():
         items = parse(text)
         assert items
         if all('nodeSelector' not in o['spec'] for o in items): assert plan(items)['hash']
+
+
+def test_deleted_selector_member_and_replaced_node_stay_unsafe():
+    z = zone(); del z['spec']['nodeNames']; z['spec']['nodeSelector'] = {'matchLabels': {'rack': 'a'}}
+    nodes = [node(labels={'rack': 'a'}), node('pi-b', {'rack': 'a'}, uid='uid-b')]
+    initial = plan([fan(), z], nodes)
+    missing = plan([fan(), z], nodes[:1], initial['zones'])
+    assert missing['zones']['rack']['members'] == ['pi-a', 'pi-b']
+    assert 'MissingNode' in missing['zones']['rack']['issues']
+    nodes[1]['metadata']['uid'] = 'new-b'
+    changed = plan([fan(), z], nodes, missing['zones'])
+    assert 'NodeReplaced' in changed['zones']['rack']['issues']
+    assert changed['zones']['rack']['memberUIDs']['pi-b'] == 'uid-b'
+    z['metadata']['uid'] = 'reviewed-zone-replacement'
+    assert not plan([fan(), z], nodes, changed['zones'])['zones']['rack']['issues']

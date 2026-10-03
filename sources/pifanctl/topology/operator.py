@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from urllib.request import urlopen
 
 import typer
+from prometheus_client import CollectorRegistry, Gauge
 
 from pifanctl import __version__
 from pifanctl.service import install_stop_handlers
@@ -111,6 +112,22 @@ class Operator:
         self.report_reader = report_reader or self.read_report
         self.last_status, self.events = {}, {}
         self.ready = False
+        self.last_reconcile = 0
+        self.registry = CollectorRegistry()
+        self.health = Gauge('pifanctl_operator_ready', 'Leader completed reconciliation recently', registry=self.registry)
+
+    def snapshot(self):
+        ready = self.ready and time.time() - self.last_reconcile < 30
+        self.health.set(1 if ready else 0)
+        return {'ready': ready, 'lastReconcileTime': self.last_reconcile, 'operator': self.id}
+
+    def patch(self, path, body):
+        if not self.lease.acquire(): raise TopologyError('LeadershipLost')
+        return self.kube.patch(path, body)
+
+    def write(self, method, path, body):
+        if not self.lease.acquire(): raise TopologyError('LeadershipLost')
+        return self.kube.request(method, path, body)
 
     def owner(self, item):
         m = item['metadata']
@@ -123,7 +140,7 @@ class Operator:
             raise TopologyError(f"{item['kind']}/{m['name']} belongs to another operator")
         if FINALIZER not in m.get('finalizers', []) or annotations.get(OWNER) != self.id:
             if m.get('deletionTimestamp'): raise TopologyError('cannot adopt a deleting resource')
-            self.kube.patch(path, {'metadata': {'resourceVersion': m['resourceVersion'],
+            self.patch(path, {'metadata': {'resourceVersion': m['resourceVersion'],
                 'annotations': {OWNER: self.id}, 'finalizers': m.get('finalizers', []) + ([] if FINALIZER in m.get('finalizers', []) else [FINALIZER])}})
 
     def managed(self, collection, desired):
@@ -139,8 +156,8 @@ class Operator:
             desired['metadata']['annotations'] = {**m.get('annotations', {}), **desired['metadata'].get('annotations', {})}
             if all(old.get(k) == v for k, v in desired.items() if k != 'metadata') and all(m.get(k) == v for k, v in desired['metadata'].items()):
                 return old
-            return self.kube.patch(path, desired)
-        return self.kube.request('POST', collection, desired)
+            return self.patch(path, desired)
+        return self.write('POST', collection, desired)
 
     def read_report(self, worker, now):
         pods = self.kube.items(self.core + '/pods?labelSelector=pifanctl.jyje.online%2Fnode%3D' + worker)
@@ -174,22 +191,27 @@ class Operator:
         for item in ([source] if source else items):
             path = self.core + '/configmaps/' + name(item['metadata']['name']) if source else resource(item['kind'], item['metadata']['name'])
             self.protect(item, path)
-        # Planner sees deleting resources for conflicts, but workers receive a
-        # plan with deletion targets removed before finalizer acknowledgement.
-        full = plan(items, nodes)
-        desired_items = [] if source and source['metadata'].get('deletionTimestamp') else [i for i in items if not i['metadata'].get('deletionTimestamp')]
-        topology = plan(desired_items, nodes)
-        for f, value in topology['fans'].items():
-            value['issues'] = sorted(set(value['issues']) | set(full['fans'][f]['issues']))
-        node_map = {n['metadata']['name']: n for n in nodes}
         configs = self.kube.items(self.core + '/configmaps')
         configs = {c['metadata'].get('labels', {}).get('pifanctl.jyje.online/nodeName'): c for c in configs
                    if c['metadata'].get('annotations', {}).get(OWNER) == self.id and 'plan.json' in c.get('data', {})}
-        self.prior_zones = {}
+        previous = {}; self.prior_zones = {}
         for node, config in configs.items():
             prior = json.loads(config['data']['plan.json'])
             for f in prior.get('fans', {}).values():
-                for zone in f['zones']: self.prior_zones.setdefault(zone['name'], set()).add(node)
+                for zone in f['zones']:
+                    self.prior_zones.setdefault(zone['name'], set()).add(node)
+                    previous[zone['name']] = zone
+        if source:
+            for item in items:
+                item['metadata']['uid'] = digest([source['metadata']['uid'], item['kind'], item['metadata']['name']])
+        # Deleted Nodes remain missing members; Node UID changes are sticky
+        # until a reviewed zone replacement or membership edit.
+        full = plan(items, nodes, previous)
+        desired_items = [] if source and source['metadata'].get('deletionTimestamp') else [i for i in items if not i['metadata'].get('deletionTimestamp')]
+        topology = plan(desired_items, nodes, previous)
+        for f, value in topology['fans'].items():
+            value['issues'] = sorted(set(value['issues']) | set(full['fans'][f]['issues']))
+        node_map = {n['metadata']['name']: n for n in nodes}
         active = {f['nodeName'] for f in topology['fans'].values()}
         owners = {n: source or sorted([i for i in desired_items if i['kind'] == 'Fan' and i['spec']['nodeName'] == n], key=lambda i: i['metadata']['name'])[0] for n in active}
         reports, plans = {}, {}
@@ -230,6 +252,7 @@ class Operator:
             reports[node] = report
         self.observe(items, source, topology, plans, reports, now)
         self.ready = True
+        self.last_reconcile = now
         return True
 
     def observe(self, items, source, topology, plans, reports, now):
@@ -298,11 +321,13 @@ class Operator:
             cm = self.kube.optional(path)
             if not cm: retired.add(node); continue
             if cm['metadata'].get('annotations', {}).get(RELEASED) != desired['hash']:
-                self.kube.patch(path, {'metadata': {'annotations': {RELEASED: desired['hash']}}})
+                self.patch(path, {'metadata': {'annotations': {RELEASED: desired['hash']}}})
             deployment = self.apps + '/deployments/' + worker
             old = self.kube.optional(deployment)
             if old:
-                self.kube.request('DELETE', deployment, {'apiVersion': 'v1', 'kind': 'DeleteOptions',
+                if old['metadata'].get('annotations', {}).get(OWNER) != self.id:
+                    raise TopologyError('refusing to delete a foreign workload')
+                self.write('DELETE', deployment, {'apiVersion': 'v1', 'kind': 'DeleteOptions',
                     'propagationPolicy': 'Foreground', 'preconditions': {'uid': old['metadata']['uid']}})
             pods = self.kube.items(self.core + '/pods?labelSelector=pifanctl.jyje.online%2Fnode%3D' + worker)
             if pods or self.kube.optional(deployment): continue
@@ -325,7 +350,7 @@ class Operator:
                 affected |= set(json.loads(annotation))
             path = self.core + '/configmaps/' + name(m['name']) if source else resource(item['kind'], m['name'])
             if annotation != json.dumps(sorted(affected)):
-                self.kube.patch(path, {'metadata': {'annotations': {RELEASE_NODES: json.dumps(sorted(affected))}}})
+                self.patch(path, {'metadata': {'annotations': {RELEASE_NODES: json.dumps(sorted(affected))}}})
             acknowledged = True
             for node in affected:
                 if node in retired: continue
@@ -342,7 +367,7 @@ class Operator:
                     acknowledged = False; break
             if acknowledged:
                 fresh = self.kube.get(path)
-                self.kube.patch(path, {'metadata': {'resourceVersion': fresh['metadata']['resourceVersion'],
+                self.patch(path, {'metadata': {'resourceVersion': fresh['metadata']['resourceVersion'],
                     'finalizers': [f for f in fresh['metadata'].get('finalizers', []) if f != FINALIZER]}})
 
     def write_status(self, item, status, now):
@@ -352,7 +377,7 @@ class Operator:
         if last and now - last[0] < 30 and last[1] == signature: return
         # Merge patch nulls clear old temperature/duty fields during failures.
         patch = {k: None for k in item.get('status', {}) if k not in status}; patch.update(status)
-        self.kube.patch(resource(item['kind'], item['metadata']['name']) + '/status', {'status': patch})
+        self.patch(resource(item['kind'], item['metadata']['name']) + '/status', {'status': patch})
         self.last_status[key] = (now, signature)
         if not last or last[1][:2] != signature[:2]:
             self.event(item, condition, now)
@@ -361,7 +386,7 @@ class Operator:
         m = item['metadata']; key = (m['uid'], condition['reason'])
         if key in self.events and now - self.events[key] < 60: return
         event_name = 'pifanctl-' + digest([m['uid'], condition['reason'], now])[:24]
-        self.kube.request('POST', self.core + '/events', {'apiVersion': 'v1', 'kind': 'Event',
+        self.write('POST', self.core + '/events', {'apiVersion': 'v1', 'kind': 'Event',
             'metadata': {'name': event_name, 'namespace': self.namespace},
             'involvedObject': {'apiVersion': API, 'kind': item['kind'], 'name': m['name'], 'uid': m['uid']},
             'reason': condition['reason'].split(':')[0][:128], 'message': condition['message'][:2048],
@@ -370,7 +395,7 @@ class Operator:
         self.events[key] = now
 
 
-def run_operator(operator, stop=None):
+def run_operator(operator, stop=None, port=9104):
     stop = stop or threading.Event(); install_stop_handlers(stop)
     # API polling resync is the correctness path; watches only wake it sooner.
     wake = threading.Event()
@@ -385,12 +410,17 @@ def run_operator(operator, stop=None):
                 stop.wait(5)
     for kind in ('Node',) if operator.input_configmap else ('Node', 'Fan', 'CoolingZone'):
         threading.Thread(target=watch_loop, args=(kind,), daemon=True).start()
-    while not stop.is_set():
-        try: operator.reconcile()
-        except Exception as error:
-            operator.ready = False
-            log.error('Reconciliation failed (%s); worker heartbeat will expire', type(error).__name__)
-        wake.wait(5); wake.clear()
+    from pifanctl.topology.worker import serve
+    server = serve(operator, port) if port else None
+    try:
+        while not stop.is_set():
+            try: operator.reconcile()
+            except Exception as error:
+                operator.ready = False
+                log.error('Reconciliation failed (%s); worker heartbeat will expire', type(error).__name__)
+            wake.wait(5); wake.clear()
+    finally:
+        if server: server.shutdown(); server.server_close()
 
 
 @app.command('run')

@@ -46,6 +46,8 @@ flowchart LR
 > **상태.** 클러스터 모드는 라즈베리 파이 4 클러스터에서 RPi.GPIO 드라이버로 운영 중입니다. 라즈베리 파이 5용 커널 PWM 드라이버는 가짜 sysfs 트리를 이용한 테스트로만 검증했고, 팬이 달린 Pi 5에서는 아직 실행해 보지 못했습니다.
 
 ---
+> 이 브랜치는 v1 alpha 소스입니다. registry 설치 전 alpha 이미지/차트 게시가 필요합니다. [런타임 매뉴얼](docs/v1/runtime-ko.md)을 확인하세요. 정식 v1.0.0의 하드웨어 검증은 남아 있습니다.
+
 ## 1. 실행
 
 ### 1.1. 요구 사항
@@ -321,19 +323,20 @@ CI/CD 환경은 [app.jyje.online#stack](https://app.jyje.online/#stack)에서 �
 
 문제가 있나요? [trouble-shooting.md](docs/trouble-shooting.md)를 보세요.
 
-### v1 설계 제안
+### v1 alpha: 선언형 냉각 토폴로지
 
 v1 제안은 Node 라벨로 냉각 대상을 선택하고 `CoolingZone`으로 구역을 구성한 뒤
 `Fan`으로 물리 PWM 팬을 연결합니다. 공유 랙 팬과 보드별 팬을 같은 모델로 표현하고
 YAML, ConfigMap, Helm, kubectl/CLI 흐름을 연결합니다.
 [오퍼레이터 설계](docs/v1/README-ko.md)와 [CRD·예시](design/v1/README.md)를
-검토할 수 있습니다. 현재는 설계 리소스이며 v1 오퍼레이터와 CLI는 아직 구현하지
-않았습니다.
+검토할 수 있습니다. operator·worker·CLI를 alpha로 구현했습니다.
+설치, migration과 검증 범위는 [런타임 매뉴얼](docs/v1/runtime-ko.md),
+단계별 작업과 정식 출시 게이트는 [PLAN.md](PLAN.md)를 확인하세요.
 
 
 #### 냉각 계통 설명: 시나리오 도해
 
-예시 온도로 v1의 예정 동작을 설명합니다. 출력은 정상상태 목표 duty이며 하강 지연은 생략했습니다. 실제 하드웨어 측정값이 아닙니다.
+예시 온도로 v1 모델의 동작을 설명합니다. 출력은 정상상태 목표 duty이며 하강 지연은 생략했습니다. 실제 하드웨어 측정값이 아닙니다.
 
 ![공유 랙 팬의 정상 동작](docs/v1/figures/rack-normal-ko.png)
 

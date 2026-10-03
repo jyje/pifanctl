@@ -34,20 +34,6 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 ## 대기 체크리스트
 
-### 07. Helm, CRD, 이미지와 운영 문서
-
-- [ ] 별도 operator chart: pinned version, replicas, input mode, resources, security
-- [ ] RBAC: Node 읽기/CR status·finalizer/지정 namespace workloads로 제한
-- [ ] worker-only hardware hostPath, 공유 lock directory, operator non-root
-- [ ] NetworkPolicy, probes, worker report 접근, Prometheus scrape 설정
-- [ ] CRD 설치/업그레이드 수명주기와 topology chart 연결
-- [ ] schema/package parity, Helm lint/render/kubeconform 검증
-- [ ] version gate, production chart/manifest/설치 버전 일치
-- [ ] 한영 사용법, migration/rollback, 실제 구현과 미래 항목 구분
-
-완료 조건: 존재하지 않는 image 기능을 문서로 설치하게 하지 않는다. alpha PR의
-이미지는 merge/build 전에는 registry에 없다는 제한을 명시한다.
-
 ### 08. 종합 검증과 PR
 
 - [ ] 기존 테스트와 새 테스트 모두 통과, coverage 기준 유지
@@ -87,4 +73,11 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 | 05 | Lease leadership, CR/ConfigMap planner, exact Node/UID worker Deployment+plan/heartbeat, protected ownership and watch/resync. 6 fake API tests passed. Agent managed/reuse deployment is packaged in stage 07 | `3aa1018` |
 
-| 06 | observed hash/UID status, rate limits/events, finalizers, primary transfer and durable empty-plan acknowledgements. 11 fake API tests passed; unreachable worker stays pending | `✨ feat(operator): acknowledge status and safe fan release` |
+| 06 | observed hash/UID status, rate limits/events, finalizers, primary transfer and durable empty-plan acknowledgements. 11 fake API tests passed; unreachable worker stays pending | `b0bdc82` |
+
+| 07 | operator chart/RBAC/NetworkPolicy/agents/CRDs, 한영 runtime/migration, alpha prerelease·latest 보호, 로컬 YAML reload·sticky member UID. Helm lint 두 입력 모드/토폴로지, kubeconform operator 9 + worker 1, actionlint, Python3.10 49 focused tests passed. CI3.10~3.14 보존 회귀 테스트 추가 | `📦 feat(chart): package the v1 alpha operator` |
+
+### 검증 중 발견해 수정한 회귀
+
+- Python3.10: Typer Context에 기본값 None을 둔 새 명령의 해석 실패. Context를 필수 주입 매개변수로 바꾼 뒤 전체 214 tests/92.53% 통과.
+- 작업 시작 이후 main의 CI가 3.10~3.14로 확대됨. 작업 브랜치도 다섯 버전을 유지하고 matrix 회귀 테스트를 추가함. 기준은 계속 90%.

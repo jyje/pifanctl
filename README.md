@@ -47,6 +47,8 @@ flowchart LR
 > **Status.** Cluster mode runs on a Raspberry Pi 4 cluster with the RPi.GPIO driver. The kernel PWM driver for Raspberry Pi 5 is covered by tests against a fake sysfs tree, but has not been run on a Pi 5 with a fan yet.
 
 ---
+> This branch contains v1 alpha source. The alpha image/chart must be built and published before registry installation. See the [runtime manual](docs/v1/runtime.md); stable v1.0.0 hardware acceptance is pending.
+
 ## 1. Run
 
 ### 1.1. Requirements
@@ -343,19 +345,20 @@ Each step skips what already exists, so re-running a failed workflow is safe. Ap
 
 Is there any problem? see [trouble-shooting.md](docs/trouble-shooting.md)
 
-### v1 design proposal
+### v1 alpha: declarative cooling topology
 
-The proposed v1 API uses Node labels to select cooling members, `CoolingZone`
+The v1 alpha API uses Node labels to select cooling members, `CoolingZone`
 resources to group them, and `Fan` resources to assign physical PWM fans. It covers
 shared rack fans and one fan per board, with YAML, ConfigMap, Helm and kubectl/CLI
 workflows. [Read the operator design](docs/v1/README.md) and
-[review the CRDs and examples](design/v1/README.md). These are design artifacts;
-the v1 operator and CLI are not implemented yet.
+[review the CRDs and examples](design/v1/README.md). The operator, worker and CLI are implemented in the alpha.
+See the [runtime manual](docs/v1/runtime.md) and [staged checklist](PLAN.md).
+Real Pi hardware and API server acceptance remain pending.
 
 
 #### Cooling systems manual: scenario figures
 
-Example temperatures illustrate the proposed v1 behavior. Figures show steady-state target duty; the downward ramp is omitted. These are not hardware measurements.
+Example temperatures illustrate the v1 model. Figures show steady-state target duty; the downward ramp is omitted. These are not hardware measurements.
 
 ![Shared rack fans in normal operation](docs/v1/figures/rack-normal-en.png)
 

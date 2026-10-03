@@ -16,7 +16,7 @@ set -euo pipefail
 
 echo "${IMAGE}:${SHORT_SHA}"
 
-if [ "${TAG_LATEST:-false}" = "true" ]; then
+if [ "${TAG_LATEST:-false}" = "true" ] && [[ "${VERSION:-}" != *-* ]]; then
   echo "${IMAGE}:latest"
 fi
 

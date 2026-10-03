@@ -149,6 +149,31 @@ def test_the_first_release_has_no_start_tag(repo, bin_dir):
     assert "--notes-start-tag" not in text
 
 
+def test_alpha_image_never_moves_latest(bin_dir):
+    result = image_tags(bin_dir, exists=False, TAG_LATEST='true', TAG_RELEASE='true', VERSION='1.0.0-alpha.1')
+    assert result.returncode == 0
+    assert not any(t.endswith(':latest') for t in result.stdout.splitlines())
+    assert 'v1.0.0-alpha.1' in result.stdout
+
+
+def test_alpha_release_is_prerelease(repo, bin_dir):
+    work, _ = repo
+    (work / 'sources/pifanctl/__init__.py').write_text('__version__ = "1.0.0-alpha.1"\n')
+    result, text = release(repo, bin_dir, 'app')
+    assert result.returncode == 0
+    assert '--prerelease' in text and '--latest=false' in text
+
+
+def test_operator_chart_has_distinct_release_tag(repo, bin_dir):
+    work, _ = repo
+    path = work / 'charts/pifanctl-operator'; path.mkdir()
+    (path / 'Chart.yaml').write_text('version: 0.1.0-alpha.1\n')
+    result, text = release(repo, bin_dir, 'chart', CHART_NAME='pifanctl-operator')
+    assert result.returncode == 0, result.stderr
+    assert 'release create operator-chart-v0.1.0-alpha.1' in text
+    assert '--prerelease' in text
+
+
 # --- version bump check ------------------------------------------------------
 
 APP = ["sources/pifanctl/control.py"]

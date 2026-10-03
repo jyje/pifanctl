@@ -200,7 +200,7 @@ def heartbeat_ok(path, plan, now=None):
 
 
 def run(plan_path, node, uid='', thermal_path='/sys/class/thermal', lock_dir='/var/lock/pifanctl',
-        heartbeat_path=None, port=9103, mock=False, stop=None):
+        heartbeat_path=None, port=9103, mock=False, stop=None, loader=None):
     stop = stop or threading.Event()
     install_stop_handlers(stop)
     worker = Worker(node, uid, thermal_path, mock)
@@ -214,7 +214,7 @@ def run(plan_path, node, uid='', thermal_path='/sys/class/thermal', lock_dir='/v
                     text = Path(plan_path).read_text()
                     if text != last:
                         if len(text.encode()) > 900_000: raise TopologyError('worker plan too large')
-                        worker.apply(yaml.load(text, Loader=UniqueLoader))
+                        worker.apply(loader(text) if loader else yaml.load(text, Loader=UniqueLoader))
                         last = text
                     error = ''
                 except (OSError, ValueError, KeyError, TypeError, yaml.YAMLError) as failure:

@@ -82,7 +82,7 @@ def test_cluster_commands(file, monkeypatch):
 
 def test_worker_local_and_identity(file, monkeypatch):
     calls = []
-    monkeypatch.setattr(cli, 'run', lambda path, *args: calls.append((json.loads(Path(path).read_text()), args)))
+    monkeypatch.setattr(cli, 'run', lambda path, *args, **kwargs: calls.append((kwargs['loader'](Path(path).read_text()), args)))
     result = runner.invoke(app, ['worker', 'run', '--file', str(file), '--node', 'pi-a', '--mock'])
     assert result.exit_code == 0, result.output
     assert calls[0][0]['fans']['fan-a']['nodeName'] == 'pi-a'

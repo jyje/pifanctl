@@ -1,7 +1,4 @@
 """Topology commands share the operator planner and portable YAML schema."""
-import json
-import os
-import tempfile
 from pathlib import Path
 from typing import Optional
 
@@ -10,7 +7,7 @@ import yaml
 
 from pifanctl.metrics import resolve_node_name
 from pifanctl.topology.kube import APIError, Kube, resource
-from pifanctl.topology.model import TopologyError, bundle, load
+from pifanctl.topology.model import TopologyError, bundle, load, parse
 from pifanctl.topology.planner import plan, worker_plan
 from pifanctl.topology.worker import run
 
@@ -41,7 +38,7 @@ def checked(path, kube=None):
 
 
 @topology.command('validate')
-def validate(file: Path, live: bool = False, ctx: typer.Context = None):
+def validate(ctx: typer.Context, file: Path, live: bool = False):
     items, _ = checked(file, api(ctx) if live else None)
     typer.echo(f'Valid: {len(items)} resources')
 
@@ -52,13 +49,13 @@ def render(file: Path):
 
 
 @topology.command('plan')
-def show_plan(file: Path, live: bool = False, node: Optional[str] = None, ctx: typer.Context = None):
+def show_plan(ctx: typer.Context, file: Path, live: bool = False, node: Optional[str] = None):
     _, p = checked(file, api(ctx) if live else None)
     emit(worker_plan(p, node) if node else p)
 
 
 @topology.command('apply')
-def apply(file: Path, dry_run: bool = False, ctx: typer.Context = None):
+def apply(ctx: typer.Context, file: Path, dry_run: bool = False):
     kube = api(ctx); items, _ = checked(file, kube)
     for item in bundle(items)['items']:
         result = kube.apply(item, dry_run)
@@ -119,12 +116,13 @@ def run_worker(ctx: typer.Context, node: Optional[str] = None, uid: str = '',
         run(plan_file, node, uid, thermal_path, lock_dir, heartbeat_file, port, mock)
     else:
         if heartbeat_file: raise TopologyError('local YAML does not use operator heartbeat')
-        _, p = checked(file, api(ctx) if live else None)
+        kube = api(ctx) if live else None
+        _, p = checked(file, kube)
         desired = worker_plan(p, node)
         if not desired['fans']: raise TopologyError('no fan assigned to this host')
-        with tempfile.TemporaryDirectory(prefix='pifanctl-plan-') as directory:
-            path = Path(directory) / 'plan.json'; path.write_text(json.dumps(desired))
-            run(path, node, desired['nodeUID'], thermal_path, lock_dir, None, port, mock)
+        def loader(text):
+            return worker_plan(plan(parse(text), kube.items('/api/v1/nodes') if kube else None), node)
+        run(file, node, desired['nodeUID'], thermal_path, lock_dir, None, port, mock, loader=loader)
 
 
 def register(app):
