@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from typing import Optional
 
 from prometheus_client import CollectorRegistry, Counter, Gauge, start_http_server
@@ -39,6 +40,11 @@ class AgentMetrics:
             ["node"],
             registry=self.registry,
         )
+        self.observed = Gauge(
+            'pifanctl_temperature_observed_timestamp_seconds',
+            'Unix timestamp of the successful sensor read',
+            ['node', 'zone', 'type'], registry=self.registry,
+        )
         self.read_errors = Counter(
             "pifanctl_temperature_read_errors_total",
             "Number of reads that returned no usable thermal zone",
@@ -58,11 +64,13 @@ class AgentMetrics:
         # because the controller would keep acting on it.
         self.temperature.clear()
         self.temperature_max.clear()
+        self.observed.clear()
         if not zones:
             self.read_errors.labels(node=self.node).inc()
             return
         for zone in zones:
             self.temperature.labels(node=self.node, zone=zone.name, type=zone.type).set(zone.celsius)
+            self.observed.labels(node=self.node, zone=zone.name, type=zone.type).set(time.time())
         self.temperature_max.labels(node=self.node).set(max(zone.celsius for zone in zones))
 
 

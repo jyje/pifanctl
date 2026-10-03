@@ -54,9 +54,11 @@ class RpiGpioDriver:
         self._pwm.ChangeDutyCycle(duty)
 
     def close(self) -> None:
-        # Leave the pin driven by the caller's last set_duty(); cleanup() would
-        # float the pin and could stop the fan.
-        pass
+        # Stop the software PWM thread before another worker can acquire it.
+        # Keep the pin high, not floating. Electrical fail-open still requires
+        # hardware acceptance; process/power loss cannot preserve software PWM.
+        self._pwm.stop()
+        self._gpio.output(self._pin, self._gpio.HIGH)
 
 
 class SysfsDriver:

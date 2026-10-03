@@ -2,11 +2,11 @@
 
 **English** | [한국어](README-ko.md)
 
-**Status: design proposal.** The CRDs, example YAML, topology rendering chart and
-RBAC are review artifacts. The operator, worker configuration reload, topology
-planner and CLI commands below are not implemented. This is a roadmap for the
-application's v1, not a v1 release. The first CRD API is `v1alpha1`; application
-major versions and Kubernetes API versions have separate lifecycles.
+**Status: implemented alpha (`1.0.0-alpha.1`), not a stable v1 release.**
+The shared planner, freshness metric, worker, operator, CLI and chart are implemented.
+See the [runtime manual](runtime.md) for current commands and limitations, and
+[PLAN.md](../../PLAN.md) for verification and remaining hardware release gates.
+The first CRD API remains `v1alpha1`.
 
 Implementation roadmap: [issue #39](https://github.com/jyje/pifanctl/issues/39).
 
@@ -173,7 +173,7 @@ handover. CRDs and ConfigMaps must never run competing controllers on the same f
 The [experimental Helm chart](../../design/v1/helm) renders either native CRs or
 the equivalent [ConfigMap](../../design/v1/examples/configmap.yaml). It emits no
 operator or worker workload, and is separate from the published production chart.
-The future operator chart owns deployment settings, pinned images and input mode;
+The [operator chart](../../charts/pifanctl-operator) owns deployment settings, pinned images and input mode;
 the topology chart or GitOps owns cooling configuration. CRD installation and
 upgrades are a separate explicit lifecycle, never silently pruned on uninstall.
 
@@ -246,13 +246,13 @@ silently declare convergence.
   back to only the worker's local temperature. Local temperature is a floor,
   not proof that remote boards are cool. Local-only mode is explicitly declared.
 - If operator/API access is lost, keep the last applied member set. A worker
-  watchdog uses a bounded operator heartbeat timeout (proposed 60s) to force full
+  watchdog uses a bounded operator heartbeat timeout (alpha default 120s) to force full
   speed. It may resume regulation only after fresh configuration acknowledgement.
   The operator periodically refreshes a separate heartbeat file in the managed
   ConfigMap, outside the plan hash. Validate its timestamp and Node UID; file
   delivery delays count toward the timeout. This is independent of the worker's
   own report heartbeat. Tune the timeout only after measuring projection latency.
-- Hold an exclusive host lock per physical claim, on a shared host lock directory,
+- Hold an exclusive host-wide lock, on a shared host lock directory,
   across local CLI and Pods. Leader election and replicas=1 alone do not prevent
   duplicate PWM writers. Never steal a lock after lease expiry if the old process
   may still be alive. Partitioned nodes must not move fan control to another node.
@@ -276,7 +276,7 @@ the same node-worker handover via a namespaced finalizer.
 
 ### Status, monitoring and access
 
-Conditions include `Ready`, `MembersResolved`, `ReferencesResolved`,
+The alpha implements `Ready` with reasons. Future diagnostic conditions include `Ready`, `MembersResolved`, `ReferencesResolved`,
 `TelemetryHealthy`, `HardwareClaimed`, `ConfigurationApplied` and `Degraded` where
 applicable. Report reasons such as `EmptySelection`, `MissingNode`, `MissingFan`,
 `HardwareConflict`, `StaleTemperature`, `PlanNotApplied` and `WorkerUnavailable`.
@@ -300,19 +300,19 @@ needs NetworkPolicy, restricted securityContext, probes and image digests.
 
 ## 7. Proposed CLI and kubectl contract
 
-The following are **future commands**, not instructions for today's release:
+These commands are implemented in the alpha. Use the runtime manual for installation:
 
 ```sh
-pifanctl topology validate -f topology.yaml
-pifanctl topology render -f topology.yaml --format kubernetes
-pifanctl --context lab topology plan -f topology.yaml
-pifanctl --context lab topology apply -f topology.yaml --dry-run=server
-pifanctl --context lab topology apply -f topology.yaml
+pifanctl topology validate topology.yaml
+pifanctl topology render topology.yaml
+pifanctl --context lab topology plan topology.yaml --live
+pifanctl --context lab topology apply topology.yaml --dry-run
+pifanctl --context lab topology apply topology.yaml
 pifanctl --context lab zone list
 pifanctl --context lab zone describe rack-a
 pifanctl --context lab fan list
-pifanctl --context lab fan watch fan-01
-pifanctl worker run --config topology.yaml --fan local-fan --node pi-01
+pifanctl --context lab fan watch
+pifanctl worker run --file topology.yaml --node pi-01
 ```
 
 `validate` is offline shape/reference validation. `plan` resolves live selectors,
@@ -353,7 +353,7 @@ overrides and stop-at-zero commands are deferred until a safe override API exist
    verify no old PWM writer remains, then enable the v1 worker. Do not run both.
    Roll back by stopping v1, releasing the claim, then restoring the legacy config.
 7. Publish v1 images and operator/topology charts only after hardware and failure
-   acceptance criteria pass. Do not bump the current application for design files.
+   acceptance criteria pass. The implemented alpha is versioned separately from stable v1.0.0.
 
 Acceptance criteria for implementation:
 

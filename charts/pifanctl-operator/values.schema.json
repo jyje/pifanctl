@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "operatorId",
+    "replicas",
+    "input",
+    "agent"
+  ],
+  "properties": {
+    "operatorId": {
+      "type": "string",
+      "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+      "maxLength": 40
+    },
+    "replicas": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "crd",
+            "configMap"
+          ]
+        },
+        "configMapName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "configMapName"
+      ]
+    },
+    "agent": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "managed",
+            "reuse"
+          ]
+        },
+        "interval": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        }
+      },
+      "required": [
+        "mode",
+        "interval"
+      ]
+    }
+  }
+}

@@ -39,9 +39,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 3.10 is the oldest supported, 3.11 is what Raspberry Pi OS ships,
-        # 3.14 matches the container image.
-        python: ["3.10", "3.11", "3.14"]
+        # Test every stable Python minor release from the minimum supported version.
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -63,12 +62,20 @@ jobs:
       - uses: azure/setup-helm@v5
       - name: Lint with every set of values
         run: |
+          helm lint charts/pifanctl-operator
+          helm lint charts/pifanctl-operator --set input.mode=configMap,input.configMapName=topology,agent.mode=reuse
+          helm lint design/v1/helm -f design/v1/examples/helm-values.yaml
           helm lint charts/pifanctl
           for values in charts/pifanctl/ci/*.yaml; do
             helm lint charts/pifanctl -f "$values"
           done
       - name: Validate rendered manifests against Kubernetes and CRD schemas
         run: |
+          for mode in crd configMap; do
+            helm template ci charts/pifanctl-operator -n pifanctl --set input.mode="$mode",input.configMapName=topology \
+              | docker run -i --rm ghcr.io/yannh/kubeconform:v0.8.0 -strict -summary \
+                  -kubernetes-version 1.33.0 -schema-location default
+          done
           for values in charts/pifanctl/ci/*.yaml; do
             echo "::group::$values"
             helm template ci charts/pifanctl -n pifanctl -f "$values" \
@@ -109,6 +116,9 @@ jobs:
       - name: Smoke test
         run: |
           docker run --rm pifanctl:ci python main.py --help
+          docker run --rm pifanctl:ci python main.py topology --help
+          docker run --rm pifanctl:ci python main.py worker --help
+          docker run --rm pifanctl:ci python main.py operator --help
           test "$(docker run --rm pifanctl:ci id -u)" != "0"
           if docker run --rm pifanctl:ci python main.py start --driver rpigpio; then
             echo "the real GPIO driver must fail when there is no GPIO" >&2

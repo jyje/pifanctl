@@ -149,6 +149,31 @@ def test_the_first_release_has_no_start_tag(repo, bin_dir):
     assert "--notes-start-tag" not in text
 
 
+def test_alpha_image_never_moves_latest(bin_dir):
+    result = image_tags(bin_dir, exists=False, TAG_LATEST='true', TAG_RELEASE='true', VERSION='1.0.0-alpha.1')
+    assert result.returncode == 0
+    assert not any(t.endswith(':latest') for t in result.stdout.splitlines())
+    assert 'v1.0.0-alpha.1' in result.stdout
+
+
+def test_alpha_release_is_prerelease(repo, bin_dir):
+    work, _ = repo
+    (work / 'sources/pifanctl/__init__.py').write_text('__version__ = "1.0.0-alpha.1"\n')
+    result, text = release(repo, bin_dir, 'app')
+    assert result.returncode == 0
+    assert '--prerelease' in text and '--latest=false' in text
+
+
+def test_operator_chart_has_distinct_release_tag(repo, bin_dir):
+    work, _ = repo
+    path = work / 'charts/pifanctl-operator'; path.mkdir()
+    (path / 'Chart.yaml').write_text('version: 0.1.0-alpha.1\n')
+    result, text = release(repo, bin_dir, 'chart', CHART_NAME='pifanctl-operator')
+    assert result.returncode == 0, result.stderr
+    assert 'release create operator-chart-v0.1.0-alpha.1' in text
+    assert '--prerelease' in text
+
+
 # --- version bump check ------------------------------------------------------
 
 APP = ["sources/pifanctl/control.py"]
@@ -190,3 +215,33 @@ def test_versions_are_read_from_the_files():
     assert bump.app_version('"""x"""\n__version__ = "1.2.3"\n') == "1.2.3"
     assert bump.chart_version("name: x\nversion: 0.1.2\nappVersion: \"0.2.0\"\n") == "0.1.2"
     assert bump.chart_version("version: '0.4.0'\n") == "0.4.0"
+
+
+@pytest.mark.parametrize('python_version,release,expected', [
+    ('3.14', 'false', 'abc1234'), ('3.12', 'false', 'abc1234-py312'),
+    ('3.12', 'true', None), ('4.0', 'false', None),
+])
+def test_experimental_python_variant_tags(tmp_path, python_version, release, expected):
+    import yaml
+    workflow = yaml.safe_load((ROOT / '.github/workflows/_build-image.yaml').read_text())
+    job = workflow['jobs']['build-and-testing']
+    script = next(s['run'] for s in job['steps'] if s.get('id') == 'tags')
+    (tmp_path / 'sources/pifanctl').mkdir(parents=True)
+    (tmp_path / 'sources/pifanctl/__init__.py').write_text('__version__ = "1.0.0-alpha.1"\n')
+    (tmp_path / 'scripts').mkdir()
+    shim(tmp_path / 'scripts', 'image-tags.sh', 'echo "${IMAGE}:${SHORT_SHA}"\n')
+    output = tmp_path / 'output'
+    env = {**os.environ, 'PYTHON_VERSION': python_version, 'TAG_LATEST': 'false',
+           'TAG_RELEASE': release, 'GITHUB_SHA': 'abc123456789', 'GITHUB_OUTPUT': str(output),
+           'IMAGE': 'ghcr.io/jyje/pifanctl-issue'}
+    result = subprocess.run(['bash', '-c', script], env=env, cwd=tmp_path, capture_output=True, text=True)
+    if expected is None:
+        assert result.returncode != 0
+        assert not output.exists()
+    else:
+        assert result.returncode == 0, result.stderr
+        assert (tmp_path / 'sources/version').read_text().strip() == expected
+        assert 'short_sha=' + expected in output.read_text()
+        assert 'ghcr.io/jyje/pifanctl-issue:' + expected in output.read_text()
+    build = next(s for s in job['steps'] if s.get('uses', '').startswith('docker/build-push-action@'))
+    assert build['with']['build-args'] == 'PYTHON_VERSION=${{ inputs.python-version }}'

@@ -1,9 +1,9 @@
 # v1 design resources
 
-**Proposal only.** These files define an API and render topology examples. They
-do not implement an operator, config reload, grouped fan control, or a new CLI.
-The released application and `charts/pifanctl` remain at their current versions.
-Do not deploy these resources as an upgrade to a running cooling installation.
+These files describe the v1 alpha topology API and render examples. The actual
+operator chart lives in [charts/pifanctl-operator](../../charts/pifanctl-operator).
+See the [runtime manual](../../docs/v1/runtime.md) before installing an alpha.
+Hardware and API server acceptance remain separate gates.
 
 Read the [design](../../docs/v1/README.md) or [한국어 설계](../../docs/v1/README-ko.md).
 
@@ -34,7 +34,7 @@ fan references; it does not execute Kubernetes CEL or validate hardware claims.
 
 The proposed minimum is Kubernetes 1.30. CRDs use structural schemas, defaults,
 CEL field validation and a `/status` subresource. API server validation still
-needs to be exercised before implementation; local rendering is not that check.
+needs to be exercised before stable release; local rendering is not that check.
 
 ```sh
 # Run only against an explicitly selected disposable cluster.

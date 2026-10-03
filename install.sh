@@ -75,4 +75,6 @@ EOL
 # Set executable permission
 sudo chmod +x $COMMAND_PATH
 
+sudo install -m 755 "${INSTALL_DIR}/bin/kubectl-pifanctl" /usr/local/bin/kubectl-pifanctl
+
 echo "[INFO] Installation completed! You can now use 'pifanctl' command."

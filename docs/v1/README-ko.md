@@ -2,11 +2,10 @@
 
 [English](README.md) | **한국어**
 
-**설계 제안 단계입니다.** 이번 리소스는 CRD, YAML 예시, 토폴로지를 렌더링하는
-Helm 차트와 RBAC입니다. 실제 오퍼레이터, worker의 설정 재로딩, 토폴로지 planner,
-아래의 새 CLI 명령은 아직 구현하지 않았습니다. 애플리케이션 v1를 위한 설계이며
-v1 출시가 아닙니다. 첫 CRD API는 `v1alpha1`입니다. 애플리케이션 버전과 Kubernetes
-API 버전은 별도로 관리합니다. [리소스 검토 방법](../../design/v1/README.md).
+**구현된 alpha (`1.0.0-alpha.1`)이며 정식 v1 출시는 아닙니다.**
+공통 planner, freshness metric, worker, operator, CLI와 차트를 구현했습니다.
+현재 명령과 제한은 [런타임 매뉴얼](runtime-ko.md), 검증과 하드웨어 출시 게이트는
+[PLAN.md](../../PLAN.md)를 확인하세요. 첫 CRD API는 `v1alpha1`입니다.
 
 후속 구현 로드맵: [이슈 #39](https://github.com/jyje/pifanctl/issues/39).
 
@@ -136,7 +135,7 @@ worker가 동시에 실행되면 안 됩니다. 모드 변경도 제어권 인�
 
 [설계용 Helm 차트](../../design/v1/helm)는 CR 또는 동등한
 [ConfigMap](../../design/v1/examples/configmap.yaml)을 렌더링합니다. 현재 배포용
-차트와 별도이며 operator나 worker를 실행하지 않습니다. 향후 operator 차트는
+차트와 별도이며 operator나 worker를 실행하지 않습니다. [operator 차트](../../charts/pifanctl-operator)는
 이미지/배치/입력 모드를 담당하고, 토폴로지 차트나 GitOps는 냉각 구성을 담당합니다.
 CRD 설치/갱신/삭제는 명시적으로 관리하고 Helm 삭제와 함께 자동 제거하지 않습니다.
 
@@ -191,13 +190,13 @@ ConfigMap 파일 갱신은 즉시 보장되지 않습니다. 디렉터리로 mou
   다른 연결 구역의 온도가 정상이어도 같습니다.
 - Prometheus 장애, 비어 있는 구역, 끊긴 참조, Node 교체, 설정 상태 상실도 전체
   속도로 전환합니다. 공유 냉각에서 worker의 로컬 온도만으로 대체하지 않습니다.
-- operator/API가 끊기면 마지막 멤버 목록을 유지합니다. 제안하는 60초 heartbeat
+- operator/API가 끊기면 마지막 멤버 목록을 유지합니다. alpha 기본 120초 heartbeat
   watchdog이 만료되면 full speed로 전환하고 새 설정 확인 이후에만 정상 제어합니다.
   operator가 관리 ConfigMap의 별도 heartbeat 파일을 주기적으로 갱신합니다. plan
   hash에는 포함하지 않습니다. 시각/Node UID를 검증하며 파일 전달 지연도 만료 시간에
   포함합니다. worker 자신의 보고 heartbeat와 구분하고 실제 전달 지연을 측정해
   timeout을 조정합니다.
-- 로컬 CLI와 Pod가 공유하는 host lock으로 물리 장치당 writer 하나를 보장합니다.
+- 로컬 CLI와 Pod가 공유하는 host 전체 lock으로 writer 프로세스 하나를 보장합니다.
   replicas=1과 leader election만으로 충분하지 않습니다. 기존 프로세스가 살아 있을
   가능성이 있으면 lease 만료만으로 lock을 빼앗지 않습니다.
 - fan controller를 다른 노드로 옮겨 장애를 해결할 수는 없습니다. 배선은 그대로입니다.
@@ -217,8 +216,9 @@ workload/config만 제거합니다. 남은 구역의 끊긴 참조는 Degraded�
 
 ### 상태, 모니터링, 권한
 
-Ready, MembersResolved, ReferencesResolved, TelemetryHealthy, HardwareClaimed,
-ConfigurationApplied, Degraded conditions와 구체적인 실패 이유를 제공합니다.
+alpha는 사유를 담은 Ready condition을 구현합니다. 추가 진단 conditions인
+MembersResolved, ReferencesResolved, TelemetryHealthy, HardwareClaimed,
+ConfigurationApplied, Degraded는 후속 개선입니다.
 상태 쓰기는 제한하고 온도 샘플마다 etcd에 기록하지 않습니다. Prometheus에는
 노드 온도 이력을 유지하고 팬 duty, 구역 온도, 누락 멤버 수, failsafe 이유,
 heartbeat metrics와 장애 알림을 추가합니다. 설정 hash를 무제한 metric label로
@@ -234,19 +234,19 @@ operator는 사용자 spec을 소유하지 않습니다. GPIO 권한은 worker�
 
 ## 7. CLI와 kubectl
 
-다음 명령은 **향후 인터페이스 제안**입니다. 현재 릴리스에는 없습니다.
+다음 명령은 alpha에 구현했습니다. 설치와 제한은 런타임 매뉴얼을 확인하세요.
 
 ```sh
-pifanctl topology validate -f topology.yaml
-pifanctl topology render -f topology.yaml --format kubernetes
-pifanctl --context lab topology plan -f topology.yaml
-pifanctl --context lab topology apply -f topology.yaml --dry-run=server
-pifanctl --context lab topology apply -f topology.yaml
+pifanctl topology validate topology.yaml
+pifanctl topology render topology.yaml
+pifanctl --context lab topology plan topology.yaml --live
+pifanctl --context lab topology apply topology.yaml --dry-run
+pifanctl --context lab topology apply topology.yaml
 pifanctl --context lab zone list
 pifanctl --context lab zone describe rack-a
 pifanctl --context lab fan list
-pifanctl --context lab fan watch fan-01
-pifanctl worker run --config topology.yaml --fan local-fan --node pi-01
+pifanctl --context lab fan watch
+pifanctl worker run --file topology.yaml --node pi-01
 ```
 
 validate는 오프라인 검증, plan은 실제 노드 선택과 claim/변경 내역의 읽기 전용 확인,
@@ -279,8 +279,7 @@ apply는 CR 모드를 대상으로 합니다. ConfigMap 모드는 List를 topolo
    dry-run과 mock worker부터 확인합니다.
 6. 팬별로 full duty → legacy 중단 → writer 해제 확인 → v1 실행을 순서대로 진행합니다.
    롤백은 v1 중단과 claim 해제 이후 legacy 복원 순서입니다.
-7. 다음 기준이 통과한 후 v1 이미지와 차트를 출시합니다. 설계 파일만으로 현재
-   앱 버전을 v1로 올리지 않습니다.
+7. 다음 기준이 통과한 후 v1 이미지와 차트를 출시합니다. 실제 구현 alpha와 정식 v1.0.0 출시는 분리합니다.
 
 - [ ] 두 구역 각각 네 대의 온도가 자기 팬에만 반영됨
 - [ ] 보드별 팬, 노드당 여러 팬, 여러 구역이 공유하는 팬 지원

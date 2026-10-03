@@ -20,7 +20,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: main
-        image: ghcr.io/jyje/pifanctl:v0.2.1
+        image: ghcr.io/jyje/pifanctl:v1.0.0-alpha.1
         command: ["python", "main.py", "start"]
         env:
         - name: PIN

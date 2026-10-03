@@ -1,10 +1,10 @@
 <div align="center">
 
-# pifanctl: A Raspberry Pi Fan Controller
+# pifanctl: Raspberry Pi Cluster Fan Control, the Kubernetes Way
 
 <img alt="Cartoon Raspberry Pi rack with one shared PWM fan and a Kubernetes whale mascot" src="docs/pifanctl-cluster-sticker-concept-1.png" width="560" style="object-fit: contain; max-width: 100%;">
 
-🥧 A CLI for **PWM Fan Controlling** of **Raspberry Pi**
+🥧 One controller node. One shared rack fan. The hottest node sets its speed.
 
 [![Python Typer](https://img.shields.io/badge/Typer-3776AB?style=flat&logo=Python&logoColor=white&label=Python)](https://typer.tiangolo.com/)
 [![GitHub ARC](https://img.shields.io/badge/GitHub%20ARC-2088FF?style=flat&logo=GitHub%20Actions&logoColor=white&label=CI)](https://github.com/actions/actions-runner-controller)
@@ -20,9 +20,9 @@
 
 </div>
 
-🐳 **pifanctl** is a CLI tool for PWM fan control on Raspberry Pi, from a single board to a whole cluster. Its primary cluster use case is one centrally controlled rack fan cooling several boards together: the shared fan follows the **hottest node**, and every node's temperature is kept in Prometheus. It runs as a plain CLI, in **Docker**, or on **Kubernetes** with a Helm chart, and is optimized for ARM64. The project features a CI/CD pipeline using GitHub Actions with Actions Runner Controller (ARC), ensuring all builds are tested in actual Raspberry Pi environments.
+🐳 **pifanctl** (Pi Fan Control) runs its controller on one Raspberry Pi node wired to the rack's shared PWM fan. An agent on every cluster node reports temperatures to Prometheus, and the controller drives the fan according to the **hottest node**. Deploy it with Helm on Kubernetes or run it as a CLI or Docker container. See the [jyje/cluster deployment](https://github.com/jyje/cluster/blob/main/clusters/r4spi/apps/pifanctl.yaml) for an example. pifanctl is optimized for ARM64, and its GitHub Actions CI/CD builds are tested on Raspberry Pi runners managed by Actions Runner Controller (ARC).
 
-The project illustration style is a friendly cartoon of an open Raspberry Pi rack, one shared central fan, and a Kubernetes ecosystem whale mascot. The boards lie flat on their shelves, turned toward the rack depth so their ports and cables face away from the fan. It represents cluster-wide shared cooling, not a separate fan on every board, and omits the Raspberry Pi logo. Single-board fan control is supported too. [See the illustration style and all three sticker concepts](docs/illustration-style.md).
+The sticker shows the same cluster setup: an abstract rack, one shared front fan, boards with rear-facing ports, and a whale mascot from the Kubernetes ecosystem. The Raspberry Pi logo is omitted. [See the illustration style and all three sticker concepts](docs/illustration-style.md).
 
 
 ```mermaid
@@ -36,17 +36,17 @@ flowchart LR
   P --> G["Grafana dashboard<br/>and alerts"]
 ```
 
-| | Single board | Cluster |
+| Component | Runs on | Role |
 | --- | --- | --- |
-| Reads | its own thermal zones | every node, through Prometheus |
-| Drives the fan from | its own temperature | the hottest node |
-| Cooling arrangement | one board and its fan | one shared rack fan cools multiple boards |
-| History | none | kept in Prometheus, with a dashboard and alerts |
-| Install | `install.sh`, Docker, raw manifest | Helm chart |
+| Agent | every cluster node | Publishes that node's temperature |
+| Prometheus | the cluster | Retains node temperatures and provides the hottest-node value |
+| Controller | one Raspberry Pi with GPIO wired to the shared fan | Sets the shared fan's PWM from the hottest node |
 
 > **Status.** Cluster mode runs on a Raspberry Pi 4 cluster with the RPi.GPIO driver. The kernel PWM driver for Raspberry Pi 5 is covered by tests against a fake sysfs tree, but has not been run on a Pi 5 with a fan yet.
 
 ---
+> This branch contains v1 alpha source. The alpha image/chart must be built and published before registry installation. See the [runtime manual](docs/v1/runtime.md); stable v1.0.0 hardware acceptance is pending.
+
 ## 1. Run
 
 ### 1.1. Requirements
@@ -114,7 +114,7 @@ Controlling the pin needs access to GPIO and `/dev/mem`, so `start` needs `docke
 # Label the one Raspberry Pi whose GPIO controls the shared rack fan.
 kubectl label node <node-that-controls-the-rack-fan> pifanctl.jyje.online/fan=true
 
-helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.3 \
+helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.2.0-alpha.1 \
   --namespace pifanctl --create-namespace \
   --set prometheus.url=http://prometheus-operated.monitoring.svc:9090 \
   --set monitoring.serviceMonitor.enabled=true \
@@ -304,11 +304,11 @@ You can check the environment of CI/CD pipeline in [app.jyje.online#stack](https
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `ci` | every pull request | Lints the workflows, runs the tests on Python 3.10, 3.11 and 3.14, lints and schema-validates the chart (kubeconform, `promtool`), and builds the ARM64 image on the in-cluster runner without pushing |
-| `build-image-main` | push to `main` | Publishes `ghcr.io/jyje/pifanctl:latest`, the commit SHA tag and `v<version>` (once per version) |
+| `ci` | every pull request | Lints the workflows, runs tests on every stable Python minor release from 3.10 through 3.14, lints and schema-validates the chart (kubeconform, `promtool`), and builds the ARM64 image on the in-cluster runner without pushing |
+| `build-image-main` | push to `main` | Publishes the commit SHA tag and `v<version>` (once per version); stable versions also update `latest` |
 | `build-image-develop` | push to `develop` | Publishes `ghcr.io/jyje/pifanctl-dev:latest` and the SHA tag |
 | `build-image-issue` | push to `issue-**` | Publishes `ghcr.io/jyje/pifanctl-issue:<sha>` for temporary testing |
-| `release-chart` | push to `main` touching `charts/pifanctl` | Publishes the chart to `oci://ghcr.io/jyje/charts/pifanctl` when its version is new |
+| `release-chart` | push to `main` touching either chart | Publishes new `pifanctl` and `pifanctl-operator` charts to `oci://ghcr.io/jyje/charts/` |
 
 The three image workflows share one reusable workflow, `_build-image.yaml`.
 
@@ -321,41 +321,42 @@ The three image workflows share one reusable workflow, `_build-image.yaml`.
 
 ### 3.3. Releasing
 
-The version lives in two places, and a pull request that changes what ships has to bump it:
+Application and chart versions are tracked separately. A pull request that changes what ships has to bump the relevant versions:
 
 | Changed | Bump | Checked by |
 | --- | --- | --- |
-| `sources/main.py` or `sources/pifanctl/` | `__version__` in `sources/pifanctl/__init__.py`, and `appVersion` in `charts/pifanctl/Chart.yaml` | the `Version bump` job |
-| `charts/pifanctl/` (not its `ci/` value sets) | `version` in `charts/pifanctl/Chart.yaml`. A new application version changes `appVersion`, so it needs a new chart version too | the `Version bump` job |
+| `sources/main.py` or `sources/pifanctl/` | `__version__` in `sources/pifanctl/__init__.py`, and `appVersion` in both chart manifests | the `Version bump` job |
+| Either directory under `charts/` (not its `ci/` value sets) | `version` in the affected `Chart.yaml`. A new application version changes `appVersion`, so both charts need new versions | the `Version bump` job |
 
 Also update the image tag in `k8s/manifests/deployments.yaml` and the chart version in the install command above; a test fails when they drift.
 
 Merging to `main` does the rest:
 
-1. `build-image-main` publishes `latest`, the commit tag, and `v<version>` the first time a version appears.
+1. `build-image-main` publishes the commit tag and `v<version>` the first time a version appears. Stable versions also update `latest`; alpha versions leave it unchanged.
 2. After the image exists, it creates the git tag `v<version>` and a GitHub release with generated notes.
-3. `release-chart` waits for the image the chart points at, publishes the chart to `oci://ghcr.io/jyje/charts/pifanctl`, and creates the tag `chart-v<version>` and its release.
+3. `release-chart` waits for the referenced image, publishes both charts to `oci://ghcr.io/jyje/charts/`, and creates `chart-v<version>` or `operator-chart-v<version>` tags and releases.
 
-Each step skips what already exists, so re-running a failed workflow is safe. Application releases are tagged `v*` and chart releases `chart-v*`.
+Each step skips what already exists, so re-running a failed workflow is safe. Application releases are tagged `v*`; chart releases use `chart-v*` and `operator-chart-v*`. Alpha versions are GitHub prereleases.
 
 ---
 ## 4. Trouble Shooting
 
 Is there any problem? see [trouble-shooting.md](docs/trouble-shooting.md)
 
-### v1 design proposal
+### v1 alpha: declarative cooling topology
 
-The proposed v1 API uses Node labels to select cooling members, `CoolingZone`
+The v1 alpha API uses Node labels to select cooling members, `CoolingZone`
 resources to group them, and `Fan` resources to assign physical PWM fans. It covers
 shared rack fans and one fan per board, with YAML, ConfigMap, Helm and kubectl/CLI
 workflows. [Read the operator design](docs/v1/README.md) and
-[review the CRDs and examples](design/v1/README.md). These are design artifacts;
-the v1 operator and CLI are not implemented yet.
+[review the CRDs and examples](design/v1/README.md). The operator, worker and CLI are implemented in the alpha.
+See the [runtime manual](docs/v1/runtime.md) and [staged checklist](PLAN.md).
+Real Pi hardware and API server acceptance remain pending.
 
 
 #### Cooling systems manual: scenario figures
 
-Example temperatures illustrate the proposed v1 behavior. Figures show steady-state target duty; the downward ramp is omitted. These are not hardware measurements.
+Example temperatures illustrate the v1 model. Figures show steady-state target duty; the downward ramp is omitted. These are not hardware measurements.
 
 ![Shared rack fans in normal operation](docs/v1/figures/rack-normal-en.png)
 

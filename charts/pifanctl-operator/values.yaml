@@ -1,0 +1,30 @@
+# Use a short, unique installation identity. CRs cannot be shared by operators.
+operatorId: pifanctl
+replicas: 2
+image:
+  repository: ghcr.io/jyje/pifanctl
+  tag: ""
+  pullPolicy: IfNotPresent
+input:
+  # crd or configMap. ConfigMap must be in this release namespace.
+  mode: crd
+  configMapName: ""
+agent:
+  # managed creates temperature agents; reuse requires the v1 freshness metric.
+  mode: managed
+  interval: 5
+  resources:
+    requests: {cpu: 10m, memory: 32Mi}
+    limits: {memory: 128Mi}
+resources:
+  requests: {cpu: 50m, memory: 128Mi}
+  limits: {memory: 512Mi}
+networkPolicy:
+  enabled: true
+  # Set to the namespace labels of your Prometheus installation.
+  monitoringNamespaceSelector:
+    kubernetes.io/metadata.name: monitoring
+serviceMonitor:
+  enabled: false
+  labels: {}
+  interval: 10s

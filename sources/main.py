@@ -22,6 +22,15 @@ class TyperGroup(typer.core.TyperGroup):
         app_name = "pifanctl"
         return usage.replace(main_py_name, app_name)
 
+    def invoke(self, ctx):
+        from pifanctl.topology.kube import APIError
+        from pifanctl.topology.model import TopologyError
+        try:
+            return super().invoke(ctx)
+        except (APIError, TopologyError, OSError) as error:
+            typer.echo(str(error), err=True)
+            raise typer.Exit(code=2)
+
 app = typer.Typer(
     cls = TyperGroup,
     name = "pifanctl",
@@ -81,6 +90,8 @@ def version_callback(value: bool):
 @app.callback()
 def common_callback(
     ctx: typer.Context,
+    kubeconfig: Optional[str] = typer.Option(None, "--kubeconfig", envvar="KUBECONFIG"),
+    context: Optional[str] = typer.Option(None, "--context"),
     log_level: Annotated[
         enum.LogLevels,
         typer.Option(
@@ -109,6 +120,8 @@ def common_callback(
     """
     Common callback
     """
+
+    ctx.obj = {"kubeconfig": kubeconfig, "context": context}
 
     # Set logging
     logging.basicConfig(
@@ -409,6 +422,9 @@ def start(
         node = node,
     )
 
+
+from pifanctl.topology.cli import register
+register(app)
 
 if __name__ == "__main__":
     app()
