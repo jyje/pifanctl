@@ -174,7 +174,7 @@ class Operator:
             return result
         except (OSError, ValueError, KeyError, TypeError): return None
 
-    def snapshot(self):
+    def topology_snapshot(self):
         source = None
         if self.input_configmap:
             source = self.kube.get(self.core + '/configmaps/' + name(self.input_configmap))
@@ -187,12 +187,12 @@ class Operator:
         now = time.time() if now is None else now
         self.ready = False
         if not self.lease.acquire(now): return False
-        items, source, nodes = self.snapshot()
+        items, source, nodes = self.topology_snapshot()
         for item in ([source] if source else items):
             path = self.core + '/configmaps/' + name(item['metadata']['name']) if source else resource(item['kind'], item['metadata']['name'])
             self.protect(item, path)
         configs = self.kube.items(self.core + '/configmaps')
-        configs = {c['metadata'].get('labels', {}).get('pifanctl.jyje.online/nodeName'): c for c in configs
+        configs = {c['metadata'].get('annotations', {}).get('pifanctl.jyje.online/nodeName'): c for c in configs
                    if c['metadata'].get('annotations', {}).get(OWNER) == self.id and 'plan.json' in c.get('data', {})}
         previous = {}; self.prior_zones = {}
         for node, config in configs.items():
@@ -232,7 +232,7 @@ class Operator:
             else: continue
             worker = worker_name(node); config = worker + '-plan'
             cm = {'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': config, 'namespace': self.namespace,
-                  'labels': {'pifanctl.jyje.online/nodeName': node}, 'annotations': {OWNER: self.id}, 'ownerReferences': [owner]},
+                  'labels': {'pifanctl.jyje.online/node': worker}, 'annotations': {OWNER: self.id, 'pifanctl.jyje.online/nodeName': node}, 'ownerReferences': [owner]},
                   'data': {'plan.json': json.dumps(desired, sort_keys=True),
                            'heartbeat.json': json.dumps({'time': now, 'healthy': True, 'planHash': desired['hash'], 'nodeUID': desired['nodeUID']})}}
             # Revalidate leadership immediately before each workload/heartbeat write.
@@ -418,6 +418,7 @@ def run_operator(operator, stop=None, port=9104):
             except Exception as error:
                 operator.ready = False
                 log.error('Reconciliation failed (%s); worker heartbeat will expire', type(error).__name__)
+            if stop.is_set(): break
             wake.wait(5); wake.clear()
     finally:
         if server: server.shutdown(); server.server_close()

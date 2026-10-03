@@ -37,13 +37,14 @@ def validate_plan(raw, node, uid=''):
         raise TopologyError('invalid plan fan map or watchdog')
     resources = []
     for name, fan in raw['fans'].items():
-        if fan.get('name') != name:
+        if not isinstance(fan, dict) or fan.get('name') != name:
             raise TopologyError('fan identity mismatch')
         normalize([{'apiVersion': API, 'kind': 'Fan', 'metadata': {'name': name},
                     'spec': {k: fan[k] for k in ('nodeName', 'hardware', 'control')}}])
         if fan['nodeName'] != node or not isinstance(fan.get('zones'), list) or not isinstance(fan.get('issues'), list):
             raise TopologyError('fan does not belong to this worker')
         for zone in fan['zones']:
+            if not isinstance(zone, dict): raise TopologyError('zone must be an object')
             normalize([{'apiVersion': API, 'kind': 'CoolingZone', 'metadata': {'name': zone['name']},
                         'spec': {'nodeNames': zone['members'] or ['unresolved'], 'fanRefs': zone['fanRefs'], 'telemetry': zone['telemetry']}}])
             if not isinstance(zone.get('issues'), list) or (not zone['members'] and not zone['issues']):

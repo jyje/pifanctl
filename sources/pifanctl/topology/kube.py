@@ -26,25 +26,32 @@ class Kube:
         if client is None:
             import os
             from kubernetes import client as kclient, config
-            if not kubeconfig and not context and os.environ.get('KUBERNETES_SERVICE_HOST'):
-                config.load_incluster_config()
-                self.client = kclient.ApiClient()
-            else:
-                self.client = config.new_client_from_config(config_file=kubeconfig, context=context)
+            from kubernetes.config.config_exception import ConfigException
+            try:
+                if not kubeconfig and not context and os.environ.get('KUBERNETES_SERVICE_HOST'):
+                    config.load_incluster_config()
+                    self.client = kclient.ApiClient()
+                else:
+                    self.client = config.new_client_from_config(config_file=kubeconfig, context=context)
+            except ConfigException:
+                raise APIError(0, 'cannot load Kubernetes credentials/context') from None
         else:
             self.client = client
 
     def request(self, method, path, body=None, query=None, content_type='application/json'):
         from kubernetes.client.exceptions import ApiException
+        from urllib3.exceptions import HTTPError
         try:
             return self.client.call_api(
                 path, method, body=body, query_params=list((query or {}).items()),
                 header_params={'Accept': 'application/json', 'Content-Type': content_type},
-                response_type='object', auth_settings=['BearerToken'],
+                response_types_map={200: 'object', 201: 'object', 202: 'object', 204: None}, auth_settings=['BearerToken'],
                 _return_http_data_only=True, _request_timeout=(3, 10))
         except ApiException as error:
             # Never echo bodies, kubeconfig contents, bearer tokens or exec output.
             raise APIError(error.status, error.reason) from None
+        except HTTPError:
+            raise APIError(0, 'transport request failed') from None
 
     def get(self, path):
         return self.request('GET', path)
@@ -69,6 +76,7 @@ class Kube:
 
     def events(self, kind, resource_version=''):
         from kubernetes import client, watch
+        from kubernetes.client.exceptions import ApiException
         stream = watch.Watch()
         try:
             if kind == 'Node':
@@ -79,4 +87,6 @@ class Kube:
                 args = (*API.split('/'), PLURALS[kind])
             yield from stream.stream(method, *args, resource_version=resource_version,
                                      timeout_seconds=20, _request_timeout=(3, 25))
+        except ApiException as error:
+            raise APIError(error.status, error.reason) from None
         finally: stream.stop()

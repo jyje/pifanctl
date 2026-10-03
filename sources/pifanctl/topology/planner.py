@@ -25,6 +25,8 @@ def plan(resources, nodes=None, previous=None):
         issues = []
         if live and not node:
             issues.append('MissingWorkerNode')
+        elif live and not any(c.get('type') == 'Ready' and c.get('status') == 'True' for c in node.get('status', {}).get('conditions', [])):
+            issues.append('WorkerNodeNotReady')
         if fan['metadata'].get('deletionTimestamp'):
             issues.append('DeletingFan')
         output['fans'][name] = {'name': name, **copy.deepcopy(s), 'nodeUID': node.get('metadata', {}).get('uid', ''), 'zones': [], 'issues': issues}

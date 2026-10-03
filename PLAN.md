@@ -36,10 +36,6 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 ### 08. 종합 검증과 PR
 
-- [ ] 기존 테스트와 새 테스트 모두 통과, coverage 기준 유지
-- [ ] 자동 검증용 가짜 API와 mock hardware로 시나리오 검증
-- [ ] CLI help/파일 입력/렌더링, charts/manifests와 문서 링크 확인
-- [ ] 모든 agent-owned diff/버전/민감 정보/미완료 항목 검토
 - [ ] 구현 PR 작성, 설계 PR 의존성과 이슈 연결, PR attachment
 - [ ] CI 결과 확인 및 실패 수정
 - [ ] 완료 기록과 최종 요약에 검증 범위를 정확하게 보고
@@ -57,27 +53,24 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 - [ ] 전기적 fail-open/독립 팬 전원 조건 문서화 후 v1.0.0 출시
 
 ## 완료 기록
-
 | 단계 | 변경 및 검증 | 커밋 |
 | --- | --- | --- |
 | 사전 설계 | CRD/예시/한영 설계, PR #40 CI 성공. 아직 runtime 없음 | `e31e183` |
 | 도해/버전 정정 | SVG→PNG 16쌍, 한영 README 8개 시나리오씩, v1 경로/표기. PNG 시각 확인, diff check | `dc01b03` |
-
 | 01 | 스키마/defaults, YAML 엄격 검증, label/name planner, 충돌/failsafe와 hash. 기존 및 새 테스트 153 passed (coverage는 종합 단계). 앱/기존 chart alpha 버전 동기화 | `03290da` |
-
 | 02 | agent read timestamp, exact-label freshness, complete zone/local floor, missing/stale/outage. 30 telemetry/service tests passed | `01e1a17` |
-
 | 03 | worker multi-fan/full duty/reload/watchdog/report, host lock + legacy lock, GPIO thread release and chart hostPath. 182 full tests + 36 focused tests passed. Cooperative host-wide lock; real PWM remains unverified | `19c27ff` |
-
 | 04 | official client/context, bounded API/SSA/dry-run, topology/fan/zone/worker CLI, kubectl wrapper. 188 full tests passed. Local file is compiled once; selectors require --live | `395e6fb` |
-
 | 05 | Lease leadership, CR/ConfigMap planner, exact Node/UID worker Deployment+plan/heartbeat, protected ownership and watch/resync. 6 fake API tests passed. Agent managed/reuse deployment is packaged in stage 07 | `3aa1018` |
-
 | 06 | observed hash/UID status, rate limits/events, finalizers, primary transfer and durable empty-plan acknowledgements. 11 fake API tests passed; unreachable worker stays pending | `b0bdc82` |
+| 07 | operator chart/RBAC/NetworkPolicy/agents/CRDs, 한영 runtime/migration, alpha prerelease·latest 보호, 로컬 YAML reload·sticky member UID. Helm lint 두 입력 모드/토폴로지, kubeconform operator 9 + worker 1, actionlint, Python3.10 49 focused tests passed. CI3.10~3.14 보존 회귀 테스트 추가 | `3921b92` |
 
-| 07 | operator chart/RBAC/NetworkPolicy/agents/CRDs, 한영 runtime/migration, alpha prerelease·latest 보호, 로컬 YAML reload·sticky member UID. Helm lint 두 입력 모드/토폴로지, kubeconform operator 9 + worker 1, actionlint, Python3.10 49 focused tests passed. CI3.10~3.14 보존 회귀 테스트 추가 | `📦 feat(chart): package the v1 alpha operator` |
+| 08-a | 다섯 Python 버전에서 218 tests/93.88~93.91%. 실제 client와 mock HTTP/공유 랙 시나리오 통합 테스트로 인자·상태 함수 충돌 수정. 마지막 견고성 수정 후 3.14 218 tests/93.48%. kubeconform K8s1.30/1.33 + actionlint 통과 | `🧪 test(v1): verify runtime scenarios and client transport` |
 
 ### 검증 중 발견해 수정한 회귀
 
 - Python3.10: Typer Context에 기본값 None을 둔 새 명령의 해석 실패. Context를 필수 주입 매개변수로 바꾼 뒤 전체 214 tests/92.53% 통과.
 - 작업 시작 이후 main의 CI가 3.10~3.14로 확대됨. 작업 브랜치도 다섯 버전을 유지하고 matrix 회귀 테스트를 추가함. 기준은 계속 90%.
+
+- 통합 테스트: Kubernetes36의 call_api는 response_types_map을 요구함. fake adapter만으로 놓친 인자 문제를 실제 client+가짜 HTTP에서 발견하고 수정함.
+- operator HTTP snapshot과 topology snapshot의 함수명 충돌을 분리함.

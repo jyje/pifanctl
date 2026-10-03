@@ -1,5 +1,5 @@
 {{- define "pifanctl.operatorName" -}}
-{{ printf "%s-operator" .Release.Name | trunc 63 | trimSuffix "-" }}
+{{ printf "%s-operator" .Release.Name | trunc 57 | trimSuffix "-" }}
 {{- end -}}
 {{- define "pifanctl.operatorImage" -}}
 {{ printf "%s:%s" .Values.image.repository (default (printf "v%s" .Chart.AppVersion) .Values.image.tag) }}
