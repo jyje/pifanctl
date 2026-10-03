@@ -1,10 +1,10 @@
 <div align="center">
 
-# pifanctl: 라즈베리 파이 팬 컨트롤러
+# pifanctl: 쿠버네티스 방식의 라즈베리 파이 클러스터 팬 제어
 
 <img alt="쿠버네티스 고래와 공용 PWM 팬이 라즈베리 파이 랙을 함께 식히는 카툰" src="docs/pifanctl-cluster-sticker-concept-1.png" width="560" style="object-fit: contain; max-width: 100%;">
 
-🥧 **라즈베리 파이**의 **PWM 팬 제어** CLI
+🥧 컨트롤러 노드 하나, 랙 공용 팬 하나, 가장 뜨거운 노드가 정하는 팬 속도
 
 [![Python Typer](https://img.shields.io/badge/Typer-3776AB?style=flat&logo=Python&logoColor=white&label=Python)](https://typer.tiangolo.com/)
 [![GitHub ARC](https://img.shields.io/badge/GitHub%20ARC-2088FF?style=flat&logo=GitHub%20Actions&logoColor=white&label=CI)](https://github.com/actions/actions-runner-controller)
@@ -20,9 +20,9 @@
 
 </div>
 
-🐳 **pifanctl**은 라즈베리 파이의 PWM 팬을 제어하는 CLI입니다. 보드 한 대부터 클러스터 전체까지 지원하며, 클러스터의 주 사용 사례는 랙에 설치한 공용 팬 하나로 여러 보드를 함께 식히는 것입니다. 공용 팬은 **가장 뜨거운 노드**를 기준으로 동작하고, 모든 노드의 온도가 Prometheus에 보관됩니다. 일반 CLI, **Docker**, 또는 Helm 차트를 이용한 **Kubernetes**로 실행할 수 있고 ARM64에 최적화되어 있습니다. GitHub Actions와 Actions Runner Controller(ARC)로 구성한 CI/CD를 사용하므로 모든 빌드가 실제 라즈베리 파이에서 테스트됩니다.
+🐳 **pifanctl** (Pi Fan Control)은 랙 공용 PWM 팬에 GPIO로 연결된 라즈베리 파이 노드 한 곳에서 controller를 실행합니다. 클러스터의 모든 노드에 배치된 agent가 온도를 Prometheus에 보고하고, controller는 **가장 뜨거운 노드**를 기준으로 공용 팬을 제어합니다. Helm 차트로 Kubernetes에 배포하거나 CLI 또는 Docker 컨테이너로 실행할 수 있습니다. [jyje/cluster 배포 예시](https://github.com/jyje/cluster/blob/main/clusters/r4spi/apps/pifanctl.yaml)를 참고하세요. ARM64에 최적화되어 있으며, GitHub Actions와 Actions Runner Controller(ARC)가 관리하는 Raspberry Pi runner에서 CI 빌드를 테스트합니다.
 
-프로젝트 일러스트는 열린 라즈베리 파이 랙과 중앙 공용 팬, 쿠버네티스 생태계의 고래 마스코트를 친근한 카툰 스타일로 표현합니다. 보드는 선반에 평평하게 두고 랙 안쪽 깊이 방향으로 돌려 포트와 케이블이 팬 반대쪽을 향합니다. 보드마다 팬이 따로 달린 모습이 아니라 랙 전체를 함께 식히는 구성을 보여주며, 파이 로고는 사용하지 않습니다. 단일 보드 팬 제어도 지원합니다. [일러스트 스타일과 스티커 시안 3개 보기](docs/illustration-style.md).
+스티커는 범용 랙, 전면 공용 팬, 후면을 향한 보드 포트, 쿠버네티스 생태계의 고래 마스코트로 이 클러스터 구성을 보여줍니다. 라즈베리 파이 로고는 사용하지 않습니다. [일러스트 스타일과 스티커 시안 3개 보기](docs/illustration-style.md).
 
 ```mermaid
 flowchart LR
@@ -35,13 +35,11 @@ flowchart LR
   P --> G["Grafana 대시보드<br/>와 알림"]
 ```
 
-| | 보드 한 대 | 클러스터 |
+| 구성 요소 | 실행 위치 | 역할 |
 | --- | --- | --- |
-| 읽는 곳 | 자기 열 영역 | Prometheus를 통한 모든 노드 |
-| 팬 구동 기준 | 자기 온도 | 가장 뜨거운 노드 |
-| 냉각 구성 | 보드 한 대와 팬 하나 | 공용 랙 팬 하나가 여러 보드를 냉각 |
-| 이력 | 없음 | Prometheus에 보관, 대시보드와 알림 제공 |
-| 설치 | `install.sh`, Docker, 원시 매니페스트 | Helm 차트 |
+| Agent | 클러스터의 모든 노드 | 각 노드의 온도를 발행 |
+| Prometheus | 클러스터 | 노드별 온도를 보관하고 가장 뜨거운 노드 값을 제공 |
+| Controller | 공용 팬 GPIO에 연결된 라즈베리 파이 한 대 | 가장 뜨거운 노드에 맞춰 공용 팬의 PWM을 설정 |
 
 > **상태.** 클러스터 모드는 라즈베리 파이 4 클러스터에서 RPi.GPIO 드라이버로 운영 중입니다. 라즈베리 파이 5용 커널 PWM 드라이버는 가짜 sysfs 트리를 이용한 테스트로만 검증했고, 팬이 달린 Pi 5에서는 아직 실행해 보지 못했습니다.
 
@@ -284,7 +282,7 @@ CI/CD 환경은 [app.jyje.online#stack](https://app.jyje.online/#stack)에서 �
 
 | 워크플로 | 트리거 | 하는 일 |
 | --- | --- | --- |
-| `ci` | 모든 풀 리퀘스트 | 워크플로 lint, Python 3.10/3.11/3.14 테스트, 차트 lint와 스키마 검증(kubeconform, `promtool`), 클러스터 내 러너에서 ARM64 이미지를 푸시 없이 빌드 |
+| `ci` | 모든 풀 리퀘스트 | 워크플로 lint, 정식 출시된 Python 마이너 버전 3.10-3.14 전체에서 테스트, 차트 lint와 스키마 검증(kubeconform, `promtool`), 클러스터 내 러너에서 ARM64 이미지를 푸시 없이 빌드 |
 | `build-image-main` | `main` push | `ghcr.io/jyje/pifanctl:latest`, 커밋 SHA 태그, `v<version>`(버전당 한 번) 발행 |
 | `build-image-develop` | `develop` push | `ghcr.io/jyje/pifanctl-dev:latest`와 SHA 태그 발행 |
 | `build-image-issue` | `issue-**` push | 임시 테스트용 `ghcr.io/jyje/pifanctl-issue:<sha>` 발행 |
