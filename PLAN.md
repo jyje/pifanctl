@@ -34,21 +34,6 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 ## 대기 체크리스트
 
-### 03. PWM worker와 cooperative host lock
-
-- [ ] 노드당 worker 한 개, 한 worker가 해당 노드의 여러 팬 제어
-- [ ] CLI/Pod가 공유할 host lock, symlink 방어, live lock 강제 탈취 금지
-- [ ] legacy start에도 같은 lock 연결, 구버전 controller의 사전 중단 문서화
-- [ ] 100% 초기화, 곡선/hysteresis, 100% 종료, driver 시작 실패 처리
-- [ ] plan hash/Node UID/immutable hardware 검증, 원자적 reload와 적용 hash 보고
-- [ ] 잘못된 plan은 기존 plan 유지 + full duty, 팬 제거는 full duty 후 claim 해제
-- [ ] heartbeat expiry/full duty, projection 지연과 clock skew 고려
-- [ ] 상태/metrics/health/ready endpoint, bounded report와 released fan 기록
-- [ ] mock driver로 잠금, reload, 삭제, 실패, 종료, watchdog 테스트
-
-완료 조건: cooperating runtime끼리 동시에 PWM을 쓰지 않는다. 응답 상태가 실제
-적용 plan과 일치하며, 정지/실패를 정상 제어로 표시하지 않는다.
-
 ### 04. Kubernetes API adapter와 CLI
 
 - [ ] 공식 Python client, kubeconfig/context와 in-cluster 인증 지원
@@ -136,4 +121,6 @@ namespace/Node labels를 수정하지 않는다.
 
 | 01 | 스키마/defaults, YAML 엄격 검증, label/name planner, 충돌/failsafe와 hash. 기존 및 새 테스트 153 passed (coverage는 종합 단계). 앱/기존 chart alpha 버전 동기화 | `03290da` |
 
-| 02 | agent read timestamp, exact-label freshness, complete zone/local floor, missing/stale/outage. 30 telemetry/service tests passed | `✨ feat(telemetry): require fresh complete cooling inputs` |
+| 02 | agent read timestamp, exact-label freshness, complete zone/local floor, missing/stale/outage. 30 telemetry/service tests passed | `01e1a17` |
+
+| 03 | worker multi-fan/full duty/reload/watchdog/report, host lock + legacy lock, GPIO thread release and chart hostPath. 182 full tests + 41 focused tests passed. Cooperative host-wide lock; real PWM remains unverified | `✨ feat(worker): add guarded multi-fan runtime` |

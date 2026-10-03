@@ -1,4 +1,6 @@
 import logging
+from contextlib import nullcontext
+from pifanctl.topology.locks import HostLock
 import threading
 from typing import Optional
 
@@ -74,30 +76,39 @@ def start(
     else:
         controller = StepController(target_temperature, duty_cycle_step, initial_duty=duty_cycle_initial)
 
+    lock = nullcontext() if driver == Drivers.MOCK else HostLock()
     try:
-        pwm = create_driver(driver, pin, pwm_frequency, duty_cycle_initial, pwm_chip, pwm_channel)
-    except DriverError as e:
-        # Do not fall back to a mock: an uncontrolled fan that looks healthy is
-        # worse than a pod that crash-loops and gets noticed.
-        logger.error(f"Cannot drive the fan: {e}")
+        lock.__enter__()
+    except (OSError, RuntimeError) as error:
+        logger.error('Cannot acquire PWM lock: %s', error)
         raise typer.Exit(code=2)
+    try:
+        try:
+            pwm = create_driver(driver, pin, pwm_frequency, duty_cycle_initial, pwm_chip, pwm_channel)
+        except DriverError as e:
+            # Do not fall back to a mock: an uncontrolled fan that looks healthy is
+            # worse than a pod that crash-loops and gets noticed.
+            logger.error(f"Cannot drive the fan: {e}")
+            raise typer.Exit(code=2)
 
-    metrics = None
-    if metrics_port:
-        metrics = ControllerMetrics(resolve_node_name(node))
-        metrics.set_info(pwm.name, algorithm.value)
-        serve(metrics.registry, metrics_port)
+        metrics = None
+        if metrics_port:
+            metrics = ControllerMetrics(resolve_node_name(node))
+            metrics.set_info(pwm.name, algorithm.value)
+            serve(metrics.registry, metrics_port)
 
-    stop = threading.Event()
-    install_stop_handlers(stop)
-    run_controller(
-        driver=pwm,
-        controller=controller,
-        read=make_resolver(local, cluster, resolve_node_name(node)),
-        metrics=metrics,
-        interval=pwm_refresh_interval,
-        failsafe_duty=failsafe_duty,
-        exit_duty=exit_duty,
-        stop=stop,
-        wants_cluster=cluster is not None,
-    )
+        stop = threading.Event()
+        install_stop_handlers(stop)
+        run_controller(
+            driver=pwm,
+            controller=controller,
+            read=make_resolver(local, cluster, resolve_node_name(node)),
+            metrics=metrics,
+            interval=pwm_refresh_interval,
+            failsafe_duty=failsafe_duty,
+            exit_duty=exit_duty,
+            stop=stop,
+            wants_cluster=cluster is not None,
+        )
+    finally:
+        lock.__exit__(None, None, None)
