@@ -34,20 +34,6 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 ## 대기 체크리스트
 
-### 04. Kubernetes API adapter와 CLI
-
-- [ ] 공식 Python client, kubeconfig/context와 in-cluster 인증 지원
-- [ ] 읽기와 쓰기 경로 분리, timeout, API 오류/소유권 충돌 명확하게 보고
-- [ ] topology validate/render/plan/apply, server dry-run과 field manager 지원
-- [ ] fan/zone list/describe/watch, 상태/멤버/팬 출력
-- [ ] worker run: 로컬 YAML 또는 operator plan, 실제 노드 정체성 확인
-- [ ] kubectl-pifanctl wrapper와 설치 방법
-- [ ] CLI 쓰기는 CR 입력에 한정, ConfigMap/GitOps 흐름 명시
-- [ ] mock API와 CliRunner로 context, 오류, dry-run, SSA, 출력 테스트
-
-완료 조건: 노트북 CLI가 원격 GPIO를 직접 구동하지 않는다. force ownership은
-기본 제공하지 않으며 서버 오류를 숨기지 않는다.
-
 ### 05. Operator: leader election과 reconciliation
 
 - [ ] Lease 기반 leader election과 resourceVersion 충돌 처리
@@ -123,4 +109,6 @@ namespace/Node labels를 수정하지 않는다.
 
 | 02 | agent read timestamp, exact-label freshness, complete zone/local floor, missing/stale/outage. 30 telemetry/service tests passed | `01e1a17` |
 
-| 03 | worker multi-fan/full duty/reload/watchdog/report, host lock + legacy lock, GPIO thread release and chart hostPath. 182 full tests + 41 focused tests passed. Cooperative host-wide lock; real PWM remains unverified | `✨ feat(worker): add guarded multi-fan runtime` |
+| 03 | worker multi-fan/full duty/reload/watchdog/report, host lock + legacy lock, GPIO thread release and chart hostPath. 182 full tests + 36 focused tests passed. Cooperative host-wide lock; real PWM remains unverified | `19c27ff` |
+
+| 04 | official client/context, bounded API/SSA/dry-run, topology/fan/zone/worker CLI, kubectl wrapper. 188 full tests passed. Local file is compiled once; selectors require --live | `✨ feat(cli): manage cooling topology through kubernetes` |
