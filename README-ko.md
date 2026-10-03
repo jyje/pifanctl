@@ -319,6 +319,66 @@ CI/CD 환경은 [app.jyje.online#stack](https://app.jyje.online/#stack)에서 �
 
 문제가 있나요? [trouble-shooting.md](docs/trouble-shooting.md)를 보세요.
 
+### v1 설계 제안
+
+v1 제안은 Node 라벨로 냉각 대상을 선택하고 `CoolingZone`으로 구역을 구성한 뒤
+`Fan`으로 물리 PWM 팬을 연결합니다. 공유 랙 팬과 보드별 팬을 같은 모델로 표현하고
+YAML, ConfigMap, Helm, kubectl/CLI 흐름을 연결합니다.
+[오퍼레이터 설계](docs/v1/README-ko.md)와 [CRD·예시](design/v1/README.md)를
+검토할 수 있습니다. 현재는 설계 리소스이며 v1 오퍼레이터와 CLI는 아직 구현하지
+않았습니다.
+
+
+#### 냉각 계통 설명: 시나리오 도해
+
+예시 온도로 v1의 예정 동작을 설명합니다. 출력은 정상상태 목표 duty이며 하강 지연은 생략했습니다. 실제 하드웨어 측정값이 아닙니다.
+
+![공유 랙 팬의 정상 동작](docs/v1/figures/rack-normal-ko.png)
+
+<details>
+<summary>NORMAL: 보드별 팬</summary>
+
+각 팬은 자기 보드의 온도를 따릅니다.
+
+![보드별 팬: normal](docs/v1/figures/individual-normal-ko.png)
+
+</details>
+
+<details>
+<summary>HIGH TEMPERATURE: pi-03 온도 상승</summary>
+
+뜨거워진 멤버에 연결된 팬을 최대 출력으로 올립니다. 다른 냉각 구역에는 영향을 주지 않습니다.
+
+![공유 랙 팬: hot](docs/v1/figures/rack-hot-ko.png)
+
+![보드별 팬: hot](docs/v1/figures/individual-hot-ko.png)
+
+</details>
+
+<details>
+<summary>DATA LOST: pi-03 온도 누락</summary>
+
+공유 구역의 온도가 불완전하면 해당 공용 팬을 100%로 합니다. 보드별 팬에서는 누락된 보드의 팬만 안전 동작으로 전환합니다.
+
+![공유 랙 팬: missing](docs/v1/figures/rack-missing-ko.png)
+
+![보드별 팬: missing](docs/v1/figures/individual-missing-ko.png)
+
+</details>
+
+<details>
+<summary>WATCHDOG EXPIRED: operator heartbeat 만료</summary>
+
+operator heartbeat가 만료되면 영향을 받은 모든 worker가 팬을 100%로 유지합니다.
+
+![공유 랙 팬: watchdog](docs/v1/figures/rack-watchdog-ko.png)
+
+![보드별 팬: watchdog](docs/v1/figures/individual-watchdog-ko.png)
+
+</details>
+
+[SVG 원본과 렌더링 방법](docs/v1/figures/README.md).
+
 ---
 ## 5. 참고 자료
 

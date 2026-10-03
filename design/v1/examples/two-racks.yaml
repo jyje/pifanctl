@@ -1,0 +1,74 @@
+# Design proposal: replace example node names and verify physical wiring.
+apiVersion: v1
+kind: List
+items:
+- apiVersion: pifanctl.jyje.online/v1alpha1
+  kind: Fan
+  metadata:
+    name: fan-01
+  spec:
+    nodeName: pi-01
+    hardware:
+      rpigpio:
+        pin: 18
+        frequencyHz: 1000
+    control:
+      curve:
+        temperatureLow: 50
+        temperatureHigh: 70
+        dutyIdle: 0
+        dutyStart: 30
+        dutyMax: 100
+        dutyDownStep: 5
+      refreshIntervalSeconds: 5
+      failsafeDuty: 100
+      exitDuty: 100
+- apiVersion: pifanctl.jyje.online/v1alpha1
+  kind: Fan
+  metadata:
+    name: fan-02
+  spec:
+    nodeName: pi-05
+    hardware:
+      rpigpio:
+        pin: 18
+        frequencyHz: 1000
+    control:
+      curve:
+        temperatureLow: 50
+        temperatureHigh: 70
+        dutyIdle: 0
+        dutyStart: 30
+        dutyMax: 100
+        dutyDownStep: 5
+      refreshIntervalSeconds: 5
+      failsafeDuty: 100
+      exitDuty: 100
+- apiVersion: pifanctl.jyje.online/v1alpha1
+  kind: CoolingZone
+  metadata:
+    name: rack-a
+  spec:
+    fanRefs:
+    - fan-01
+    telemetry:
+      source: prometheus
+      prometheusURL: http://prometheus-operated.monitoring.svc:9090
+      maxSampleAgeSeconds: 30
+    nodeSelector:
+      matchLabels:
+        pifanctl.jyje.online/rack: a
+- apiVersion: pifanctl.jyje.online/v1alpha1
+  kind: CoolingZone
+  metadata:
+    name: rack-b
+  spec:
+    fanRefs:
+    - fan-02
+    telemetry:
+      source: prometheus
+      prometheusURL: http://prometheus-operated.monitoring.svc:9090
+      maxSampleAgeSeconds: 30
+    nodeSelector:
+      matchLabels:
+        pifanctl.jyje.online/rack: b

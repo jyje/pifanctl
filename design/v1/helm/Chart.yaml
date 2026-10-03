@@ -1,0 +1,6 @@
+apiVersion: v2
+name: pifanctl-topology-design
+description: Experimental v1 topology resources only. No operator or fan worker runtime.
+type: application
+version: 0.0.0
+home: https://github.com/jyje/pifanctl
