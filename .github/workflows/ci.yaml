@@ -39,9 +39,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 3.10 is the oldest supported, 3.11 is what Raspberry Pi OS ships,
-        # 3.14 matches the container image.
-        python: ["3.10", "3.11", "3.14"]
+        # Test every stable Python minor release from the minimum supported version.
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7

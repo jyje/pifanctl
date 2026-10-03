@@ -282,7 +282,7 @@ CI/CD 환경은 [app.jyje.online#stack](https://app.jyje.online/#stack)에서 �
 
 | 워크플로 | 트리거 | 하는 일 |
 | --- | --- | --- |
-| `ci` | 모든 풀 리퀘스트 | 워크플로 lint, Python 3.10/3.11/3.14 테스트, 차트 lint와 스키마 검증(kubeconform, `promtool`), 클러스터 내 러너에서 ARM64 이미지를 푸시 없이 빌드 |
+| `ci` | 모든 풀 리퀘스트 | 워크플로 lint, 정식 출시된 Python 마이너 버전 3.10-3.14 전체에서 테스트, 차트 lint와 스키마 검증(kubeconform, `promtool`), 클러스터 내 러너에서 ARM64 이미지를 푸시 없이 빌드 |
 | `build-image-main` | `main` push | `ghcr.io/jyje/pifanctl:latest`, 커밋 SHA 태그, `v<version>`(버전당 한 번) 발행 |
 | `build-image-develop` | `develop` push | `ghcr.io/jyje/pifanctl-dev:latest`와 SHA 태그 발행 |
 | `build-image-issue` | `issue-**` push | 임시 테스트용 `ghcr.io/jyje/pifanctl-issue:<sha>` 발행 |
