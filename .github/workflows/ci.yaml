@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Test every stable Python release from the minimum supported version.
+        # Test every stable Python minor release from the minimum supported version.
         python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v7
