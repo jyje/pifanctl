@@ -114,7 +114,7 @@ Controlling the pin needs access to GPIO and `/dev/mem`, so `start` needs `docke
 # Label the one Raspberry Pi whose GPIO controls the shared rack fan.
 kubectl label node <node-that-controls-the-rack-fan> pifanctl.jyje.online/fan=true
 
-helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.3 \
+helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.2.0-alpha.1 \
   --namespace pifanctl --create-namespace \
   --set prometheus.url=http://prometheus-operated.monitoring.svc:9090 \
   --set monitoring.serviceMonitor.enabled=true \

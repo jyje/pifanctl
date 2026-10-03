@@ -109,7 +109,7 @@ INFO [2026-10-01 14:30:00Z] Duty: 36.6%, Temperature: 51.9°C, Following: raspbe
 # 공용 랙 팬을 제어하는 GPIO가 연결된 Raspberry Pi 노드 한 곳에 라벨을 붙입니다.
 kubectl label node <공용-랙-팬-제어-노드> pifanctl.jyje.online/fan=true
 
-helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.3 \
+helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.2.0-alpha.1 \
   --namespace pifanctl --create-namespace \
   --set prometheus.url=http://prometheus-operated.monitoring.svc:9090 \
   --set monitoring.serviceMonitor.enabled=true \

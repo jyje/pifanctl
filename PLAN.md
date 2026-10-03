@@ -34,20 +34,6 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 ## 대기 체크리스트
 
-### 01. 공통 모델과 planner
-
-- [ ] CRD와 같은 필드·범위·기본값을 적용하는 패키지 내 스키마 추가
-- [ ] YAML 중복 키, 알 수 없는 필드, 이름/라벨/URL 문법, driver union 검증
-- [ ] selector/name 멤버십 해석, 팬 참조, local 배치, 텔레메트리 충돌 검증
-- [ ] 물리 장치 충돌과 같은 노드의 GPIO/sysfs 혼용 거부
-- [ ] 유효하지 않은 관계를 삭제하지 않고 failsafe 이유로 plan에 보존
-- [ ] 결정적인 topology hash와 노드별 worker plan 생성
-- [ ] YAML/ConfigMap/Helm 입력 동등성, 잘못된 입력, 이름 변경/노드 삭제 테스트
-- [ ] Python 최소 지원 버전 문법, 기존 테스트, 버전/차트/manifest 동기화
-
-완료 조건: planner는 PWM이나 Kubernetes API에 쓰지 않으며 같은 입력에 같은
-plan을 만든다. 런타임은 아직 시작되지 않는다.
-
 ### 02. 센서 freshness와 완전한 온도 입력
 
 - [ ] agent에 마지막 성공 센서 읽기 timestamp metric 추가
@@ -159,3 +145,5 @@ namespace/Node labels를 수정하지 않는다.
 | --- | --- | --- |
 | 사전 설계 | CRD/예시/한영 설계, PR #40 CI 성공. 아직 runtime 없음 | `e31e183` |
 | 도해/버전 정정 | SVG→PNG 16쌍, 한영 README 8개 시나리오씩, v1 경로/표기. PNG 시각 확인, diff check | `dc01b03` |
+
+| 01 | 스키마/defaults, YAML 엄격 검증, label/name planner, 충돌/failsafe와 hash. 기존 및 새 테스트 153 passed (coverage는 종합 단계). 앱/기존 chart alpha 버전 동기화 | `✨ feat(topology): add validated cooling plans` |

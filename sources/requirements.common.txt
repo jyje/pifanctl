@@ -1,2 +1,4 @@
 typer == 0.27.2
 prometheus-client == 0.26.0
+PyYAML == 6.0.3
+jsonschema == 4.26.0
