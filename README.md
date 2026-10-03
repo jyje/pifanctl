@@ -304,7 +304,7 @@ You can check the environment of CI/CD pipeline in [app.jyje.online#stack](https
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `ci` | every pull request | Lints the workflows, runs the tests on Python 3.10, 3.11 and 3.14, lints and schema-validates the chart (kubeconform, `promtool`), and builds the ARM64 image on the in-cluster runner without pushing |
+| `ci` | every pull request | Lints the workflows, runs tests on every stable Python release from 3.10 through 3.14, lints and schema-validates the chart (kubeconform, `promtool`), and builds the ARM64 image on the in-cluster runner without pushing |
 | `build-image-main` | push to `main` | Publishes `ghcr.io/jyje/pifanctl:latest`, the commit SHA tag and `v<version>` (once per version) |
 | `build-image-develop` | push to `develop` | Publishes `ghcr.io/jyje/pifanctl-dev:latest` and the SHA tag |
 | `build-image-issue` | push to `issue-**` | Publishes `ghcr.io/jyje/pifanctl-issue:<sha>` for temporary testing |
