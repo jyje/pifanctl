@@ -127,3 +127,76 @@ def test_duplicate_operators_and_adoption(setup):
     k, o = setup
     k.objects[resource('Fan', 'fan-a')]['metadata']['annotations'] = {OWNER: 'other'}
     with pytest.raises(TopologyError): o.reconcile()
+
+
+def reporter(k, o, ready=True):
+    def read(worker, now):
+        p = json.loads(k.get(o.core + '/configmaps/' + worker + '-plan')['data']['plan.json'])
+        return {'nodeName': p['nodeName'], 'nodeUID': p['nodeUID'], 'appliedTopologyHash': p['hash'],
+                'heartbeatTime': now, 'podName': 'worker-pod', 'fans': {
+                    f: {'ready': ready, 'reason': '' if ready else 'MissingOrStaleTemperature: pi-b',
+                        'dutyPercent': 60 if ready else 100, 'temperatureCelsius': 60 if ready else None,
+                        'nodes': {'pi-a': 60} if ready else {},
+                        'zones': {z['name']: 60 for z in spec['zones']} if ready else {}}
+                    for f, spec in p['fans'].items()}}
+    return read
+
+
+def test_status_rate_and_failure_clears_temperature(setup):
+    k, o = setup; o.report_reader = reporter(k, o)
+    o.reconcile(100)
+    status = k.get(resource('Fan', 'fan-a'))['status']
+    assert status['conditions'][0]['status'] == 'True' and status['controlTemperatureCelsius'] == 60
+    count = len([c for c in k.calls if c[1].endswith('/status')])
+    o.reconcile(110)
+    assert len([c for c in k.calls if c[1].endswith('/status')]) == count
+    o.report_reader = reporter(k, o, False); o.reconcile(111)
+    status = k.get(resource('Fan', 'fan-a'))['status']
+    assert status['dutyPercent'] == 100 and 'controlTemperatureCelsius' not in status
+    assert status['conditions'][0]['reason'] == 'MissingOrStaleTemperature'
+    zone_status = k.get(resource('CoolingZone', 'rack'))['status']
+    assert zone_status['missingNodeNames'] == ['pi-a']
+
+
+def test_deletion_waits_for_ack(setup):
+    k, o = setup; o.reconcile()
+    k.objects[resource('Fan', 'fan-a')]['metadata']['deletionTimestamp'] = 'now'
+    o.reconcile()
+    assert FINALIZER in k.get(resource('Fan', 'fan-a'))['metadata']['finalizers']
+    o.report_reader = reporter(k, o); o.reconcile()
+    assert FINALIZER not in k.get(resource('Fan', 'fan-a'))['metadata']['finalizers']
+    assert k.optional(o.apps + '/deployments/' + worker_name('pi-a')) is None
+    assert k.get(o.core + '/configmaps/' + worker_name('pi-a') + '-plan')['metadata']['annotations']['pifanctl.jyje.online/released-hash']
+
+
+def test_zone_deletion_and_shared_node_transfer(setup):
+    k, o = setup
+    k.put(resource('Fan', 'fan-b'), fan('fan-b', hardware={'rpigpio': {'pin': 12}}))
+    z = zone(refs=['fan-a', 'fan-b']); k.put(resource('CoolingZone', 'rack'), z)
+    o.report_reader = reporter(k, o); o.reconcile()
+    k.objects[resource('Fan', 'fan-a')]['metadata']['deletionTimestamp'] = 'now'
+    o.reconcile()
+    assert FINALIZER not in k.get(resource('Fan', 'fan-a'))['metadata']['finalizers']
+    k.objects.pop(resource('Fan', 'fan-a'))
+    k.objects[resource('CoolingZone', 'rack')]['metadata']['deletionTimestamp'] = 'now'
+    o.reconcile()
+    assert FINALIZER not in k.get(resource('CoolingZone', 'rack'))['metadata']['finalizers']
+
+
+def test_invalid_report_does_not_acknowledge(setup):
+    k, o = setup; o.reconcile()
+    o.report_reader = lambda w, now: {'nodeName': 'pi-a', 'nodeUID': 'wrong', 'appliedTopologyHash': 'wrong'}
+    o.reconcile()
+    assert k.get(resource('Fan', 'fan-a'))['status']['conditions'][0]['status'] == 'False'
+
+
+def test_configmap_delete_and_status(setup):
+    import yaml
+    k, o = setup; o.input_configmap = 'topology'
+    k.put(o.core + '/configmaps/topology', {'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': 'topology'},
+        'data': {'topology.yaml': yaml.safe_dump(bundle([fan(), zone()]))}})
+    o.report_reader = reporter(k, o); o.reconcile()
+    assert any('status.json' in c.get('data', {}) for c in k.items(o.core + '/configmaps'))
+    k.objects[o.core + '/configmaps/topology']['metadata']['deletionTimestamp'] = 'now'
+    o.reconcile()
+    assert FINALIZER not in k.get(o.core + '/configmaps/topology')['metadata']['finalizers']

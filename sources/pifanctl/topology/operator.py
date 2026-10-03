@@ -21,6 +21,8 @@ from pifanctl.topology.planner import plan, worker_plan
 log = logging.getLogger(__name__)
 OWNER = 'pifanctl.jyje.online/operator'
 FINALIZER = 'pifanctl.jyje.online/release'
+RELEASED = 'pifanctl.jyje.online/released-hash'
+RELEASE_NODES = 'pifanctl.jyje.online/release-nodes'
 app = typer.Typer(help='Reconcile topology into node-bound worker plans')
 
 
@@ -151,6 +153,7 @@ class Operator:
             with urlopen(f'http://{host}:9103/status', timeout=2) as response:
                 result = json.loads(response.read(512_000))
             if not -5 <= now - float(result['heartbeatTime']) <= 90: return None
+            result['podName'] = pods[0]['metadata']['name']
             return result
         except (OSError, ValueError, KeyError, TypeError): return None
 
@@ -182,6 +185,11 @@ class Operator:
         configs = self.kube.items(self.core + '/configmaps')
         configs = {c['metadata'].get('labels', {}).get('pifanctl.jyje.online/nodeName'): c for c in configs
                    if c['metadata'].get('annotations', {}).get(OWNER) == self.id and 'plan.json' in c.get('data', {})}
+        self.prior_zones = {}
+        for node, config in configs.items():
+            prior = json.loads(config['data']['plan.json'])
+            for f in prior.get('fans', {}).values():
+                for zone in f['zones']: self.prior_zones.setdefault(zone['name'], set()).add(node)
         active = {f['nodeName'] for f in topology['fans'].values()}
         owners = {n: source or sorted([i for i in desired_items if i['kind'] == 'Fan' and i['spec']['nodeName'] == n], key=lambda i: i['metadata']['name'])[0] for n in active}
         reports, plans = {}, {}
@@ -208,6 +216,10 @@ class Operator:
             # Revalidate leadership immediately before each workload/heartbeat write.
             if not self.lease.acquire(): return False
             self.managed(self.core + '/configmaps', cm)
+            if not desired['fans'] and old and old['metadata'].get('annotations', {}).get(RELEASED) == desired['hash']:
+                reports[node] = {'nodeName': node, 'nodeUID': desired['nodeUID'], 'appliedTopologyHash': desired['hash'],
+                                 'fans': {}, 'released': True, 'heartbeatTime': now}
+                continue
             hostname = node_map[node]['metadata'].get('labels', {}).get('kubernetes.io/hostname')
             if not hostname: raise TopologyError('actuator Node requires kubernetes.io/hostname label')
             deployment = worker_deployment(self.namespace, self.id, node, desired['nodeUID'], hostname, config, self.image, owner)
@@ -221,8 +233,141 @@ class Operator:
         return True
 
     def observe(self, items, source, topology, plans, reports, now):
-        # Status/finalizer reconciliation is added in the next checklist stage.
-        return None
+        statuses = {}
+        for item in items:
+            kind, m, spec = item['kind'], item['metadata'], item['spec']
+            resource_name = m['name']; generation = m.get('generation', 1)
+            status = {'observedGeneration': generation, 'topologyHash': topology['hash']}
+            if kind == 'Fan':
+                node = spec['nodeName']; desired = plans.get(node, {})
+                report = reports.get(node) or {}; state = report.get('fans', {}).get(resource_name, {})
+                resolved = topology['fans'].get(resource_name, {})
+                issues = resolved.get('issues', [])
+                ready = bool(state.get('ready')) and not issues
+                reason = issues[0] if issues else ('Regulating' if ready else state.get('reason') or 'AwaitingWorker')
+                status.update(nodeUID=desired.get('nodeUID', ''), topologyHash=desired.get('hash', ''),
+                              appliedTopologyHash=report.get('appliedTopologyHash', ''),
+                              zoneNames=[z['name'] for z in resolved.get('zones', [])],
+                              workerPodName=report.get('podName', ''))
+                if state:
+                    status['dutyPercent'] = state['dutyPercent']
+                    if state.get('temperatureCelsius') is not None: status['controlTemperatureCelsius'] = state['temperatureCelsius']
+                if report: status['heartbeatTime'] = timestamp(report['heartbeatTime'])
+            else:
+                resolved = topology['zones'].get(resource_name, {})
+                members, refs = resolved.get('members', []), spec['fanRefs']
+                issues = resolved.get('issues', [])
+                states = [reports.get(topology['fans'].get(f, {}).get('nodeName')) or {} for f in refs]
+                ready = not issues and bool(states) and all(s.get('fans', {}).get(f, {}).get('ready') for f, s in zip(refs, states))
+                reason = issues[0] if issues else ('Regulating' if ready else 'AwaitingWorker')
+                observed_nodes = {n for s in states for f in s.get('fans', {}).values() for n in f.get('nodes', {})}
+                status.update(resolvedNodeNames=members, missingNodeNames=sorted(set(members) - observed_nodes),
+                              fanNames=refs, memberCount=len(members), fanCount=len(refs))
+                values = [s['fans'][f]['zones'][resource_name] for f, s in zip(refs, states)
+                          if resource_name in s.get('fans', {}).get(f, {}).get('zones', {})]
+                if ready and values:
+                    status['temperatureCelsius'] = max(values); status['temperatureObservedAt'] = timestamp(now)
+            if m.get('deletionTimestamp') or source and source['metadata'].get('deletionTimestamp'):
+                ready, reason = False, 'Releasing'
+            previous = item.get('status', {}).get('conditions', [])
+            condition = {'type': 'Ready', 'status': 'True' if ready else 'False', 'reason': reason.split(':')[0].split(',')[0][:128],
+                         'message': reason, 'observedGeneration': generation, 'lastTransitionTime': timestamp(now)}
+            for c in previous:
+                if c.get('type') == 'Ready' and c.get('status') == condition['status']:
+                    condition['lastTransitionTime'] = c['lastTransitionTime']
+            status['conditions'] = [condition]; statuses[kind + '/' + resource_name] = status
+            if not source: self.write_status(item, status, now)
+        if source:
+            owner = self.owner(source)
+            signature = digest({k: [v['topologyHash'], v['conditions'][0]['status'], v['conditions'][0]['reason']] for k, v in statuses.items()})
+            key = source['metadata']['uid']; last = self.last_status.get(key)
+            if not last or now - last[0] >= 30 or last[1] != signature:
+                status_name = 'pifanctl-status-' + digest(source['metadata']['name'])[:16]
+                self.managed(self.core + '/configmaps', {'apiVersion': 'v1', 'kind': 'ConfigMap',
+                'metadata': {'name': status_name, 'namespace': self.namespace,
+                             'annotations': {OWNER: self.id}, 'ownerReferences': [owner]},
+                'data': {'status.json': json.dumps(statuses, sort_keys=True)}})
+                self.last_status[key] = (now, signature)
+        # First acknowledge empty plans, then delete workloads. Persist the hash
+        # so a restart cannot recreate an acknowledged, retiring worker.
+        retired = set()
+        for node, desired in plans.items():
+            report = reports.get(node)
+            if desired['fans'] or not report or report.get('fans'): continue
+            worker = worker_name(node); path = self.core + '/configmaps/' + worker + '-plan'
+            cm = self.kube.optional(path)
+            if not cm: retired.add(node); continue
+            if cm['metadata'].get('annotations', {}).get(RELEASED) != desired['hash']:
+                self.kube.patch(path, {'metadata': {'annotations': {RELEASED: desired['hash']}}})
+            deployment = self.apps + '/deployments/' + worker
+            old = self.kube.optional(deployment)
+            if old:
+                self.kube.request('DELETE', deployment, {'apiVersion': 'v1', 'kind': 'DeleteOptions',
+                    'propagationPolicy': 'Foreground', 'preconditions': {'uid': old['metadata']['uid']}})
+            pods = self.kube.items(self.core + '/pods?labelSelector=pifanctl.jyje.online%2Fnode%3D' + worker)
+            if pods or self.kube.optional(deployment): continue
+            # Keep this empty-plan acknowledgement until owner GC. It survives
+            # restarts while another node is still unreachable during deletion.
+            retired.add(node)
+        targets = [source] if source else items
+        for item in targets:
+            m = item['metadata']
+            if not m.get('deletionTimestamp') or FINALIZER not in m.get('finalizers', []): continue
+            if source:
+                affected = set(plans) | {f['spec']['nodeName'] for f in items if f['kind'] == 'Fan'}
+            elif item['kind'] == 'Fan': affected = {item['spec']['nodeName']}
+            else:
+                # Prior plans are the authoritative set after a zone is removed.
+                affected = {f['spec']['nodeName'] for f in items if f['kind'] == 'Fan' and f['metadata']['name'] in item['spec']['fanRefs']}
+                affected |= self.prior_zones.get(m['name'], set())
+            annotation = m.get('annotations', {}).get(RELEASE_NODES)
+            if annotation:
+                affected |= set(json.loads(annotation))
+            path = self.core + '/configmaps/' + name(m['name']) if source else resource(item['kind'], m['name'])
+            if annotation != json.dumps(sorted(affected)):
+                self.kube.patch(path, {'metadata': {'annotations': {RELEASE_NODES: json.dumps(sorted(affected))}}})
+            acknowledged = True
+            for node in affected:
+                if node in retired: continue
+                report = reports.get(node)
+                if not report:
+                    # No remaining owned plan or workload means this operator
+                    # has no runtime claim there (e.g. an already deleted Fan).
+                    cm_path = self.core + '/configmaps/' + worker_name(node) + '-plan'
+                    deploy_path = self.apps + '/deployments/' + worker_name(node)
+                    if node not in plans and self.kube.optional(cm_path) is None and self.kube.optional(deploy_path) is None:
+                        continue
+                    acknowledged = False; break
+                if item['kind'] == 'Fan' and m['name'] in report.get('fans', {}):
+                    acknowledged = False; break
+            if acknowledged:
+                fresh = self.kube.get(path)
+                self.kube.patch(path, {'metadata': {'resourceVersion': fresh['metadata']['resourceVersion'],
+                    'finalizers': [f for f in fresh['metadata'].get('finalizers', []) if f != FINALIZER]}})
+
+    def write_status(self, item, status, now):
+        key = item['metadata']['uid']; condition = status['conditions'][0]
+        signature = (condition['status'], condition['reason'], status['topologyHash'], status['observedGeneration'])
+        last = self.last_status.get(key)
+        if last and now - last[0] < 30 and last[1] == signature: return
+        # Merge patch nulls clear old temperature/duty fields during failures.
+        patch = {k: None for k in item.get('status', {}) if k not in status}; patch.update(status)
+        self.kube.patch(resource(item['kind'], item['metadata']['name']) + '/status', {'status': patch})
+        self.last_status[key] = (now, signature)
+        if not last or last[1][:2] != signature[:2]:
+            self.event(item, condition, now)
+
+    def event(self, item, condition, now):
+        m = item['metadata']; key = (m['uid'], condition['reason'])
+        if key in self.events and now - self.events[key] < 60: return
+        event_name = 'pifanctl-' + digest([m['uid'], condition['reason'], now])[:24]
+        self.kube.request('POST', self.core + '/events', {'apiVersion': 'v1', 'kind': 'Event',
+            'metadata': {'name': event_name, 'namespace': self.namespace},
+            'involvedObject': {'apiVersion': API, 'kind': item['kind'], 'name': m['name'], 'uid': m['uid']},
+            'reason': condition['reason'].split(':')[0][:128], 'message': condition['message'][:2048],
+            'type': 'Normal' if condition['status'] == 'True' else 'Warning',
+            'source': {'component': 'pifanctl-operator'}, 'firstTimestamp': timestamp(now), 'lastTimestamp': timestamp(now), 'count': 1})
+        self.events[key] = now
 
 
 def run_operator(operator, stop=None):

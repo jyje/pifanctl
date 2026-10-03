@@ -34,19 +34,6 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 ## 대기 체크리스트
 
-### 06. Operator: observed status와 안전한 삭제
-
-- [ ] 적용 hash와 fresh worker report를 확인한 뒤 Ready 갱신
-- [ ] generation, conditions/reason, resolved/missing nodes, fan/zone 상태
-- [ ] status/Event 쓰기 rate limit, metric hash label의 무제한 증가 방지
-- [ ] Fan/CoolingZone/입력 ConfigMap finalizer
-- [ ] 삭제 plan 적용 및 팬 claim 해제 확인 후 finalizer 제거
-- [ ] 같은 노드의 다른 팬이 남아 있으면 primary ownership 이전
-- [ ] worker unreachable이면 삭제 대기, 강제 삭제는 안전 증명으로 취급하지 않음
-- [ ] mock API로 느린/누락 report, 부분 삭제, 소유권 이전, dangling refs 테스트
-
-완료 조건: 리소스를 지웠다는 API 응답과 실제 하드웨어 제어권 해제를 구분한다.
-
 ### 07. Helm, CRD, 이미지와 운영 문서
 
 - [ ] 별도 operator chart: pinned version, replicas, input mode, resources, security
@@ -98,4 +85,6 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 | 04 | official client/context, bounded API/SSA/dry-run, topology/fan/zone/worker CLI, kubectl wrapper. 188 full tests passed. Local file is compiled once; selectors require --live | `395e6fb` |
 
-| 05 | Lease leadership, CR/ConfigMap planner, exact Node/UID worker Deployment+plan/heartbeat, protected ownership and watch/resync. 6 fake API tests passed. Agent managed/reuse deployment is packaged in stage 07 | `✨ feat(operator): reconcile node-bound fan workers` |
+| 05 | Lease leadership, CR/ConfigMap planner, exact Node/UID worker Deployment+plan/heartbeat, protected ownership and watch/resync. 6 fake API tests passed. Agent managed/reuse deployment is packaged in stage 07 | `3aa1018` |
+
+| 06 | observed hash/UID status, rate limits/events, finalizers, primary transfer and durable empty-plan acknowledgements. 11 fake API tests passed; unreachable worker stays pending | `✨ feat(operator): acknowledge status and safe fan release` |
