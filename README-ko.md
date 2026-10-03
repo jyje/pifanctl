@@ -2,9 +2,7 @@
 
 # pifanctl: 라즈베리 파이 팬 컨트롤러
 
-[English](README.md) | **한국어**
-
-<img alt="pifanctl logo" src="docs/whale-cooling-pie.jpg" width="450" style="object-fit: contain; max-width: 100%; aspect-ratio: 16 / 9;">
+<img alt="쿠버네티스 고래와 공용 PWM 팬이 라즈베리 파이 랙을 함께 식히는 카툰" src="docs/pifanctl-cluster-sticker-concept-1.png" width="560" style="object-fit: contain; max-width: 100%;">
 
 🥧 **라즈베리 파이**의 **PWM 팬 제어** CLI
 
@@ -18,10 +16,13 @@
 [![CI status for develop branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml)
 [![GitHub Repo stars](https://img.shields.io/github/stars/jyje/pifanctl?style=flat&color=yellow&label=%F0%9F%8C%9F%20Stars)](https://github.com/jyje/pifanctl)
 
+[English](README.md) | **한국어**
 
 </div>
 
-🐳 **pifanctl**은 라즈베리 파이의 PWM 팬을 제어하는 CLI입니다. 보드 한 대부터 클러스터 전체까지 지원하며, 일반 CLI, **Docker**, 또는 Helm 차트를 이용한 **Kubernetes**로 실행할 수 있고 ARM64에 최적화되어 있습니다. 클러스터에서는 팬이 **가장 뜨거운 노드**를 기준으로 동작하고, 모든 노드의 온도가 Prometheus에 보관됩니다. GitHub Actions와 Actions Runner Controller(ARC)로 구성한 CI/CD를 사용하므로 모든 빌드가 실제 라즈베리 파이에서 테스트됩니다.
+🐳 **pifanctl**은 라즈베리 파이의 PWM 팬을 제어하는 CLI입니다. 보드 한 대부터 클러스터 전체까지 지원하며, 클러스터의 주 사용 사례는 랙에 설치한 공용 팬 하나로 여러 보드를 함께 식히는 것입니다. 공용 팬은 **가장 뜨거운 노드**를 기준으로 동작하고, 모든 노드의 온도가 Prometheus에 보관됩니다. 일반 CLI, **Docker**, 또는 Helm 차트를 이용한 **Kubernetes**로 실행할 수 있고 ARM64에 최적화되어 있습니다. GitHub Actions와 Actions Runner Controller(ARC)로 구성한 CI/CD를 사용하므로 모든 빌드가 실제 라즈베리 파이에서 테스트됩니다.
+
+프로젝트 일러스트는 열린 라즈베리 파이 랙과 중앙 공용 팬, 쿠버네티스 생태계의 고래 마스코트를 친근한 카툰 스타일로 표현합니다. 보드는 선반에 평평하게 두고 랙 안쪽 깊이 방향으로 돌려 포트와 케이블이 팬 반대쪽을 향합니다. 보드마다 팬이 따로 달린 모습이 아니라 랙 전체를 함께 식히는 구성을 보여주며, 파이 로고는 사용하지 않습니다. 단일 보드 팬 제어도 지원합니다. [일러스트 스타일과 스티커 시안 3개 보기](docs/illustration-style.md).
 
 ```mermaid
 flowchart LR
@@ -29,8 +30,8 @@ flowchart LR
     A1["agent<br/>(DaemonSet)"]
   end
   A1 -- "pifanctl_temperature_celsius{node}" --> P[("Prometheus<br/>(보관)")]
-  P -- "max by (node)" --> C["controller<br/>(팬이 달린 노드)"]
-  C -- "PWM duty" --> F(("팬"))
+  P -- "max by (node)" --> C["controller<br/>(랙 팬 제어 노드)"]
+  C -- "PWM duty" --> F(("공용 랙 팬<br/>모든 보드를 냉각"))
   P --> G["Grafana 대시보드<br/>와 알림"]
 ```
 
@@ -38,6 +39,7 @@ flowchart LR
 | --- | --- | --- |
 | 읽는 곳 | 자기 열 영역 | Prometheus를 통한 모든 노드 |
 | 팬 구동 기준 | 자기 온도 | 가장 뜨거운 노드 |
+| 냉각 구성 | 보드 한 대와 팬 하나 | 공용 랙 팬 하나가 여러 보드를 냉각 |
 | 이력 | 없음 | Prometheus에 보관, 대시보드와 알림 제공 |
 | 설치 | `install.sh`, Docker, 원시 매니페스트 | Helm 차트 |
 
@@ -104,7 +106,8 @@ INFO [2026-10-01 14:30:00Z] Duty: 36.6%, Temperature: 51.9°C, Following: raspbe
 ### 1.4. 옵션 3: Helm으로 Kubernetes에 설치 (권장)
 
 ```sh
-kubectl label node <팬이-달린-노드> pifanctl.jyje.online/fan=true
+# 공용 랙 팬을 제어하는 GPIO가 연결된 Raspberry Pi 노드 한 곳에 라벨을 붙입니다.
+kubectl label node <공용-랙-팬-제어-노드> pifanctl.jyje.online/fan=true
 
 helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.3 \
   --namespace pifanctl --create-namespace \
@@ -117,7 +120,7 @@ helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.3 \
 사전 조건: 컨트롤러에서 접근 가능한 Prometheus. `monitoring.*` 옵션에는 Prometheus Operator CRD(`ServiceMonitor`, `PrometheusRule`)가, `GrafanaDashboard`에는 grafana-operator가 필요합니다. `monitoring.*.labels`는 Prometheus가 선택하는 라벨(예: `release: prometheus`)로 지정하세요.
 
 - `agent`: 모든 노드에서 도는 DaemonSet (모든 taint 허용), non-root, 읽기 전용 루트 파일시스템, 권한 없음.
-- `controller`: GPIO 구동에 `/dev/mem`이 필요해서 root와 privileged로 실행됩니다. 선택한 노드에서만 실행되고, 멈출 때는 최대 속도로 남습니다.
+- `controller`: GPIO 구동에 `/dev/mem`이 필요해서 root와 privileged로 실행됩니다. 공용 랙 팬 하나를 제어할 때는 해당 팬에 GPIO가 연결된 노드 한 곳을 선택합니다. 컨트롤러가 멈출 때는 최대 속도로 남습니다.
 - `controllers`: 이름 있는 그룹의 맵입니다. 각 그룹은 자신의 `nodeSelector`로 한정된 DaemonSet이고 `controllerDefaults` 위에 덮어써지므로, 하드웨어가 다른 노드를 한 릴리스에 함께 선언할 수 있습니다.
 
   ```yaml
@@ -181,15 +184,15 @@ pip install --upgrade -r requirements.raspi.txt
 python ~/.pifanctl/sources/main.py --help
 ```
 
-### 1.7. 클러스터 모드: 팬 하나, 노드 여러 개
+### 1.7. 클러스터 모드: 공용 랙 팬 하나로 여러 노드 냉각
 
-팬 하나가 같은 케이스 안의 여러 보드를 식히는 경우가 많습니다. 팬은 자신이 연결된 보드가 아니라 **그중 가장 뜨거운 보드**를 따라야 합니다.
+랙에 설치한 PWM 팬 하나가 여러 라즈베리 파이 보드를 함께 식힙니다. 팬은 중앙에서 제어하고, 랙 안에서 **가장 뜨거운 노드**를 기준으로 속도를 정합니다. 각 보드에 팬을 따로 설치할 필요가 없습니다.
 
 | 역할 | 명령 | 실행 위치 | 하는 일 |
 | --- | --- | --- | --- |
 | Agent | `pifanctl agent` | **모든 노드** (DaemonSet) | `/sys/class/thermal`을 읽어 `node` 라벨이 붙은 `pifanctl_*` 메트릭을 노출 |
 | Prometheus | | 클러스터 | 온도를 수집하고 **보관** |
-| Controller | `pifanctl start --source prometheus` | **팬이 달린 노드** | Prometheus에 `max by (node) (pifanctl_temperature_celsius)`를 질의해 가장 뜨거운 노드 기준으로 팬 구동 |
+| Controller | `pifanctl start --source prometheus` | **지정된 팬 제어 노드 한 곳** | Prometheus에 `max by (node) (pifanctl_temperature_celsius)`를 질의해 가장 뜨거운 노드 기준으로 공용 랙 팬 구동 |
 
 컨트롤러는 한 가지 소스만 믿지 않습니다. 매 주기마다 클러스터 값과 자기 노드 값 중 **높은 쪽**으로 동작하고, 안전하게 단계적으로 물러납니다.
 
@@ -199,13 +202,13 @@ python ~/.pifanctl/sources/main.py --help
 
 컨트롤러가 멈추면(SIGTERM, Pod 축출) 팬은 `--exit-duty`(기본 100%)로 남습니다. 멈춘 컨트롤러는 더 이상 보드를 지켜주지 못하기 때문입니다.
 
-`--source local`(기본값)에서는 아무것도 공유하지 않으며, 보드 한 대일 때처럼 노드가 자기 팬만 제어합니다.
+`--source local`(기본값)에서는 컨트롤러가 자기 노드의 온도만 사용합니다. 단일 보드 구성에 적합하며, 여러 노드가 공유하는 랙 팬은 `--source prometheus`를 사용해 가장 뜨거운 보드가 팬 속도를 결정하게 하세요.
 
 ```sh
 # 모든 노드에서
 pifanctl agent
 
-# 팬이 달린 노드에서
+# 공용 랙 팬을 제어하도록 지정한 노드에서
 pifanctl start --source prometheus --prometheus-url http://prometheus:9090
 ```
 

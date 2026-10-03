@@ -2,9 +2,7 @@
 
 # pifanctl: A Raspberry Pi Fan Controller
 
-**English** | [한국어](README-ko.md)
-
-<img alt="pifanctl logo" src="docs/whale-cooling-pie.jpg" width="450" style="object-fit: contain; max-width: 100%; aspect-ratio: 16 / 9;">
+<img alt="Cartoon Raspberry Pi rack with one shared PWM fan and a Kubernetes whale mascot" src="docs/pifanctl-cluster-sticker-concept-1.png" width="560" style="object-fit: contain; max-width: 100%;">
 
 🥧 A CLI for **PWM Fan Controlling** of **Raspberry Pi**
 
@@ -18,10 +16,13 @@
 [![CI status for develop branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml)
 [![GitHub Repo stars](https://img.shields.io/github/stars/jyje/pifanctl?style=flat&color=yellow&label=%F0%9F%8C%9F%20Stars)](https://github.com/jyje/pifanctl)
 
+**English** | [한국어](README-ko.md)
 
 </div>
 
-🐳 **pifanctl** is a CLI tool for PWM fan control on Raspberry Pi, from a single board to a whole cluster. It runs as a plain CLI, in **Docker**, or on **Kubernetes** with a Helm chart, and is optimized for ARM64. In a cluster the fans follow the **hottest node**, and every node's temperature is kept in Prometheus. The project features a CI/CD pipeline using GitHub Actions with Actions Runner Controller (ARC), ensuring all builds are tested in actual Raspberry Pi environments. Please enjoy it!
+🐳 **pifanctl** is a CLI tool for PWM fan control on Raspberry Pi, from a single board to a whole cluster. Its primary cluster use case is one centrally controlled rack fan cooling several boards together: the shared fan follows the **hottest node**, and every node's temperature is kept in Prometheus. It runs as a plain CLI, in **Docker**, or on **Kubernetes** with a Helm chart, and is optimized for ARM64. The project features a CI/CD pipeline using GitHub Actions with Actions Runner Controller (ARC), ensuring all builds are tested in actual Raspberry Pi environments.
+
+The project illustration style is a friendly cartoon of an open Raspberry Pi rack, one shared central fan, and a Kubernetes ecosystem whale mascot. The boards lie flat on their shelves, turned toward the rack depth so their ports and cables face away from the fan. It represents cluster-wide shared cooling, not a separate fan on every board, and omits the Raspberry Pi logo. Single-board fan control is supported too. [See the illustration style and all three sticker concepts](docs/illustration-style.md).
 
 
 ```mermaid
@@ -30,8 +31,8 @@ flowchart LR
     A1["agent<br/>(DaemonSet)"]
   end
   A1 -- "pifanctl_temperature_celsius{node}" --> P[("Prometheus<br/>(retention)")]
-  P -- "max by (node)" --> C["controller<br/>(node with the fan)"]
-  C -- "PWM duty" --> F(("fan"))
+  P -- "max by (node)" --> C["controller<br/>(rack fan control node)"]
+  C -- "PWM duty" --> F(("one shared rack fan<br/>cools all boards"))
   P --> G["Grafana dashboard<br/>and alerts"]
 ```
 
@@ -39,6 +40,7 @@ flowchart LR
 | --- | --- | --- |
 | Reads | its own thermal zones | every node, through Prometheus |
 | Drives the fan from | its own temperature | the hottest node |
+| Cooling arrangement | one board and its fan | one shared rack fan cools multiple boards |
 | History | none | kept in Prometheus, with a dashboard and alerts |
 | Install | `install.sh`, Docker, raw manifest | Helm chart |
 
@@ -109,7 +111,8 @@ Controlling the pin needs access to GPIO and `/dev/mem`, so `start` needs `docke
 ### 1.4. OPTION 3: On Kubernetes with Helm (recommended)
 
 ```sh
-kubectl label node <the-node-with-the-fan> pifanctl.jyje.online/fan=true
+# Label the one Raspberry Pi whose GPIO controls the shared rack fan.
+kubectl label node <node-that-controls-the-rack-fan> pifanctl.jyje.online/fan=true
 
 helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.3 \
   --namespace pifanctl --create-namespace \
@@ -122,7 +125,7 @@ helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.3 \
 Prerequisites: a Prometheus reachable from the controller. The `monitoring.*` options need the Prometheus Operator CRDs (`ServiceMonitor`, `PrometheusRule`), and a `GrafanaDashboard` needs grafana-operator. Set `monitoring.*.labels` to whatever your Prometheus selects on (for example `release: prometheus`).
 
 - `agent`: a DaemonSet on every node (tolerates every taint), non-root, read-only root filesystem, no privileges.
-- `controller`: runs as root and privileged, because driving GPIO needs `/dev/mem`. It only runs on the nodes you select, and stops at full speed.
+- `controller`: runs as root and privileged, because driving GPIO needs `/dev/mem`. For one shared rack fan, select one controller node whose GPIO is wired to that fan; it stops at full speed.
 - `controllers`: a map of named groups. Each group is a DaemonSet limited by its own `nodeSelector` and merged over `controllerDefaults`, so nodes with different hardware live in one release:
 
   ```yaml
@@ -197,15 +200,15 @@ python ~/.pifanctl/sources/main.py --help
 ```
 
 
-### 1.7. Cluster mode: one fan, many nodes
+### 1.7. Cluster mode: one shared rack fan, many nodes
 
-One fan usually cools several boards that sit in the same enclosure. The fan should follow the hottest of them, not the board it happens to be wired to.
+One PWM fan mounted on the rack cools several Raspberry Pi boards together. The fan is controlled centrally, and its speed follows the hottest node in the rack. The boards do not each need their own fan.
 
 | Role | Command | Runs on | What it does |
 | --- | --- | --- | --- |
 | Agent | `pifanctl agent` | **every node** (DaemonSet) | Reads `/sys/class/thermal` and serves `pifanctl_*` metrics, labelled with `node` |
 | Prometheus | | the cluster | Scrapes and **retains** the temperatures |
-| Controller | `pifanctl start --source prometheus` | **nodes that have a fan** | Asks Prometheus for `max by (node) (pifanctl_temperature_celsius)` and drives the fan from the hottest node |
+| Controller | `pifanctl start --source prometheus` | **one designated fan-control node** | Asks Prometheus for `max by (node) (pifanctl_temperature_celsius)` and drives the shared rack fan from the hottest node |
 
 The controller never trusts a single source. Each cycle it acts on the highest of the cluster value and its own node's value, and it degrades safely:
 
@@ -215,13 +218,13 @@ The controller never trusts a single source. Each cycle it acts on the highest o
 
 When the controller stops (SIGTERM, pod eviction) the fan is left at `--exit-duty` (default 100%), because a stopped controller no longer protects the board.
 
-With `--source local` (the default) nothing is shared and a node controls only its own fan, exactly like a single board.
+With `--source local` (the default), the controller uses only its own node's temperature. This suits a single-board setup; for a rack fan shared across nodes, use `--source prometheus` so the hottest board sets the fan speed.
 
 ```sh
 # on every node
 pifanctl agent
 
-# on the node with the fan
+# on the designated fan-control node for the shared rack fan
 pifanctl start --source prometheus --prometheus-url http://prometheus:9090
 ```
 
