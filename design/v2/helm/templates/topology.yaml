@@ -1,0 +1,23 @@
+{{- $items := (include "pifanctl.topologyItems" . | fromYaml).items -}}
+{{- if $items -}}
+{{- if eq .Values.mode "configMap" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configMapName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: pifanctl
+    app.kubernetes.io/component: topology-design
+data:
+  topology.yaml: |
+    apiVersion: v1
+    kind: List
+    {{- toYaml (dict "items" $items) | nindent 4 }}
+{{- else -}}
+{{- range $items }}
+---
+{{ toYaml . }}
+{{- end -}}
+{{- end -}}
+{{- end -}}

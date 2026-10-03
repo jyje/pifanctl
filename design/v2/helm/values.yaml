@@ -1,0 +1,7 @@
+# Rendering examples only. This chart is not part of the published chart.
+# Install the proposed CRDs separately for customResources mode.
+# configMap mode stores the same objects as a Kubernetes List in topology.yaml.
+mode: customResources
+configMapName: pifanctl-topology
+fans: {}
+coolingZones: {}

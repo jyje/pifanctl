@@ -1,0 +1,233 @@
+# Design proposal only: no operator runtime is included.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: coolingzones.pifanctl.jyje.online
+  annotations:
+    pifanctl.jyje.online/design-status: proposal
+spec:
+  group: pifanctl.jyje.online
+  scope: Cluster
+  names:
+    plural: coolingzones
+    singular: coolingzone
+    kind: CoolingZone
+    shortNames:
+    - cz
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: Members
+      type: integer
+      jsonPath: .status.memberCount
+    - name: Fans
+      type: integer
+      jsonPath: .status.fanCount
+    - name: Ready
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+    - name: Age
+      type: date
+      jsonPath: .metadata.creationTimestamp
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          apiVersion:
+            type: string
+          kind:
+            type: string
+          metadata:
+            type: object
+          spec:
+            type: object
+            properties:
+              nodeSelector:
+                type: object
+                properties:
+                  matchLabels:
+                    type: object
+                    maxProperties: 64
+                    additionalProperties:
+                      type: string
+                      maxLength: 63
+                  matchExpressions:
+                    type: array
+                    maxItems: 64
+                    items:
+                      type: object
+                      properties:
+                        key:
+                          type: string
+                          minLength: 1
+                          maxLength: 317
+                        operator:
+                          type: string
+                          enum:
+                          - In
+                          - NotIn
+                          - Exists
+                          - DoesNotExist
+                        values:
+                          type: array
+                          maxItems: 128
+                          items:
+                            type: string
+                            maxLength: 63
+                          x-kubernetes-list-type: set
+                      required:
+                      - key
+                      - operator
+                      x-kubernetes-validations:
+                      - rule: 'self.operator in [''In'', ''NotIn''] ? (has(self.values)
+                          && size(self.values) > 0) : (!has(self.values) || size(self.values)
+                          == 0)'
+                        message: In/NotIn need values; Exists/DoesNotExist must not
+                          have values
+                    x-kubernetes-list-type: atomic
+                x-kubernetes-validations:
+                - rule: (has(self.matchLabels) && size(self.matchLabels) > 0) || (has(self.matchExpressions)
+                    && size(self.matchExpressions) > 0)
+                  message: an empty selector is not allowed; enumerate the intended
+                    nodes
+              nodeNames:
+                type: array
+                minItems: 1
+                maxItems: 1024
+                x-kubernetes-list-type: set
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 253
+                  pattern: ^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$
+              fanRefs:
+                type: array
+                minItems: 1
+                maxItems: 64
+                x-kubernetes-list-type: set
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 253
+                  pattern: ^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$
+              telemetry:
+                type: object
+                properties:
+                  source:
+                    type: string
+                    enum:
+                    - prometheus
+                    - local
+                  prometheusURL:
+                    type: string
+                    maxLength: 2048
+                    pattern: ^https?://[^\s]+$
+                  maxSampleAgeSeconds:
+                    type: integer
+                    minimum: 5
+                    maximum: 300
+                    default: 30
+                required:
+                - source
+                x-kubernetes-validations:
+                - rule: 'self.source == ''prometheus'' ? has(self.prometheusURL) :
+                    !has(self.prometheusURL)'
+                  message: prometheusURL is required only for the prometheus source
+            required:
+            - fanRefs
+            - telemetry
+            x-kubernetes-validations:
+            - rule: has(self.nodeSelector) != has(self.nodeNames)
+              message: choose nodeSelector or nodeNames, not both
+            - rule: self.telemetry.source != 'local' || (has(self.nodeNames) && size(self.nodeNames)
+                == 1)
+              message: local telemetry requires exactly one explicit nodeName
+          status:
+            type: object
+            properties:
+              observedGeneration:
+                type: integer
+                minimum: 0
+              conditions:
+                type: array
+                maxItems: 16
+                x-kubernetes-list-type: map
+                x-kubernetes-list-map-keys:
+                - type
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      maxLength: 128
+                    status:
+                      type: string
+                      enum:
+                      - 'True'
+                      - 'False'
+                      - Unknown
+                    reason:
+                      type: string
+                      maxLength: 128
+                    message:
+                      type: string
+                      maxLength: 2048
+                    lastTransitionTime:
+                      type: string
+                      format: date-time
+                    observedGeneration:
+                      type: integer
+                      minimum: 0
+                  required:
+                  - type
+                  - status
+                  - reason
+                  - message
+                  - lastTransitionTime
+              topologyHash:
+                type: string
+                maxLength: 64
+              resolvedNodeNames:
+                type: array
+                maxItems: 1024
+                x-kubernetes-list-type: set
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 253
+                  pattern: ^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$
+              missingNodeNames:
+                type: array
+                maxItems: 1024
+                x-kubernetes-list-type: set
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 253
+                  pattern: ^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$
+              temperatureCelsius:
+                type: number
+              temperatureObservedAt:
+                type: string
+                format: date-time
+              fanNames:
+                type: array
+                maxItems: 64
+                x-kubernetes-list-type: set
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 253
+                  pattern: ^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$
+              memberCount:
+                type: integer
+                minimum: 0
+              fanCount:
+                type: integer
+                minimum: 0
+        required:
+        - spec

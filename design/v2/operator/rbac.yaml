@@ -1,0 +1,71 @@
+# Proposed permissions only. No operator Deployment/image exists in this PR.
+# Create pifanctl-system separately in a disposable design review cluster.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pifanctl-operator
+  namespace: pifanctl-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pifanctl-operator-design
+rules:
+  - apiGroups: [""]
+    resources: [nodes]
+    verbs: [get, list, watch]
+  - apiGroups: [pifanctl.jyje.online]
+    resources: [fans, coolingzones]
+    verbs: [get, list, watch, patch, update]
+  - apiGroups: [pifanctl.jyje.online]
+    resources: [fans/status, coolingzones/status, fans/finalizers, coolingzones/finalizers]
+    verbs: [get, patch, update]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pifanctl-operator-design
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: pifanctl-operator-design
+subjects:
+  - kind: ServiceAccount
+    name: pifanctl-operator
+    namespace: pifanctl-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pifanctl-operator-design
+  namespace: pifanctl-system
+rules:
+  - apiGroups: [apps]
+    resources: [deployments, daemonsets]
+    verbs: [get, list, watch, create, patch, update, delete]
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list, watch]
+  - apiGroups: [""]
+    resources: [configmaps, services]
+    verbs: [get, list, watch, create, patch, update, delete]
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [get, list, watch, create, patch, update]
+  - apiGroups: [coordination.k8s.io]
+    resources: [leases]
+    verbs: [get, list, watch, create, patch, update]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pifanctl-operator-design
+  namespace: pifanctl-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pifanctl-operator-design
+subjects:
+  - kind: ServiceAccount
+    name: pifanctl-operator
+    namespace: pifanctl-system

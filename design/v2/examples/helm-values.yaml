@@ -1,0 +1,58 @@
+mode: customResources
+configMapName: pifanctl-topology
+fans:
+  fan-01:
+    nodeName: pi-01
+    hardware:
+      rpigpio:
+        pin: 18
+        frequencyHz: 1000
+    control:
+      curve:
+        temperatureLow: 50
+        temperatureHigh: 70
+        dutyIdle: 0
+        dutyStart: 30
+        dutyMax: 100
+        dutyDownStep: 5
+      refreshIntervalSeconds: 5
+      failsafeDuty: 100
+      exitDuty: 100
+  fan-02:
+    nodeName: pi-05
+    hardware:
+      rpigpio:
+        pin: 18
+        frequencyHz: 1000
+    control:
+      curve:
+        temperatureLow: 50
+        temperatureHigh: 70
+        dutyIdle: 0
+        dutyStart: 30
+        dutyMax: 100
+        dutyDownStep: 5
+      refreshIntervalSeconds: 5
+      failsafeDuty: 100
+      exitDuty: 100
+coolingZones:
+  rack-a:
+    fanRefs:
+    - fan-01
+    telemetry:
+      source: prometheus
+      prometheusURL: http://prometheus-operated.monitoring.svc:9090
+      maxSampleAgeSeconds: 30
+    nodeSelector:
+      matchLabels:
+        pifanctl.jyje.online/rack: a
+  rack-b:
+    fanRefs:
+    - fan-02
+    telemetry:
+      source: prometheus
+      prometheusURL: http://prometheus-operated.monitoring.svc:9090
+      maxSampleAgeSeconds: 30
+    nodeSelector:
+      matchLabels:
+        pifanctl.jyje.online/rack: b

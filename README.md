@@ -343,6 +343,15 @@ Each step skips what already exists, so re-running a failed workflow is safe. Ap
 
 Is there any problem? see [trouble-shooting.md](docs/trouble-shooting.md)
 
+### v2 design proposal
+
+The proposed v2 API uses Node labels to select cooling members, `CoolingZone`
+resources to group them, and `Fan` resources to assign physical PWM fans. It covers
+shared rack fans and one fan per board, with YAML, ConfigMap, Helm and kubectl/CLI
+workflows. [Read the operator design](docs/v2/README.md) and
+[review the CRDs and examples](design/v2/README.md). These are design artifacts;
+the v2 operator and CLI are not implemented yet.
+
 
 ---
 ## 5. References

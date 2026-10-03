@@ -1,0 +1,232 @@
+# Design proposal only: no operator runtime is included.
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: fans.pifanctl.jyje.online
+  annotations:
+    pifanctl.jyje.online/design-status: proposal
+spec:
+  group: pifanctl.jyje.online
+  scope: Cluster
+  names:
+    plural: fans
+    singular: fan
+    kind: Fan
+    shortNames:
+    - fan
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true
+    subresources:
+      status: {}
+    additionalPrinterColumns:
+    - name: Node
+      type: string
+      jsonPath: .spec.nodeName
+    - name: Duty
+      type: number
+      jsonPath: .status.dutyPercent
+    - name: Ready
+      type: string
+      jsonPath: .status.conditions[?(@.type=="Ready")].status
+    - name: Age
+      type: date
+      jsonPath: .metadata.creationTimestamp
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          apiVersion:
+            type: string
+          kind:
+            type: string
+          metadata:
+            type: object
+          spec:
+            type: object
+            properties:
+              nodeName:
+                type: string
+                minLength: 1
+                maxLength: 253
+                pattern: ^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$
+                x-kubernetes-validations:
+                - rule: self == oldSelf
+                  message: nodeName is immutable
+              hardware:
+                type: object
+                properties:
+                  rpigpio:
+                    type: object
+                    properties:
+                      pin:
+                        type: integer
+                        minimum: 0
+                        maximum: 27
+                      frequencyHz:
+                        type: integer
+                        minimum: 1
+                        maximum: 100000
+                        default: 1000
+                    required:
+                    - pin
+                  sysfs:
+                    type: object
+                    properties:
+                      chip:
+                        type: integer
+                        minimum: 0
+                        maximum: 255
+                      channel:
+                        type: integer
+                        minimum: 0
+                        maximum: 255
+                      frequencyHz:
+                        type: integer
+                        minimum: 1
+                        maximum: 100000
+                        default: 1000
+                    required:
+                    - chip
+                    - channel
+                x-kubernetes-validations:
+                - rule: has(self.rpigpio) != has(self.sysfs)
+                  message: choose exactly one explicit hardware driver
+                - rule: self == oldSelf
+                  message: hardware is immutable; use a controlled fan replacement
+              control:
+                type: object
+                properties:
+                  curve:
+                    type: object
+                    properties:
+                      temperatureLow:
+                        type: number
+                        minimum: 0
+                        maximum: 120
+                        default: 50
+                      temperatureHigh:
+                        type: number
+                        minimum: 0
+                        maximum: 120
+                        default: 70
+                      dutyIdle:
+                        type: number
+                        minimum: 0
+                        maximum: 100
+                        default: 0
+                      dutyStart:
+                        type: number
+                        minimum: 0
+                        maximum: 100
+                        default: 30
+                      dutyMax:
+                        type: number
+                        minimum: 0
+                        maximum: 100
+                        default: 100
+                      dutyDownStep:
+                        type: number
+                        minimum: 0
+                        maximum: 100
+                        default: 5
+                    default: {}
+                    x-kubernetes-validations:
+                    - rule: self.temperatureLow < self.temperatureHigh
+                      message: temperatureLow must be below temperatureHigh
+                    - rule: self.dutyIdle <= self.dutyStart && self.dutyStart <= self.dutyMax
+                      message: dutyIdle <= dutyStart <= dutyMax is required
+                  refreshIntervalSeconds:
+                    type: integer
+                    minimum: 1
+                    maximum: 60
+                    default: 5
+                  failsafeDuty:
+                    type: number
+                    enum:
+                    - 100
+                    default: 100
+                  exitDuty:
+                    type: number
+                    enum:
+                    - 100
+                    default: 100
+                default: {}
+            required:
+            - nodeName
+            - hardware
+          status:
+            type: object
+            properties:
+              observedGeneration:
+                type: integer
+                minimum: 0
+              conditions:
+                type: array
+                maxItems: 16
+                x-kubernetes-list-type: map
+                x-kubernetes-list-map-keys:
+                - type
+                items:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      maxLength: 128
+                    status:
+                      type: string
+                      enum:
+                      - 'True'
+                      - 'False'
+                      - Unknown
+                    reason:
+                      type: string
+                      maxLength: 128
+                    message:
+                      type: string
+                      maxLength: 2048
+                    lastTransitionTime:
+                      type: string
+                      format: date-time
+                    observedGeneration:
+                      type: integer
+                      minimum: 0
+                  required:
+                  - type
+                  - status
+                  - reason
+                  - message
+                  - lastTransitionTime
+              topologyHash:
+                type: string
+                maxLength: 64
+              zoneNames:
+                type: array
+                maxItems: 1024
+                x-kubernetes-list-type: set
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 253
+                  pattern: ^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$
+              workerPodName:
+                type: string
+              appliedTopologyHash:
+                type: string
+                maxLength: 64
+              dutyPercent:
+                type: number
+                minimum: 0
+                maximum: 100
+              controlTemperatureCelsius:
+                type: number
+              heartbeatTime:
+                type: string
+                format: date-time
+              nodeUID:
+                type: string
+              hardwareClaim:
+                type: string
+        required:
+        - spec

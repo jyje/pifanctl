@@ -321,6 +321,15 @@ CI/CD 환경은 [app.jyje.online#stack](https://app.jyje.online/#stack)에서 �
 
 문제가 있나요? [trouble-shooting.md](docs/trouble-shooting.md)를 보세요.
 
+### v2 설계 제안
+
+v2 제안은 Node 라벨로 냉각 대상을 선택하고 `CoolingZone`으로 구역을 구성한 뒤
+`Fan`으로 물리 PWM 팬을 연결합니다. 공유 랙 팬과 보드별 팬을 같은 모델로 표현하고
+YAML, ConfigMap, Helm, kubectl/CLI 흐름을 연결합니다.
+[오퍼레이터 설계](docs/v2/README-ko.md)와 [CRD·예시](design/v2/README.md)를
+검토할 수 있습니다. 현재는 설계 리소스이며 v2 오퍼레이터와 CLI는 아직 구현하지
+않았습니다.
+
 ---
 ## 5. 참고 자료
 
