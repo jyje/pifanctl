@@ -132,3 +132,5 @@ def register(app):
     app.add_typer(fan, name='fan')
     app.add_typer(zone, name='zone')
     app.add_typer(worker, name='worker')
+    from pifanctl.topology.operator import app as operator_app
+    app.add_typer(operator_app, name='operator')

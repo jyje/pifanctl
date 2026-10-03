@@ -34,21 +34,6 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 ## 대기 체크리스트
 
-### 05. Operator: leader election과 reconciliation
-
-- [ ] Lease 기반 leader election과 resourceVersion 충돌 처리
-- [ ] Node/CR/ConfigMap 변경 감지, watch 복구와 주기적인 재동기화
-- [ ] native CR 또는 지정 ConfigMap 단일 입력 모드
-- [ ] 노드별 hashed plan/heartbeat ConfigMap과 고정 worker Deployment 생성
-- [ ] Node의 실제 hostname 라벨, UID, required affinity, replicas=1/Recreate
-- [ ] workload/config ownership 충돌 거부, 사용자 리소스 자동 인수 금지
-- [ ] agent managed/reuse 모드, worker에 Kubernetes 자격 증명 미제공
-- [ ] operator/API 장애 시 heartbeat 갱신 중단, worker watchdog 독립 동작
-- [ ] mock API로 생성/변경/노드 교체/leader 상실/재동기화 테스트
-
-완료 조건: operator는 PWM을 쓰지 않고, 기존 release를 몰래 인수하거나 다른
-namespace/Node labels를 수정하지 않는다.
-
 ### 06. Operator: observed status와 안전한 삭제
 
 - [ ] 적용 hash와 fresh worker report를 확인한 뒤 Ready 갱신
@@ -111,4 +96,6 @@ namespace/Node labels를 수정하지 않는다.
 
 | 03 | worker multi-fan/full duty/reload/watchdog/report, host lock + legacy lock, GPIO thread release and chart hostPath. 182 full tests + 36 focused tests passed. Cooperative host-wide lock; real PWM remains unverified | `19c27ff` |
 
-| 04 | official client/context, bounded API/SSA/dry-run, topology/fan/zone/worker CLI, kubectl wrapper. 188 full tests passed. Local file is compiled once; selectors require --live | `✨ feat(cli): manage cooling topology through kubernetes` |
+| 04 | official client/context, bounded API/SSA/dry-run, topology/fan/zone/worker CLI, kubectl wrapper. 188 full tests passed. Local file is compiled once; selectors require --live | `395e6fb` |
+
+| 05 | Lease leadership, CR/ConfigMap planner, exact Node/UID worker Deployment+plan/heartbeat, protected ownership and watch/resync. 6 fake API tests passed. Agent managed/reuse deployment is packaged in stage 07 | `✨ feat(operator): reconcile node-bound fan workers` |
