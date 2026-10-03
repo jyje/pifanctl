@@ -80,3 +80,15 @@ def test_http_query(monkeypatch):
     def fail(*args, **kwargs): raise URLError('offline')
     monkeypatch.setattr(t.urllib.request, 'urlopen', fail)
     with pytest.raises(TemperatureUnavailable): t.query('http://p', 'expression')
+
+
+def test_latency_counts_toward_sample_age(monkeypatch):
+    clock = [100]
+    values = t.vector(payload())
+    def query(url, expression):
+        clock[0] += 20
+        return {k: 100 for k in values} if 'timestamp' in expression else values
+    monkeypatch.setattr(t, 'query', query)
+    monkeypatch.setattr(t.time, 'time', lambda: clock[0])
+    with pytest.raises(TemperatureUnavailable, match='Stale'):
+        t.read_members({'source': 'prometheus', 'prometheusURL': 'http://p', 'maxSampleAgeSeconds': 30}, ['pi-a'], 55)

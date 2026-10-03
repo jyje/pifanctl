@@ -16,7 +16,7 @@ from prometheus_client import CollectorRegistry, Gauge
 from pifanctl import __version__
 from pifanctl.service import install_stop_handlers
 from pifanctl.topology.kube import APIError, Kube, name, resource
-from pifanctl.topology.model import API, TopologyError, parse, digest
+from pifanctl.topology.model import API, MAX_BYTES, TopologyError, parse, digest
 from pifanctl.topology.planner import plan, worker_plan
 
 log = logging.getLogger(__name__)
@@ -231,9 +231,12 @@ class Operator:
                 owner = old['metadata']['ownerReferences'][0]
             else: continue
             worker = worker_name(node); config = worker + '-plan'
+            plan_text = json.dumps(desired, sort_keys=True)
+            if len(plan_text.encode()) > MAX_BYTES:
+                raise TopologyError('worker plan exceeds 900 KB; split the actuator topology')
             cm = {'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': config, 'namespace': self.namespace,
                   'labels': {'pifanctl.jyje.online/node': worker}, 'annotations': {OWNER: self.id, 'pifanctl.jyje.online/nodeName': node}, 'ownerReferences': [owner]},
-                  'data': {'plan.json': json.dumps(desired, sort_keys=True),
+                  'data': {'plan.json': plan_text,
                            'heartbeat.json': json.dumps({'time': now, 'healthy': True, 'planHash': desired['hash'], 'nodeUID': desired['nodeUID']})}}
             # Revalidate leadership immediately before each workload/heartbeat write.
             if not self.lease.acquire(): return False

@@ -61,8 +61,43 @@ def test_reload_removal_and_hardware_immutable(monkeypatch):
 
 @pytest.mark.parametrize('field,value', [('format', 2), ('nodeName', 'other'), ('nodeUID', 'other'), ('hash', 'bad'), ('watchdogSeconds', 0), ('fans', [])])
 def test_bad_plan(field, value):
-    p = desired(); p[field] = value
+    p = desired(); p['nodeUID'] = 'uid'; p[field] = value
+    if field != 'hash': p['hash'] = digest({k: v for k, v in p.items() if k != 'hash'})
     with pytest.raises(TopologyError): w.validate_plan(p, 'pi-a', 'uid')
+
+
+def test_channel_rename_requires_release(monkeypatch):
+    x = worker(monkeypatch)
+    p = worker_plan(plan([fan('new-name'), zone(refs=['new-name'], telemetry={'source': 'local'})]), 'pi-a')
+    with pytest.raises(TopologyError, match='release'): x.apply(p)
+    x.close()
+
+
+def test_watchdog_latch_survives_late_cycle(monkeypatch, tmp_path):
+    x = worker(monkeypatch); x.cycle(now=100)
+    assert x.drivers['fan-a'].duty == 95
+    heartbeat = tmp_path / 'heartbeat'; heartbeat.write_text(json.dumps({
+        'healthy': True, 'time': 100, 'planHash': x.plan['hash'], 'nodeUID': ''}))
+    w.check_watchdog(x, heartbeat, now=300)
+    assert x.drivers['fan-a'].duty == 100
+    assert x.snapshot()['reason'] == 'OperatorHeartbeatExpired'
+    # A late successful read cannot clear the safety latch by itself.
+    assert x.cycle(now=300)['fans']['fan-a']['dutyPercent'] == 100
+    x.safety_error = ''; w.check_watchdog(x, monotonic_now=x.progress + 121)
+    assert x.safety_error == 'ControlLoopStalled'
+    assert not x.snapshot()['ready']
+    x.close()
+
+
+def test_watchdog_no_plan_and_thread(monkeypatch):
+    x = w.Worker('pi-a', mock=True)
+    w.check_watchdog(x); assert not x.safety_error
+    calls = []
+    monkeypatch.setattr(w, 'check_watchdog', lambda *args: calls.append(args))
+    class Stop:
+        def wait(self, interval): return len(calls) == 1
+    w.watch_safety(x, None, Stop())
+    assert len(calls) == 1
 
 
 def test_plan_identity_and_conflict():

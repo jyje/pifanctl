@@ -131,6 +131,10 @@ ConfigMap 디렉터리 전달에는 지연이 있습니다. worker는 plan과 �
 우회하지 않습니다. duty 하강은 팬별 refresh interval을 지키고, 상승과 장애는 읽은
 즉시 반영합니다.
 
+별도 worker 스레드가 1초마다 heartbeat 만료와 제어 루프 진행을 감시합니다.
+Prometheus 조회와 독립적으로 full duty를 요청하고, 뒤늦은 조회 결과는 안전
+latch를 해제하지 못합니다. main loop가 재검증한 뒤에만 정상 제어를 재개합니다.
+
 | 관측 | 의미 |
 | --- | --- |
 | worker :9103 `/status`, `/metrics` | 적용 hash, 명령 duty, 멤버 온도와 실패 사유 |

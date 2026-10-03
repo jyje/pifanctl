@@ -28,7 +28,7 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 - 설계/그림 PR: [#40](https://github.com/jyje/pifanctl/pull/40)
 - v1 구현 로드맵: [#39](https://github.com/jyje/pifanctl/issues/39)
-- 구현 브랜치: `feat/v1-topology-runtime` (PR #40 위에 쌓는 별도 PR)
+- 구현 브랜치: `feat/v1-topology-runtime` ([PR #41](https://github.com/jyje/pifanctl/pull/41), PR #40 위에 쌓음)
 - 제안 API: `pifanctl.jyje.online/v1alpha1`, cluster scoped Fan/CoolingZone
 - 도해: 한영 각각 공유 팬/보드별 팬 × 정상/고온/데이터 누락/heartbeat 만료
 
@@ -36,7 +36,6 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 
 ### 08. 종합 검증과 PR
 
-- [ ] 구현 PR 작성, 설계 PR 의존성과 이슈 연결, PR attachment
 - [ ] CI 결과 확인 및 실패 수정
 - [ ] 완료 기록과 최종 요약에 검증 범위를 정확하게 보고
 
@@ -65,7 +64,9 @@ CoolingZone과 물리 Fan을 YAML·ConfigMap·CRD로 관리하는 v1이다.
 | 06 | observed hash/UID status, rate limits/events, finalizers, primary transfer and durable empty-plan acknowledgements. 11 fake API tests passed; unreachable worker stays pending | `b0bdc82` |
 | 07 | operator chart/RBAC/NetworkPolicy/agents/CRDs, 한영 runtime/migration, alpha prerelease·latest 보호, 로컬 YAML reload·sticky member UID. Helm lint 두 입력 모드/토폴로지, kubeconform operator 9 + worker 1, actionlint, Python3.10 49 focused tests passed. CI3.10~3.14 보존 회귀 테스트 추가 | `3921b92` |
 
-| 08-a | 다섯 Python 버전에서 218 tests/93.88~93.91%. 실제 client와 mock HTTP/공유 랙 시나리오 통합 테스트로 인자·상태 함수 충돌 수정. 마지막 견고성 수정 후 3.14 218 tests/93.48%. kubeconform K8s1.30/1.33 + actionlint 통과 | `🧪 test(v1): verify runtime scenarios and client transport` |
+| 08-a | 다섯 Python 버전에서 218 tests/93.88~93.91%. 실제 client와 mock HTTP/공유 랙 시나리오 통합 테스트로 인자·상태 함수 충돌 수정. 마지막 견고성 수정 후 3.14 218 tests/93.48%. kubeconform K8s1.30/1.33 + actionlint 통과 | `f8e6dcb` |
+
+| 08-b | PR #41 생성/attachment. 첫 원격 CI의 9개 job 성공. 보드별/여러 팬/watch 복구 테스트 추가 후 로컬3.14 224 tests/95.69%. 느린 조회와 독립적인 watchdog latch 추가, focused 22 tests 및 전체3.14 227 tests/95.65% passed. 조회 지연도 sample age에 반영. 새 커밋 CI 재확인 중 | `🛡️ fix(worker): enforce an independent safety watchdog` |
 
 ### 검증 중 발견해 수정한 회귀
 

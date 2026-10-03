@@ -70,12 +70,19 @@ class Worker:
         self.released = set()
         self.report = {'nodeName': node, 'nodeUID': uid, 'appliedTopologyHash': '', 'fans': {}, 'releasedFans': [], 'heartbeatTime': 0, 'ready': False, 'reason': 'Starting'}
         self.mutex = threading.Lock()
+        self.actuation = threading.RLock()
+        self.safety_error = ''
+        self.progress = time.monotonic()
         self.registry = CollectorRegistry()
         self.duty = Gauge('pifanctl_worker_fan_duty_percent', 'Requested fan duty', ['node', 'fan'], registry=self.registry)
         self.health = Gauge('pifanctl_worker_fan_ready', 'Fan regulation is healthy', ['node', 'fan'], registry=self.registry)
         self.zone_temp = Gauge('pifanctl_worker_zone_temperature_celsius', 'Complete zone maximum', ['node', 'zone'], registry=self.registry)
 
     def apply(self, raw):
+        with self.actuation:
+            return self._apply(raw)
+
+    def _apply(self, raw):
         new = validate_plan(raw, self.node, self.uid)
         def claim(spec):
             family = next(iter(spec['hardware']))
@@ -116,7 +123,28 @@ class Worker:
         self.plan = new
         self.released = set(sorted(self.released)[-128:])
 
+    def trip(self, reason):
+        # Publish the latch before touching hardware so a late query cannot
+        # undo the watchdog. Only the main loop may clear it after revalidation.
+        self.safety_error = reason
+        with self.actuation:
+            self.safety_error = reason
+            for name, driver in self.drivers.items():
+                try:
+                    driver.set_duty(100)
+                    if name in self.controllers: self.controllers[name].force(100)
+                except Exception:
+                    log.error('Watchdog could not write full duty to %s', name)
+                self.duty.labels(self.node, name).set(100)
+                self.health.labels(self.node, name).set(0)
+        with self.mutex:
+            self.report['ready'] = False
+            self.report['reason'] = reason
+            for state in self.report['fans'].values():
+                state.update(ready=False, reason=reason, dutyPercent=100)
+
     def cycle(self, healthy=True, reason='', now=None):
+        sample_now = now
         now = time.time() if now is None else now
         result = {'nodeName': self.node, 'nodeUID': self.uid, 'appliedTopologyHash': self.plan['hash'] if self.plan else '',
                   'fans': {}, 'releasedFans': sorted(self.released), 'heartbeatTime': now, 'ready': bool(self.plan), 'reason': reason}
@@ -128,42 +156,53 @@ class Worker:
             local = None
         for name, spec in (self.plan or {}).get('fans', {}).items():
             temperature, nodes, zone_values = None, {}, {}
-            failure = reason if not healthy else ''
+            failure = self.safety_error or (reason if not healthy else '')
             try:
                 if failure: raise TemperatureUnavailable(failure)
                 if local is None: raise TemperatureUnavailable('LocalSensorUnavailable')
-                temperature, zone_values, nodes = fan_reading(spec, local, now)
+                temperature, zone_values, nodes = fan_reading(spec, local, sample_now)
             except (TemperatureUnavailable, OSError, ValueError) as error:
                 failure = str(error)
             if name not in self.drivers:
                 failure = 'HardwareUnavailable'
                 duty = 100
             else:
-                control = self.controllers[name]
-                if failure:
-                    duty = control.force(100)
-                    self.updated.pop(name, None)
-                elif now - self.updated.get(name, float('-inf')) >= spec['control']['refreshIntervalSeconds']:
-                    duty = control.update(temperature)
-                    self.updated[name] = now
-                else:
-                    # Rising temperature is always acted on immediately.
-                    from pifanctl.control import curve_target
-                    duty = control.force(max(control.duty, curve_target(temperature, control.config)))
-                self.drivers[name].set_duty(duty)
+                with self.actuation:
+                    failure = self.safety_error or failure
+                    control = self.controllers[name]
+                    if failure:
+                        duty = control.force(100)
+                        self.updated.pop(name, None)
+                    elif now - self.updated.get(name, float('-inf')) >= spec['control']['refreshIntervalSeconds']:
+                        duty = control.update(temperature)
+                        self.updated[name] = now
+                    else:
+                        # Rising temperature is always acted on immediately.
+                        from pifanctl.control import curve_target
+                        duty = control.force(max(control.duty, curve_target(temperature, control.config)))
+                    self.drivers[name].set_duty(duty)
             result['fans'][name] = {'dutyPercent': duty, 'temperatureCelsius': temperature, 'ready': not bool(failure),
                                     'reason': failure, 'zones': zone_values, 'nodes': nodes}
             result['ready'] = result['ready'] and not failure
             self.duty.labels(self.node, name).set(duty)
             self.health.labels(self.node, name).set(0 if failure else 1)
             for zone, value in zone_values.items(): self.zone_temp.labels(self.node, zone).set(value)
-        with self.mutex: self.report = result
+        with self.mutex:
+            if self.safety_error:
+                result.update(ready=False, reason=self.safety_error)
+                for state in result['fans'].values(): state.update(ready=False, reason=self.safety_error, dutyPercent=100)
+            self.report = result
+        self.progress = time.monotonic()
         return result
 
     def snapshot(self):
         with self.mutex: return copy.deepcopy(self.report)
 
     def close(self):
+        with self.actuation:
+            return self._close()
+
+    def _close(self):
         errors = []
         for driver in self.drivers.values():
             try: driver.set_duty(100)
@@ -200,6 +239,19 @@ def heartbeat_ok(path, plan, now=None):
     except (OSError, ValueError, KeyError, TypeError): return False
 
 
+def check_watchdog(worker, heartbeat_path=None, now=None, monotonic_now=None):
+    if not worker.plan: return
+    monotonic_now = time.monotonic() if monotonic_now is None else monotonic_now
+    if heartbeat_path and not heartbeat_ok(heartbeat_path, worker.plan, now):
+        worker.trip('OperatorHeartbeatExpired')
+    elif monotonic_now - worker.progress > worker.plan['watchdogSeconds']:
+        worker.trip('ControlLoopStalled')
+
+
+def watch_safety(worker, heartbeat_path, stop):
+    while not stop.wait(1): check_watchdog(worker, heartbeat_path)
+
+
 def run(plan_path, node, uid='', thermal_path='/sys/class/thermal', lock_dir='/var/lock/pifanctl',
         heartbeat_path=None, port=9103, mock=False, stop=None, loader=None):
     stop = stop or threading.Event()
@@ -208,6 +260,9 @@ def run(plan_path, node, uid='', thermal_path='/sys/class/thermal', lock_dir='/v
     server = None
     last, error = None, 'NoPlan'
     with HostLock(lock_dir):
+        guard_stop = threading.Event()
+        guard = threading.Thread(target=watch_safety, args=(worker, heartbeat_path, guard_stop), daemon=True)
+        guard.start()
         try:
             if port: server = serve(worker, port)
             while not stop.is_set():
@@ -224,10 +279,18 @@ def run(plan_path, node, uid='', thermal_path='/sys/class/thermal', lock_dir='/v
                 healthy = not error and worker.plan is not None
                 if healthy and heartbeat_path and not heartbeat_ok(heartbeat_path, worker.plan):
                     healthy, error = False, 'OperatorHeartbeatExpired'
+                if healthy:
+                    with worker.actuation:
+                        # Recheck after acquiring the actuation lock; a watchdog
+                        # trip may have happened while a query/lock was pending.
+                        fresh = not heartbeat_path or heartbeat_ok(heartbeat_path, worker.plan)
+                        progressed = time.monotonic() - worker.progress <= worker.plan['watchdogSeconds']
+                        if fresh and progressed: worker.safety_error = ''
                 worker.cycle(healthy, error)
                 intervals = [f['control']['refreshIntervalSeconds'] for f in (worker.plan or {}).get('fans', {}).values()]
                 stop.wait(min(intervals, default=5))
         finally:
+            guard_stop.set(); guard.join()
             try: worker.close()
             finally:
                 if server: server.shutdown(); server.server_close()

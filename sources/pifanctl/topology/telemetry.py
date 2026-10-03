@@ -39,7 +39,6 @@ def query(url, expression, timeout=3):
 
 
 def read_members(telemetry, members, local, now=None):
-    now = time.time() if now is None else now
     if not members:
         raise TemperatureUnavailable('EmptySelection')
     if telemetry['source'] == 'local':
@@ -48,6 +47,8 @@ def read_members(telemetry, members, local, now=None):
     selector = '{node=~' + json.dumps(expression) + '}'
     temperatures = query(telemetry['prometheusURL'], 'pifanctl_temperature_celsius' + selector)
     timestamps = query(telemetry['prometheusURL'], 'pifanctl_temperature_observed_timestamp_seconds' + selector)
+    # Account for time spent in both requests, not the start of the whole cycle.
+    now = time.time() if now is None else now
     nodes = {}
     age = telemetry['maxSampleAgeSeconds']
     for key, value in temperatures.items():

@@ -135,6 +135,10 @@ duty. A healthy heartbeat does not bypass a zone's missing/stale sensor input.
 The worker only decreases duty on each fan's refresh interval; rising demand
 and failures are applied immediately when sampled.
 
+A separate worker thread checks heartbeat expiry and control-loop progress every
+second, independently of Prometheus queries. Its full-duty latch cannot be
+overridden by a late query; the main loop must revalidate before clearing it.
+
 | Observation | Meaning |
 | --- | --- |
 | `/status`, `/metrics` on worker :9103 | Applied hash, requested duty, member temperatures and reasons |

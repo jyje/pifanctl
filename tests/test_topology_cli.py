@@ -97,3 +97,40 @@ def test_dangling_reference(file):
     file.write_text(yaml.safe_dump(bundle([zone()])))
     result = runner.invoke(app, ['topology', 'validate', str(file)])
     assert result.exit_code == 2 and 'MissingFan' in result.output
+
+
+def test_watch_recovery(monkeypatch):
+    class Fake:
+        def __init__(self, *args): self.count = 0
+        def get(self, path): return {'metadata': {'resourceVersion': '1'}, 'items': []}
+        def events(self, kind, rv):
+            self.count += 1
+            if self.count == 1: yield {'type': 'ERROR', 'object': {'code': 410}}
+            elif self.count == 2: raise APIError(410, 'Expired')
+            else: raise KeyboardInterrupt()
+    monkeypatch.setattr(cli, 'Kube', Fake)
+    assert runner.invoke(app, ['fan', 'watch']).exit_code != 0
+
+
+def test_watch_wrapper_and_auth_transport_errors(monkeypatch):
+    from kubernetes import config, client, watch
+    from kubernetes.config.config_exception import ConfigException
+    from urllib3.exceptions import HTTPError
+    calls = []
+    class Stream:
+        def stream(self, method, *args, **kwargs):
+            calls.append((args, kwargs)); yield {'type': 'ADDED'}
+        def stop(self): calls.append('stopped')
+    monkeypatch.setattr(watch, 'Watch', Stream)
+    monkeypatch.setattr(client, 'CoreV1Api', lambda c: type('Core', (), {'list_node': None})())
+    monkeypatch.setattr(client, 'CustomObjectsApi', lambda c: type('Custom', (), {'list_cluster_custom_object': None})())
+    k = Kube(client=FakeClient())
+    assert list(k.events('Node')) == [{'type': 'ADDED'}]
+    assert list(k.events('Fan', '42')) == [{'type': 'ADDED'}]
+    assert calls[-2][1]['resource_version'] == '42' and calls[-1] == 'stopped'
+    def auth_fail(**kwargs): raise ConfigException('PRIVATE')
+    monkeypatch.setattr(config, 'new_client_from_config', auth_fail)
+    with pytest.raises(APIError, match='credentials'): Kube('path')
+    def transport_fail(*args, **kwargs): raise HTTPError('PRIVATE')
+    monkeypatch.setattr(k.client, 'call_api', transport_fail)
+    with pytest.raises(APIError, match='transport'): k.get('/api/v1/nodes')

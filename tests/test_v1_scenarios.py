@@ -57,6 +57,36 @@ def test_two_racks_hot_missing_watchdog(monkeypatch):
         for w in workers.values(): w.close()
 
 
+@pytest.mark.parametrize('example', ['per-node', 'multi-fan', 'standalone'])
+def test_per_board_and_multiple_fan_examples(monkeypatch, example):
+    topology = plan(load(f'design/v1/examples/{example}.yaml'))
+    temperatures = {f'pi-{i:02}': (78 if i == 1 else 55) for i in range(1, 5)}
+    monkeypatch.setattr(telemetry, 'query', lambda url, expr: {
+        (('node', n), ('zone', 'cpu')): (100 if 'timestamp' in expr else value) for n, value in temperatures.items()})
+    workers = {}
+    try:
+        for f in topology['fans'].values():
+            n = f['nodeName']
+            if n in workers: continue
+            w = Worker(n, mock=True); monkeypatch.setattr(w.local, 'read', lambda n=n: temperatures[n])
+            w.apply(worker_plan(topology, n)); workers[n] = w
+        for w in workers.values():
+            result = w.cycle(now=100)
+            assert result['ready']
+            if example in ('multi-fan', 'standalone'):
+                assert all(f['dutyPercent'] == 100 for f in result['fans'].values())
+        if example == 'per-node':
+            assert workers['pi-01'].snapshot()['fans']['fan-pi-01']['dutyPercent'] == 100
+            assert workers['pi-02'].snapshot()['fans']['fan-pi-02']['dutyPercent'] == 95
+            temperatures.pop('pi-01')
+            monkeypatch.setattr(workers['pi-01'].local, 'read', lambda: 55)
+            assert not workers['pi-01'].cycle(now=100)['ready']
+            assert workers['pi-02'].cycle(now=100)['ready']
+        if example == 'multi-fan': assert len(workers['pi-01'].drivers) == 2
+    finally:
+        for w in workers.values(): w.close()
+
+
 def test_official_client_http_transport():
     calls = []
     class Handler(BaseHTTPRequestHandler):
