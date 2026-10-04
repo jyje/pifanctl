@@ -195,6 +195,16 @@ def test_coverage_actions_remain_outside_the_arm_runner():
     assert "if" in workflow["jobs"]["publish-badges"]
     assert "github.event_name == 'push'" in workflow["jobs"]["publish-badges"]["if"]
     assert workflow["jobs"]["publish-badges"]["permissions"]["contents"] == "write"
+    publisher_run = "\n".join(
+        step.get("run", "") for step in workflow["jobs"]["publish-badges"]["steps"]
+    )
+    assert "--output assets/coverage" in publisher_run
+    assert "git push origin HEAD:main" in publisher_run
+    assert "coverage-badges" not in publisher_run
+    for readme in ("README.md", "README-ko.md"):
+        content = (ROOT / readme).read_text()
+        assert "assets/coverage/lines.svg" in content
+        assert "assets/coverage/branches.svg" in content
     assert workflow["jobs"]["image"]["runs-on"]["labels"] == "r4spi-microk8s"
     codecov_job = workflow["jobs"]["codecov"]
     assert "github.ref == 'refs/heads/main'" in codecov_job["if"]
