@@ -45,9 +45,11 @@ and 95% patch statuses are informational during bootstrap. An unavailable
 Codecov service cannot pass or bypass the local CI quality check.
 
 Repository owners must enable the pifanctl repository in Codecov for PR
-annotations, OIDC uploads and Codecov's native project view. Main uploads use
-OIDC. PR upload errors are non-blocking while Codecov account integration is
-being established. The GitHub workflow never exposes upload secrets to PR code.
+annotations, OIDC uploads and Codecov's native project view. Main and same-repo
+PR uploads use OIDC. Fork PRs use the Codecov Action's public-fork upload path
+without a token. Upload errors remain non-blocking while the repository's
+Codecov configuration is established. The GitHub workflow never exposes upload
+secrets to PR code.
 
 ## README badges
 
