@@ -5,7 +5,7 @@ operator chart lives in [charts/pifanctl-operator](../../charts/pifanctl-operato
 See the [runtime manual](../../docs/v1/runtime.md) before installing an alpha.
 Hardware and API server acceptance remain separate gates.
 
-Read the [design](../../docs/v1/README.md) or [한국어 설계](../../docs/v1/README-ko.md).
+Read the [design](../../docs/v1/README.md) or [Korean design](../../docs/v1/README-ko.md).
 
 | Directory | Contents |
 | --- | --- |

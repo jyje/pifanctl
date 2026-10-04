@@ -1,6 +1,6 @@
 # v1: cooling topology and operator design
 
-**English** | [한국어](README-ko.md)
+**English** | [Korean](README-ko.md)
 
 **Status: implemented alpha (`1.0.0-alpha.1`), not a stable v1 release.**
 The shared planner, freshness metric, worker, operator, CLI and chart are implemented.

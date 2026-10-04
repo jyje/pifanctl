@@ -5,7 +5,7 @@ created by the operator for physical actuator Nodes. The alpha image must be
 built and published before installation; a PR does not create a registry image.
 
 See [English runtime instructions](../../docs/v1/runtime.md),
-[한국어](../../docs/v1/runtime-ko.md) and the [implementation checklist](../../PLAN.md).
+[Korean](../../docs/v1/runtime-ko.md) and the [implementation checklist](../../PLAN.md).
 
 ```sh
 helm lint charts/pifanctl-operator

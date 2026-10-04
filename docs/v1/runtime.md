@@ -4,7 +4,7 @@
 `1.0.0-alpha.1` includes the portable schema/planner, freshness metric, guarded
 worker, official Kubernetes client, operator, CLI and operator chart. Mock tests
 do not establish real PWM behavior. [PLAN.md](../../PLAN.md) records the staged
-checks and remaining release gates. [한국어](runtime-ko.md).
+checks and remaining release gates. [Korean](runtime-ko.md).
 
 ## 01: choose the physical topology
 
