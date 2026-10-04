@@ -196,7 +196,11 @@ def test_coverage_actions_remain_outside_the_arm_runner():
     assert "github.event_name == 'push'" in workflow["jobs"]["publish-badges"]["if"]
     assert workflow["jobs"]["publish-badges"]["permissions"]["contents"] == "write"
     assert workflow["jobs"]["image"]["runs-on"]["labels"] == "r4spi-microk8s"
-    codecov_step = workflow["jobs"]["codecov"]["steps"][-1]
-    oidc_condition = codecov_step["with"]["use_oidc"]
-    assert "github.ref == 'refs/heads/main'" in oidc_condition
-    assert "github.event.pull_request.head.repo.full_name == github.repository" in oidc_condition
+    codecov_job = workflow["jobs"]["codecov"]
+    assert "github.ref == 'refs/heads/main'" in codecov_job["if"]
+    assert "github.event.pull_request.head.repo.full_name == github.repository" in codecov_job["if"]
+    assert "github.actor != 'dependabot[bot]'" in codecov_job["if"]
+    assert codecov_job["permissions"] == {"contents": "read"}
+    codecov_step = codecov_job["steps"][-1]
+    assert codecov_step["with"]["token"] == "${{ secrets.CODECOV_TOKEN }}"
+    assert codecov_step["uses"] == "codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac"
