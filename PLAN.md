@@ -44,7 +44,7 @@ checks remain below. Live trial steps and results are tracked privately.
 
 ## Remaining release acceptance gates
 
-- [ ] Merge PR #41, which carries the v1 runtime and merged coverage CI work, into the default branch.
+- [ ] Merge design PR #40 into `main`, then merge PR #41, which carries the v1 runtime and merged coverage CI work.
 - [ ] After the changes reach the default branch, verify Codecov commit/path mapping and PR annotations, then verify the first successful main line and branch badge publication.
 - [ ] Measure real Pi 4 GPIO and Pi 5 sysfs wiring, channel, initialization and shutdown PWM behavior.
 - [ ] Measure fan behavior during process kill, Node reboot, power loss, and network partition.
