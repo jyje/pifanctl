@@ -51,7 +51,16 @@ checks remain below. Live trial steps and results are tracked privately.
 - [ ] Measure fan behavior during process kill, Node reboot, power loss, and network partition.
 - [ ] Complete supported hardware migration and rollback acceptance across the documented configurations.
 - [ ] Measure status, Prometheus, and API load at the supported fleet size.
-- [ ] Document electrical fail-open behavior and independent fan power requirements before v1.0.0.
+- [x] Document electrical fail-open limits and independent fan power requirements. Hardware-specific measurements remain open above.
+
+The repeatable procedures, acceptance criteria, current MicroK8s baseline,
+evidence form, and release decision record are in the [v1 release acceptance
+field manual](docs/v1/release-acceptance.md) and its [PDF](docs/v1/release-acceptance.pdf).
+The isolated trial now runs a Python 3.12 image built from current `main`
+(`887f6f1-py312`) because the cluster uses the documented legacy-CA compatibility
+path. Argo CD is Synced/Healthy and the Fan/Zone report Ready. Physical rotation
+confirmation after this upgrade and all hardware/failure acceptance gates remain
+open.
 
 ## Completion log
 
@@ -79,6 +88,7 @@ checks remain below. Live trial steps and results are tracked privately.
 | Worker monitoring follow-up | Headless worker Service and optional ServiceMonitor in managed/reuse modes. Unready endpoints remain visible for failsafe metrics. Label/port discovery regression checks and migration guidance added. Full Python 3.14: 239 tests, 95.69%; monitoring-enabled Helm lint passed. | `d1a1409` |
 
 | Operator replacement follow-up | Default to one operator and use Recreate so leader-only readiness cannot deadlock a surge update. Full Python 3.14: 239 tests, 95.69%; chart regression/lint passed. CI passed all nine jobs. Multi-replica readiness remains a follow-up. | `837b3d5` |
+| Release acceptance field manual and trial upgrade | Added repeatable Pi 4/Pi 5 PWM, failure, rollback, and fleet-load procedures; documented electrical fail-open and independent fan-supply limits. Built and deployed `ghcr.io/jyje/pifanctl-issue:887f6f1-py312` from current `main` via successful [workflow run #25](https://github.com/jyje/pifanctl/actions/runs/37201259327). Read-only verification: Argo CD Synced/Healthy; operator, agents, worker, Fan, and CoolingZone Ready; observed temperature 49.05 C and requested duty 24.375%. User confirmation of physical fan rotation after rollout is pending. No fault injection or electrical waveform measurement was performed. PDF rendered and visually reviewed. | Pending |
 | Coverage CI follow-up | PR #43 merged into the still-open PR #41 branch. CI passed Python 3.10-3.14 with 259 tests each, the 90% line gate, branch reporting, workflow/version/Helm checks, ARM64 image smoke test, and authenticated Codecov upload. Baseline: 95.75-95.77% line and 88.2129-89.1635% branch coverage. Codecov's main-branch comparisons and the first main badge publication remain unverified until PR #41 reaches the default branch. | `6dc6bfa` |
 
 ### Regressions found and fixed

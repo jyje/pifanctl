@@ -65,6 +65,22 @@ before any migration. The sysfs driver leaves kernel PWM enabled on close;
 RPi.GPIO stops its software thread and holds the pin HIGH. Verify actual
 electrical full-speed behavior for your wiring before relying on this.
 
+### Electrical fail-open requirements
+
+`100%` is a requested PWM duty, not a measured voltage, fan RPM, or guarantee
+that the fan has power. The signal state during process termination, board
+reboot, disconnected wiring, or controller power loss depends on the actual Pi,
+driver, fan input polarity, and external circuit. Do not assume a floating input
+or a GPIO HIGH state means maximum cooling. Before using the system as a cooling
+safety control, measure the signal and fan rotation on each supported hardware
+combination and provide an independent, correctly rated fan supply. The fan
+input must have a verified hardware default that requests the fan's safe maximum
+when software no longer controls the signal. This project does not prescribe a
+universal pull-up, pull-down, or polarity. Complete the [release acceptance
+field manual](release-acceptance.pdf) and retain its measured evidence before a
+stable release. A fan-supply or mechanical failure cannot be corrected by
+software.
+
 ## 03: prepare Kubernetes
 
 The alpha image is **not available merely because this PR exists**. Build and
