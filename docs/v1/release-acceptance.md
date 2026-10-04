@@ -1,151 +1,151 @@
 # pifanctl v1 Release Acceptance Field Manual
 
-**Status:** Field procedures and evidence record, 2026-10-04
+**Status:** Trial observations recorded on 2026-10-04
 **Release target:** `1.0.0`
 **Current implementation:** `1.0.0-alpha.1`
 **Decision:** Not ready for a stable release. Hardware-specific acceptance remains open.
 
-This manual turns the remaining release gates in [PLAN.md](../../PLAN.md) into repeatable checks. It distinguishes software-reported commands from measured electrical signals and physical cooling. A green condition, requested PWM duty, or spinning fan at one point in time is not proof of fail-open behavior.
+This manual records the current MicroK8s trial, the bounded temperature-response test, the measured evidence, and the remaining release checks. Cluster-reported temperatures and requested duty are not electrical or RPM measurements. Values unavailable from Kubernetes are explicitly marked **Not recorded** instead of being guessed.
 
-## 1. Evidence rules
-
-- Record the tested source commit, image digest, chart version, topology hash, node identity, and test timestamp for every run.
-- Use an isolated test rack or a maintenance window for tests that stop workers, partition networking, reboot nodes, or remove power.
-- Keep a person at the hardware for all fan and power tests. Record fan rotation directly. Use a tachometer when available, and an oscilloscope or logic analyzer for PWM signal measurements.
-- Mark a check **Pass** only when its acceptance criteria and evidence are recorded. Use **Fail**, **Blocked**, or **Not run** for all other outcomes.
-- Do not infer fan RPM from pifanctl duty. Duty is a requested signal value, not a rotation measurement.
-- Stop on unexpected heating, loss of cooling, unstable power, or a signal state that cannot be explained. Restore the archived configuration using the documented rollback procedure.
-
-## 2. Current trial baseline
-
-Read-only snapshot from the configured MicroK8s cluster after the candidate rollout on 2026-10-04:
+## 1. Current trial configuration
 
 | Item | Observed value |
 | --- | --- |
 | Kubernetes context | `microk8s` |
-| Nodes | `raspi-40`, `raspi-41`, `raspi-50`, `raspi-51` |
-| Node runtime | Kubernetes `v1.36.2`, `arm64` |
 | Trial namespace | `pifanctl-v1-trial` |
-| Operator and worker image | `ghcr.io/jyje/pifanctl-issue:887f6f1-py312` |
-| Runtime chart source | `pifanctl` commit `887f6f1ff05301255e7a5f01e22e117ef8e8e9ef` |
-| Image build | [GitHub Actions run #25](https://github.com/jyje/pifanctl/actions/runs/37201259327), Python 3.12, successful image checks |
-| Preserved pre-upgrade trial target | Chart source `837b3d5`; issue image `6a0f5a5-py312`, retained in the Application's previous applied configuration |
-| Cooling zone | `r4spi-rack`, four named Nodes |
-| Fan | `r4spi-rack-fan`, `raspi-40`, RPi.GPIO BCM pin 18, 1000 Hz |
-| Reported state | Argo CD `Synced/Healthy`; operator, four agents, and worker Ready; Fan and CoolingZone Ready |
-| Reported temperature | 49.05 C, from Prometheus at `2026-10-04T12:18:16Z` |
-| Requested fan duty | 24.375% at the same observation |
-| Physical observation | Post-upgrade visual confirmation is pending; the user confirmed normal rotation before this image update. No RPM or PWM waveform is recorded. |
-| Topology source | Unchanged from commit `837b3d5`; shared rack configuration preserved |
+| Nodes | `raspi-40`, `raspi-41`, `raspi-50`, `raspi-51` |
+| Node platforms | ARM64, Kubernetes `v1.36.2`, Debian GNU/Linux 12, Linux `6.12.93+rpt-rpi-*` kernels |
+| Known board labels | `raspi-40` and `raspi-41`: Raspberry Pi 4 Model B; `raspi-50`: Raspberry Pi 5 Model B; `raspi-51`: model label not present |
+| Operator / agent / worker image | `ghcr.io/jyje/pifanctl-issue:887f6f1-py312` |
+| Image digest | `sha256:525ef9f01f7bd4d5af5ac4d4014d9f0320187628c41cd2eacd028d5fbb896cf5` |
+| Source revision | `887f6f1ff05301255e7a5f01e22e117ef8e8e9ef` |
+| Runtime chart | `pifanctl` chart `0.2.0-alpha.1`; topology source preserved from `837b3d5` |
+| Image build | [GitHub Actions run #25](https://github.com/jyje/pifanctl/actions/runs/37201259327), Python 3.12, passed |
+| Current topology | One shared rack fan cools the four Nodes in CoolingZone `r4spi-rack` |
+| Actuator | Fan `r4spi-rack-fan` on `raspi-40`, RPi.GPIO BCM pin 18, 1000 Hz |
+| Curve | Idle 0%; starts at 30% at 50°C; reaches 100% at 70°C; downward changes are limited to 5 percentage points per refresh |
+| Safety commands | Failsafe duty 100%; exit duty 100%; refresh every 5 seconds; worker heartbeat timeout 120 seconds |
+| Topology hash | `eb8b2a42289be4271f52103db3c7980ce5c9a0bb06fe83bc7f17d804b5c3f37c` |
+| Readiness | Argo CD `Synced/Healthy`; operator, four agents, worker, Fan, and CoolingZone reported Ready after rollout |
+| Immediate image rollback | `ghcr.io/jyje/pifanctl-issue:6a0f5a5-py312`, runtime chart source `837b3d5`; the archived v0 configuration remains the full rollback target |
 
-This is a useful live baseline, not a release acceptance result. The current main-source candidate is deployed to the isolated trial, but no physical PWM waveform, RPM, reboot, power-loss, or network-partition test has been recorded. The Pi model and fan electrical details must be read from the physical inventory; node names alone do not prove board model. The earlier `6a0f5a5-py312` trial image remains the immediate rollback target, and the separately archived v0 configuration remains available for full rollback.
+At the last recorded sample, `2026-10-04T13:23:40Z`, the Fan resource reported a 51.25°C control temperature and a 34.375% requested duty. The measured node temperatures and Fan status vary over time; see the timestamped sample file rather than treating this point as a steady-state result.
 
-## 3. Hardware inventory and electrical safety
+## 2. Filled hardware inventory
 
-Complete one inventory row for each actuator and fan before applying a configuration:
+The table describes the deployed shared-fan controller. The thermal workload test ran on member `raspi-41`, which has no local fan in this topology.
 
-| Field | Record |
+| Field | Recorded value |
 | --- | --- |
-| Raspberry Pi model and revision | ______________________________ |
-| OS, kernel, firmware | ______________________________ |
-| Node name and UID | ______________________________ |
-| Driver and exact GPIO/PWM chip/channel | ______________________________ |
-| Fan manufacturer, model, rated voltage/current | ______________________________ |
-| Fan power source and fuse/current limit | ______________________________ |
-| PWM input type, polarity, frequency range | ______________________________ |
-| Ground/reference and signal wiring | ______________________________ |
-| Independent pull/default circuit and measured default | ______________________________ |
-| Tachometer or other rotation measurement | ______________________________ |
+| Controller Raspberry Pi model | Raspberry Pi 4 Model B, based on the Kubernetes node label; exact PCB revision not recorded |
+| Controller OS, kernel, firmware | Debian GNU/Linux 12; kernel `6.12.93+rpt-rpi-v8`; firmware version not recorded |
+| Controller Node and UID | `raspi-40`; `2b557e96-e346-4e26-b053-04d3cfaa094e` |
+| Driver and PWM channel | RPi.GPIO, BCM GPIO 18, 1000 Hz |
+| Fan manufacturer, model, rated voltage/current | Not recorded in Kubernetes; physical fan label or datasheet inspection required |
+| Fan supply, fuse, and current limit | Not recorded; physical wiring and supply inspection required |
+| PWM input type and polarity | Not recorded; verify from the exact fan datasheet and measured waveform |
+| Ground/reference and signal wiring | Not recorded; inspect the physical rack |
+| Independent hardware default and measured signal state | Not recorded; oscilloscope or logic-analyzer measurement required |
+| Tachometer/RPM | No RPM metric or tachometer record was available |
+| Visual rotation after the image update | Awaiting direct post-upgrade confirmation; normal rotation was confirmed before the image update |
+| Test member Node and UID | `raspi-41`; `cabfc25d-6991-427c-a941-3ff323fd6531`; Raspberry Pi 4 Model B label |
 
-`100%` in pifanctl means a full-duty request. It does not prove the signal polarity is correct, that the fan has power, or that the motor is turning. A controller-board reboot, process crash, disconnected signal, or lost board power can leave the PWM input floating or inactive depending on the board, fan, driver, and circuit. The hardware design must give the fan's PWM input a measured safe default independent of pifanctl. The fan supply must remain available independently of the control process and must be correctly rated and protected. No universal pull-up, pull-down, or polarity is assumed by this project.
+`100%` is a requested PWM duty, not measured voltage, RPM, or proof that the fan has power. A floating input or GPIO HIGH must not be assumed to mean maximum cooling. No universal pull-up, pull-down, or polarity is prescribed. Verify a hardware safe default and independently powered fan circuit for the actual wiring. Software cannot correct fan-supply loss or mechanical failure.
 
-Do not promise cooling during complete fan-supply loss. If the workload requires cooling after a controller or signal failure, use a fan and external circuit whose documented default state has been verified for the actual wiring. Record both signal waveform and physical rotation. Software cannot compensate for an unpowered or mechanically failed fan.
+## 3. Temperature-response test
 
-## 4. Acceptance procedures
+### Method and guardrails
 
-### A. Raspberry Pi 4 GPIO PWM
+- The live Fan stayed enabled throughout the CPU-load test. No CR, ConfigMap, Helm value, or temperature threshold was changed.
+- Temporary, non-privileged CPU-load Pods were pinned to `raspi-41` and used the deployed candidate image. Each stage had a CPU and memory limit and exited automatically after its fixed duration.
+- Prometheus temperatures and Fan status were sampled every 10 to 15 seconds. The load test was set to stop if any member reached 65°C or if temperature/status monitoring failed. Neither stop condition was reached.
+- The 65°C abort threshold was a conservative test guardrail, not a pifanctl release setting. Raspberry Pi documents SoC thermal throttling between 80°C and 85°C; this test stayed well below that range. [Raspberry Pi hardware documentation](https://www.raspberrypi.com/documentation/hardware/rf/)
+- The raw records are in [thermal-load-observations.csv](thermal-load-observations.csv). They contain Prometheus CPU-thermal readings and contemporaneous Fan resource status. The Prometheus samples were fresh, with observed sample age below 1.1 seconds.
+- The CSV has 68 observations from `2026-10-04T12:54:19Z` through `2026-10-04T13:23:40Z`. SHA-256: `78a3226fbfc82a8cced5c18061e08d256909d11a80333ae9def67f2ba81794f5`.
 
-1. Record Pi model/revision, OS/kernel, fan model, power, exact wiring, pin, polarity, and instrument setup.
-2. With the fan safely powered and a person observing it, start the worker on the actuator node. Capture the signal from process start through driver initialization.
-3. Verify the initial full-duty request reaches the measured signal before telemetry is accepted. Measure frequency, duty, polarity, voltage levels, startup latency, and fan rotation.
-4. Apply a known configuration and verify measured duty tracks the requested duty. Confirm the fan starts reliably from rest at the configured start duty and does not stall at each tested step.
-5. Stop the worker normally. Verify the configured exit duty is emitted and the fan remains in the intended safe state.
-6. Repeat at least three cold starts and three normal stops. Attach scope/tachometer records and logs.
+### Results
 
-**Pass:** measured waveform and fan behavior match the documented fan specification and configured duty at every tested point; startup and shutdown default behavior is repeatable. A 100% software request alone is not a pass.
-
-### B. Raspberry Pi 5 kernel sysfs PWM
-
-1. Confirm the supported kernel overlay, PWM chip, channel, pin mux, polarity, and frequency from the actual Pi 5. The sample `chip: 0`, `channel: 2` in `design/v1/examples/sysfs.yaml` is illustrative and must not be assumed correct for a board.
-2. Record which kernel component owns the PWM channel and confirm there is no competing writer.
-3. Repeat the waveform, start duty, stable duty points, normal shutdown, cold-start, and physical rotation measurements from procedure A.
-4. Reboot the Pi and verify the signal's state from power-on through worker initialization. Capture any interval before the kernel driver and pifanctl take control.
-
-**Pass:** actual chip/channel mapping is verified, there is one writer, waveform and physical behavior are repeatable, and the measured boot/shutdown defaults satisfy the hardware safety design.
-
-### C. Process exit, crash, and watchdog
-
-Test graceful stop and forced termination separately. A normal shutdown can run cleanup; `SIGKILL` cannot. Record signal and fan behavior for both. For the operator heartbeat test, interrupt only the isolated trial worker's access to fresh plan/heartbeat data and confirm the 120-second watchdog behavior without affecting unrelated workloads.
-
-**Pass:** graceful stop applies the documented exit state; forced termination and stale heartbeat reach the independently designed safe electrical default; the operator reports stale or unready state; recovery requires fresh matching plan/heartbeat acknowledgement. Any measured behavior that depends on Python cleanup is not accepted as protection against `SIGKILL`.
-
-### D. Node reboot and power loss
-
-On an isolated actuator host, separately test orderly reboot, abrupt controller power loss, and fan-supply interruption. Do not combine failure causes in a single run. Observe the physical fan and capture signal voltage during each transition. Confirm the independent fan supply behaves as designed. Restore one failure at a time and verify the worker reclaims the hardware lock without competing writers.
-
-**Pass:** each failure has a measured, documented outcome. If cooling cannot continue during a particular failure, state that limitation explicitly and keep the stable-release gate open unless the product's safety requirements accept it.
-
-### E. Network partition and telemetry loss
-
-In the isolated trial only, interrupt worker-to-operator heartbeat delivery and separately interrupt Prometheus telemetry. Record when the fault begins, when the worker enters failsafe, requested and measured PWM, `/readyz`, metrics, and recovery. Keep the assigned fan and expected member set unchanged during the test.
-
-**Pass:** stale/missing telemetry and expired worker heartbeat do not lower duty; the worker stays unready/degraded with a visible reason; recovery uses fresh data and matching configuration identity.
-
-### F. Migration and rollback
-
-1. Capture the archived v0 configuration and its checksum. Inventory all processes that can write each PWM channel.
-2. Compare a read-only v1 topology plan with the physical rack. Keep the fan at full speed during handover.
-3. Stop the legacy writer and verify it has released the hardware before starting the v1 worker. Confirm the host-wide lock prevents a second writer.
-4. Exercise rollback: stop v1, verify driver close and lock release, restore the archived v0 configuration, then verify the original controller and cooling behavior.
-5. Repeat for every documented driver/topology combination, including a single Pi fan and shared rack fans.
-
-**Pass:** no overlapping writers occur, handover and rollback are repeatable, all nodes/fans return to the intended configuration, and the archive is usable.
-
-### G. Fleet load
-
-Define a supported fleet size before testing: number of Nodes, CoolingZones, Fans, worker endpoints, and scrape interval. At that size, measure operator CPU/memory, API requests, reconciliation duration, status writes, Prometheus query latency, scrape gaps, and worker heartbeat age during steady state and recovery. Use representative synthetic telemetry first; do not generate load against the production API without a maintenance plan.
-
-**Pass:** all workers remain within freshness limits, no stale state is reported Ready, API and Prometheus load stay within the cluster's documented budget, and status writes do not create unbounded etcd churn.
-
-## 5. Evidence record
-
-Use a separate record for every run. Attach raw logs, scope captures, and tachometer data to the project evidence archive and reference their checksum here.
-
-| Run | Candidate commit/image digest | Procedure | Result | Evidence reference/checksum | Reviewer/date |
+| Stage | Applied load | Highest member reading | `raspi-41` reading | Fan resource observation | Result |
 | --- | --- | --- | --- | --- | --- |
-| 1 | __________________ | __________________ | Not run | __________________ | __________________ |
-| 2 | __________________ | __________________ | Not run | __________________ | __________________ |
-| 3 | __________________ | __________________ | Not run | __________________ | __________________ |
+| A | 1 vCPU, up to 150 seconds | 51.8°C | 49.173°C maximum | Requested duty 29.375% to 36.3% | Partial; 55°C band not reached |
+| B | 2 vCPU, up to 120 seconds | 52.35°C | 50.147°C maximum | Requested duty reached 38.225% | Partial; brief readings only, no stable hold |
+| C | 3 vCPU, up to 120 seconds | 55.1°C on `raspi-51` | 49.173°C maximum | At control temperature 55.1°C, status requested 47.85% | Partial; hottest member was not the load target and did not remain at 55.1°C |
+| D | Five-minute no-load observation, begun about seven minutes after the final stress stage | 54.55°C maximum during the interval | Recorded separately in the CSV | Control temperature 49.05°C to 54.55°C; requested duty 17.45% to 45.925% | No stable plateau established; this delayed interval does not measure the immediate cooldown transient |
 
-### Release gate summary
+The expected steady-state commands from the configured curve are 30% at 50°C, 47.5% at 55°C, 65% at 60°C, 82.5% at 65°C, and 100% at 70°C. The trial reached a short 55.1°C control-temperature snapshot and reported 47.85%, consistent with the configured curve. It did not reach 60°C or higher, and no temperature band was held long enough to claim thermal stabilization.
 
-| Gate | Current state | Required evidence |
+The test is not an isolated causal measurement. The hottest readings came from `raspi-51`, not the stress target `raspi-41`, and the cluster hosts other services. The stress target peaked at 50.147°C, while the hottest rack member peaked at 55.1°C. A later `kubectl top nodes` sample showed about 19% CPU on both `raspi-40` and `raspi-41`, and about 6% on `raspi-50` and `raspi-51`, after the load had ended. The data demonstrate changing cluster telemetry and corresponding Fan status, but they do not prove that the injected load alone caused the `raspi-51` temperature peak.
+
+![Measured node temperatures and requested fan duty](figures/thermal-load-response.png)
+
+This figure plots the node selected for load, the concurrently hottest node, the cluster maximum, the Fan status control temperature, and the requested duty. Gaps between test stages remain gaps in time. Fan status is not measured PWM voltage or RPM.
+
+![Configured curve hypothesis and observed duty commands](figures/thermal-control-curve.png)
+
+The solid line is the configured rising curve. Markers are observed Fan status snapshots. The downward ramp can lag the curve because the configured controller limits each decrease to 5 percentage points per refresh. Target points at 60°C and above are curve calculations, not live measurements.
+
+### Stability criteria and interpretation
+
+For a future acceptance run, call a temperature band stable only after the hottest member stays within a 1°C range for at least 120 seconds under a declared, repeatable workload, telemetry remains fresh, and requested duty has no unexplained increase. Record the fan RPM or direct visual rotation during the entire run. This trial did not satisfy that criterion. The member temperature readings varied independently, and the hottest member was outside the node receiving the test load. The recorded five-minute no-load interval began about seven minutes after the last CPU-load sample, so it is not evidence for the immediate cooling slope or time-to-stability.
+
+The live test ended below the 65°C abort guardrail, all temporary load Pods were removed, and no trial configuration was changed. The physical-fan-stop and recovery test has **not** been run. Its safe abort threshold is awaiting confirmation; the hardware default, RPM, and post-upgrade physical rotation also remain unverified.
+
+## 4. Other scenario records
+
+| Scenario | Current evidence | Status |
 | --- | --- | --- |
-| Pi 4 GPIO waveform and physical fan behavior | Open | Procedures A and C results on the release candidate |
-| Pi 5 sysfs mapping and behavior | Open | Procedure B results on the actual supported Pi 5 setup |
-| Process/node/power/network failures | Open | Procedures C, D, and E with measured signal/rotation and recovery |
-| Migration and rollback | Open | Procedure F for each supported configuration |
-| Supported-fleet load | Open | Procedure G measurements at a declared fleet size |
-| Safety limitations documented | Documented, hardware validation open | Inventory, measured defaults, independent supply, and explicit failure limits |
+| Normal shared-rack regulation | Fan and CoolingZone Ready; Fan status follows the hottest available member samples and reports requested duty | Observed; not a stable thermal acceptance run |
+| Local node CPU load | Three capped CPU-load stages on `raspi-41`; see Section 3 and CSV | Partial; did not hold a target temperature |
+| Temperature missing or stale | The worker is configured for fail-safe 100%; no live telemetry fault was injected | Not run live; automated mock/API scenarios cover this behavior |
+| Operator heartbeat expires | Worker plan uses a 120-second heartbeat timeout and fail-safe 100%; no live heartbeat fault was injected | Not run live |
+| Physical shared fan stopped, then restored | No stop command or fan-power interruption was applied; actual fan circuit default is not yet documented | Not run; safety guardrail confirmation pending |
+| Controller process exit, reboot, or power loss | No live fault was injected; process and electrical defaults need measurement | Not run |
+| Pi 5 PWM hardware | `raspi-50` is labelled Pi 5 Model B, but the trial fan actuator uses RPi.GPIO on Pi 4 `raspi-40` | Not run on Pi 5 hardware |
 
-## 6. Release decision
+The examples below describe expected control behavior, not measured thermal traces:
 
-Do not label `1.0.0` stable until every applicable gate is backed by evidence for the exact release candidate. Hardware or topology combinations that were not tested must be clearly listed as unsupported. Preserve the alpha rollback archive until the release decision is recorded.
+- **Normal load:** the shared fan follows the hottest member. A hotter member raises the shared fan request while cooler members remain in the same CoolingZone.
+- **One hot member:** the selected zone's fan should rise along the configured curve; unrelated zones should not change.
+- **Missing temperature or expired heartbeat:** the affected worker should request 100% and report an unhealthy reason. No thermal rise is predicted here because the live faults were not injected.
+- **Fan stops or loses supply:** a software duty command cannot guarantee cooling. The measured hardware default and restoration behavior must be recorded before this scenario can pass.
+
+## 5. Remaining release procedures
+
+### Pi 4 GPIO PWM waveform and physical behavior
+
+Record the actual board revision, OS/firmware, fan part number, supply/current protection, wiring, polarity, voltage levels, and instrument setup. With a person at the hardware, capture startup, requested duty changes, fan start-from-rest, normal stop, and process termination. Repeat at least three cold starts and three normal stops. **Pass only when measured waveform and physical fan behavior agree with the fan datasheet at all tested points.**
+
+### Pi 5 kernel PWM
+
+Verify the actual overlay, PWM chip/channel, pin mux, polarity, and frequency on the physical Pi 5. The sample `chip: 0`, `channel: 2` in `design/v1/examples/sysfs.yaml` is illustrative. Check single-writer ownership and repeat startup, duty, reboot, and shutdown measurements. Do not infer a Pi model or pin map from a Node name.
+
+### Process, reboot, power, and network faults
+
+In an isolated maintenance window, test graceful stop and `SIGKILL` separately, then orderly reboot, abrupt controller power loss, fan-supply interruption, worker/operator partition, and Prometheus loss. Record physical rotation, scope/tachometer data, failsafe time, `/readyz`, status reason, and recovery. Never count Python cleanup as protection against `SIGKILL`.
+
+### Migration, rollback, and fleet load
+
+Capture the archived v0 configuration and checksum. Inventory every writer of each PWM channel. Compare a read-only v1 plan to the physical rack, keep cooling at the safe state during handover, stop the old writer and verify lock release before starting v1, then exercise rollback. Measure CPU/memory, API requests, reconciliation duration, status writes, Prometheus latency, scrape gaps, and heartbeat age at a declared fleet size.
+
+## 6. Evidence and release decision
+
+| Record | Candidate and method | Result | Evidence |
+| --- | --- | --- | --- |
+| Deployment | `887f6f1-py312`, digest recorded in Section 1 | Argo CD Synced/Healthy; Fan and CoolingZone Ready | [Workflow run #25](https://github.com/jyje/pifanctl/actions/runs/37201259327) |
+| Load stage A | `raspi-41`, 1 vCPU, maximum 150 seconds | Partial; maximum zone sample 51.8°C | [Raw samples](thermal-load-observations.csv) |
+| Load stage B | `raspi-41`, 2 vCPU, maximum 120 seconds | Partial; maximum zone sample 52.35°C | [Raw samples](thermal-load-observations.csv) |
+| Load stage C | `raspi-41`, 3 vCPU, maximum 120 seconds | Partial; 55.1°C transient on `raspi-51`; no steady hold | [Raw samples](thermal-load-observations.csv) |
+| Cooldown | Five-minute no-load observation, started about seven minutes after the final load sample | Not stable; immediate cooldown transient was not captured | [Raw samples](thermal-load-observations.csv) |
+| Electrical waveform, RPM, and physical fan-off recovery | No instruments or completed post-upgrade observation recorded | Not run | Physical acceptance evidence required |
+| Pi 5 hardware, fault injection, rollback, fleet scale | No live trial records | Not run | Procedures in Sections 5 and 3 |
+
+Do not label `1.0.0` stable until every applicable release gate has evidence for the exact release candidate. Hardware or topologies not tested must be listed as unsupported. Preserve the v0 rollback archive until the release decision is recorded.
 
 ## References
 
 - [Runtime manual](runtime.md)
 - [v1 architecture and acceptance design](README.md)
 - [Implementation and release checklist](../../PLAN.md)
+- [Raspberry Pi frequency and thermal management](https://www.raspberrypi.com/documentation/hardware/rf/)
 - [RPi.GPIO project](https://sourceforge.net/projects/raspberry-gpio-python/)
 - [Linux kernel PWM interface](https://docs.kernel.org/driver-api/pwm.html)
