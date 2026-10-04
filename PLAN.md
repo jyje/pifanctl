@@ -31,6 +31,7 @@ gates below. Local and CI results alone do not establish electrical cooling safe
 - Design and diagrams: [PR #40](https://github.com/jyje/pifanctl/pull/40)
 - v1 implementation roadmap: [issue #39](https://github.com/jyje/pifanctl/issues/39)
 - Implementation branch: `feat/v1-topology-runtime`, [PR #41](https://github.com/jyje/pifanctl/pull/41), stacked on PR #40
+- Coverage CI follow-up: issue #42 completed by [PR #43](https://github.com/jyje/pifanctl/pull/43), merged into the PR #41 branch at `6dc6bfa` on 2026-10-04. PR #41 remains open.
 - API: `pifanctl.jyje.online/v1alpha1`, cluster scoped Fan and CoolingZone
 - Diagrams: shared fans and one fan per board, each with normal, hot, missing-data, and expired-heartbeat scenarios in English and Korean locale files
 
@@ -43,6 +44,8 @@ checks remain below. Live trial steps and results are tracked privately.
 
 ## Remaining release acceptance gates
 
+- [ ] Merge PR #41, which carries the v1 runtime and merged coverage CI work, into the default branch.
+- [ ] After the changes reach the default branch, verify Codecov commit/path mapping and PR annotations, then verify the first successful main line and branch badge publication.
 - [ ] Measure real Pi 4 GPIO and Pi 5 sysfs wiring, channel, initialization and shutdown PWM behavior.
 - [ ] Measure fan behavior during process kill, Node reboot, power loss, and network partition.
 - [ ] Complete supported hardware migration and rollback acceptance across the documented configurations.
@@ -75,6 +78,7 @@ checks remain below. Live trial steps and results are tracked privately.
 | Worker monitoring follow-up | Headless worker Service and optional ServiceMonitor in managed/reuse modes. Unready endpoints remain visible for failsafe metrics. Label/port discovery regression checks and migration guidance added. Full Python 3.14: 239 tests, 95.69%; monitoring-enabled Helm lint passed. | `d1a1409` |
 
 | Operator replacement follow-up | Default to one operator and use Recreate so leader-only readiness cannot deadlock a surge update. Full Python 3.14: 239 tests, 95.69%; chart regression/lint passed. CI passed all nine jobs. Multi-replica readiness remains a follow-up. | `837b3d5` |
+| Coverage CI follow-up | PR #43 merged into the still-open PR #41 branch. CI passed Python 3.10-3.14 with 259 tests each, the 90% line gate, branch reporting, workflow/version/Helm checks, ARM64 image smoke test, and authenticated Codecov upload. Baseline: 95.75-95.77% line and 88.2129-89.1635% branch coverage. Codecov's main-branch comparisons and the first main badge publication remain unverified until PR #41 reaches the default branch. | `6dc6bfa` |
 
 ### Regressions found and fixed
 
@@ -99,7 +103,7 @@ checks remain below. Live trial steps and results are tracked privately.
 - English primary artifact policy is recorded in AGENTS.md; Korean illustration guidance moved into illustration-style-ko.md in `e5a1c64`.
 - For existing SSA-managed Deployments, clear the old rollingUpdate field when adopting Recreate, as documented in the operator chart manual.
 
-## Coverage CI follow-up: issue #42
+## Coverage CI follow-up: issue #42, implemented and merged into PR #41
 
 - [x] Preserve the Python 3.10-3.14 matrix and independently enforce the existing 90% line floor.
 - [x] Collect branch-aware XML, JSON and HTML reports and validate per-version artifacts at one tested commit.
@@ -108,11 +112,11 @@ checks remain below. Live trial steps and results are tracked privately.
 - [x] Introduce a validated v1 changeset ledger without adding a Node package manager or replacing app/chart version files.
 - [x] Remove the test that asserted historical StepController outputs; retain the bounded step-controller test.
 - [x] Run the five-version CI matrix and review the initial branch baseline.
-- [ ] Verify Codecov annotations and the first main badge publication after integration is enabled.
+- [ ] After PR #41 reaches the default branch, verify Codecov commit/path mapping and PR annotations, and verify the first successful main badge publication.
 
 The coverage baseline is not inferred from prior line-only results. Hardware and
 operator safety still need the separate v1 release acceptance work above.
 
 - [PR #43 CI run 37169304903](https://github.com/jyje/pifanctl/actions/runs/37169304903): all five Python matrix reports, the `Coverage quality` gate, version check, chart validation, workflow lint, and ARM64 image smoke test passed. GitHub Actions measured 95.75-95.77% line coverage and 88.2129-89.1635% branch coverage.
-- The first canonical OIDC upload returned `Repository not found`. The repository owner has configured the `CODECOV_TOKEN` Actions secret; the uploader now uses that secret for main and trusted same-repository PR runs. Verify the new CI upload before marking Codecov annotations complete. Upload remains non-blocking.
-- [PR #43 CI run 37189207411](https://github.com/jyje/pifanctl/actions/runs/37189207411): all five Python versions passed 259 tests; `Coverage quality`, version, workflow, Helm, ARM64 image and Codecov jobs passed. The canonical report upload was accepted with the repository token. Codecov posted its integration welcome comment. Because PR #43 is stacked on PR #41, Codecov says coverage comparisons start after the changes reach the default branch. Path mapping, commit mapping, PR annotations and the first main badge publication remain pending verification.
+- The first canonical OIDC upload returned `Repository not found`. The repository owner configured the `CODECOV_TOKEN` Actions secret; the uploader now uses that secret for main and trusted same-repository PR runs. The authenticated upload was accepted in CI. Upload remains non-blocking.
+- [PR #43 CI run 37189547667](https://github.com/jyje/pifanctl/actions/runs/37189547667): all five Python versions passed 259 tests; `Coverage quality`, version, workflow, Helm, ARM64 image and Codecov jobs passed. The canonical report upload was accepted with the repository token. Codecov posted its integration welcome comment. PR #43 merged into PR #41 at `6dc6bfa`; PR #41 remains open, so default-branch comparisons, path/commit mapping, PR annotations, and the first main badge publication remain pending verification.
