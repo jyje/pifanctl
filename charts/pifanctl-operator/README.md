@@ -18,7 +18,7 @@ helm upgrade --install pifanctl charts/pifanctl-operator \
 | Value | Purpose |
 | --- | --- |
 | `operatorId` | Short, unique identity; another operator cannot adopt its CRs |
-| `replicas` | 2 replicas by default, one active Lease holder |
+| `replicas` | 1 by default; only the active Lease holder is Ready |
 | `input.mode` | `crd` or `configMap` |
 | `input.configMapName` | Existing input ConfigMap in the release namespace |
 | `agent.mode` | `managed` or `reuse`; reused agents must export read timestamps |
@@ -27,6 +27,12 @@ helm upgrade --install pifanctl charts/pifanctl-operator \
 | `serviceMonitor.enabled` | Create worker and managed-agent ServiceMonitors if Prometheus Operator is installed |
 
 CRDs in `crds/` are installed by Helm, but Helm does not upgrade or delete them.
+
+Operator replacement uses `Recreate` because leader-only readiness would block
+a surge rollout. The worker keeps its last plan during operator replacement and
+requests failsafe duty if the heartbeat expires. Multi-replica readiness and
+availability during operator upgrades remain alpha follow-ups.
+
 Review and apply schema upgrades explicitly. ConfigMap mode can use
 `--skip-crds`; its operator RBAC only needs Node cluster reads. Namespace-scoped
 permissions create workloads/config, publish Events and update the Lease. CR

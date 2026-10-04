@@ -1,6 +1,7 @@
 # Use a short, unique installation identity. CRs cannot be shared by operators.
 operatorId: pifanctl
-replicas: 2
+# Leader-only readiness: one operator is the supported alpha deployment shape.
+replicas: 1
 image:
   repository: ghcr.io/jyje/pifanctl
   tag: ""

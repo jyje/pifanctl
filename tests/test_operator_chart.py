@@ -22,7 +22,8 @@ def render(*args):
 def test_default_operator_chart():
     objects = render(); d = next(o for o in objects if o['kind'] == 'Deployment')
     pod = d['spec']['template']['spec']; c = pod['containers'][0]
-    assert d['spec']['replicas'] == 2
+    assert d['spec']['replicas'] == 1
+    assert d['spec']['strategy'] == {'type': 'Recreate'}
     assert pod['securityContext']['runAsNonRoot']
     assert 'volumes' not in pod
     assert c['image'] == f'ghcr.io/jyje/pifanctl:v{__version__}'

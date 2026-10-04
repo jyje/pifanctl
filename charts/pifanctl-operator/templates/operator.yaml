@@ -16,6 +16,9 @@ metadata:
     {{- include "pifanctl.operatorLabels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicas }}
+  # Only the Lease leader is Ready. A surge update would wait for a new leader
+  # while keeping the old leader alive, so stop old operators before replacement.
+  strategy: {type: Recreate}
   selector:
     matchLabels:
       app.kubernetes.io/instance: {{ .Release.Name }}

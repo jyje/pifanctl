@@ -126,7 +126,10 @@ worker에는 Kubernetes 토큰이 없고 leader 상실 시 heartbeat 갱신이 �
 
 CR 소유권은 `namespace/operatorId`로 기록합니다. 다른 namespace에서 같은 ID를
 사용해도 인수할 수 없습니다. alpha의 cluster-wide CR 토폴로지는 설치 한 개가
-담당하고, 그 설치의 replicas가 Lease를 공유합니다.
+담당하고, 그 설치의 replicas가 Lease를 공유합니다. alpha 차트는 operator 하나를
+기본값으로 사용하고 리더만 Ready인 구조의 교체 대기를 방지하려고 Recreate로
+교체합니다. 교체 중에도 worker heartbeat 만료 보호가 동작합니다. 여러 replica의
+readiness와 업그레이드 가용성은 후속 개선입니다.
 
 ConfigMap 디렉터리 전달에는 지연이 있습니다. worker는 plan과 별도의 heartbeat를
 읽고 hash/UID를 비교합니다. 미래 시각은 최대 5초 허용합니다.

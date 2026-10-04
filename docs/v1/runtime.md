@@ -129,7 +129,10 @@ Kubernetes credentials. Leader loss stops heartbeat refresh.
 
 CR-mode ownership records `namespace/operatorId`, so an identical ID in another
 namespace cannot adopt the same CRs. This alpha uses one CR-mode installation
-for the cluster-wide topology; replicas share its Lease.
+for the cluster-wide topology; replicas share its Lease. The alpha chart defaults
+to one operator and uses Recreate for replacement because only the leader is
+Ready. Worker heartbeat expiry remains active during replacement. Multi-replica
+readiness and upgrade availability require further work.
 
 ConfigMap directory projection can lag. The worker checks separate plan and
 heartbeat files, matching hash and UID, allowing at most five seconds future
