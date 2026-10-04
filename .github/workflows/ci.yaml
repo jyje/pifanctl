@@ -1,9 +1,11 @@
 name: ci
 
-# Checks every pull request before merge. Nothing here publishes anything.
+# Checks pull requests and main, then publishes only trusted coverage badges.
 
 on:
   pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -32,6 +34,8 @@ jobs:
       - uses: actions/checkout@v7
       - name: Lint workflows
         run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color
+      - name: Validate pending v1 release changesets
+        run: python3 scripts/check_changesets.py
 
   test:
     name: 🧪 Test (Python ${{ matrix.python }})
@@ -52,7 +56,122 @@ jobs:
       - name: Install dependencies
         run: pip install -r sources/requirements.dev.txt
       - name: Run tests with coverage
-        run: python -m pytest --cov=sources --cov-report=term-missing --cov-fail-under=90
+        run: >-
+          python -m pytest --cov=sources --cov-config=.coveragerc --cov-branch
+          --cov-report=term-missing --cov-report=xml:coverage.xml
+          --cov-report=json:coverage.json --cov-report=html:coverage-html
+      - name: Validate branch report and enforce the line floor
+        run: >-
+          python scripts/coverage_metrics.py report --report coverage.json
+          --python "${{ matrix.python }}" --sha "${{ github.sha }}"
+          --manifest coverage-manifest.json
+          --summary "$GITHUB_STEP_SUMMARY"
+      - name: Preserve the version-specific reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: coverage-${{ matrix.python }}
+          path: |
+            coverage.json
+            coverage.xml
+            coverage-manifest.json
+            coverage-html/
+          retention-days: ${{ github.ref == 'refs/heads/main' && 90 || 30 }}
+          if-no-files-found: warn
+
+  coverage:
+    name: Coverage quality
+    needs: [test]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Download every Python coverage report
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          pattern: coverage-*
+          path: coverage-artifacts
+          merge-multiple: false
+      - name: Check report identities, matrix completeness, and line floor
+        run: python scripts/coverage_metrics.py matrix --directory coverage-artifacts --sha "${{ github.sha }}" --summary "$GITHUB_STEP_SUMMARY"
+
+  codecov:
+    name: Codecov report
+    needs: [coverage]
+    if: >-
+      needs.coverage.result == 'success' &&
+      ((github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+       (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        github.actor != 'dependabot[bot]'))
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: Download canonical Python 3.14 coverage
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: coverage-3.14
+          path: coverage-canonical
+      - name: Upload the canonical report to Codecov
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
+        with:
+          files: coverage-canonical/coverage.xml
+          disable_search: true
+          flags: python314
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  publish-badges:
+    name: Publish main coverage badges
+    needs: [workflows, test, chart, coverage]
+    if: >-
+      github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+      needs.workflows.result == 'success' && needs.test.result == 'success' &&
+      needs.chart.result == 'success' && needs.coverage.result == 'success'
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: coverage-badge-publish
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Download canonical Python 3.14 coverage
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: coverage-3.14
+          path: coverage-canonical
+      - name: Render line and branch SVG badges with measurement metadata
+        run: python scripts/coverage_metrics.py badges --manifest coverage-canonical/coverage-manifest.json --output "$RUNNER_TEMP/coverage-badges"
+      - name: Publish only if this commit is still main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git fetch --no-tags origin main
+          if [ "$(git rev-parse FETCH_HEAD)" != "$GITHUB_SHA" ]; then
+            echo 'Main advanced after this run; keep the existing badge measurement.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git ls-remote --exit-code --heads origin coverage-badges >/dev/null 2>&1; then
+            git fetch origin coverage-badges
+            git switch --create coverage-badges --track origin/coverage-badges
+          else
+            git switch --orphan coverage-badges
+            git rm -rf .
+          fi
+          cp "$RUNNER_TEMP"/coverage-badges/* .
+          git add lines.svg branches.svg metadata.json
+          if git diff --cached --quiet; then
+            echo 'Coverage badge contents are unchanged.'
+            exit 0
+          fi
+          git commit -m 'ci(coverage): publish main badges'
+          git push origin coverage-badges
 
   chart:
     name: ⎈ Chart

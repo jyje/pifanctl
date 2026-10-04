@@ -101,13 +101,6 @@ def test_worker_generated_resource_is_valid_shape(tmp_path):
     assert all(v['hostPath']['path'] in ['/sys', '/dev', '/var/lock/pifanctl'] for v in d['spec']['template']['spec']['volumes'] if 'hostPath' in v)
 
 
-def test_ci_keeps_every_supported_python_minor():
-    ci = yaml.safe_load(Path('.github/workflows/ci.yaml').read_text())
-    assert ci['jobs']['test']['strategy']['matrix']['python'] == ['3.10', '3.11', '3.12', '3.13', '3.14']
-    test = ci['jobs']['test']['steps'][-1]['run']
-    assert '--cov-fail-under=90' in test
-
-
 def test_cluster_event_rbac_is_limited_to_default():
     objects = render()
     role = next(o for o in objects if o['kind'] == 'Role' and o['metadata'].get('namespace') == 'default')

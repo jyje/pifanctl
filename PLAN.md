@@ -98,3 +98,21 @@ checks remain below. Live trial steps and results are tracked privately.
 - [CI for d1a1409](https://github.com/jyje/pifanctl/actions/runs/37165023194): Python 3.10-3.14 each passed 239 tests, 95.75-95.77% coverage; all nine jobs passed.
 - English primary artifact policy is recorded in AGENTS.md; Korean illustration guidance moved into illustration-style-ko.md in `e5a1c64`.
 - For existing SSA-managed Deployments, clear the old rollingUpdate field when adopting Recreate, as documented in the operator chart manual.
+
+## Coverage CI follow-up: issue #42
+
+- [x] Preserve the Python 3.10-3.14 matrix and independently enforce the existing 90% line floor.
+- [x] Collect branch-aware XML, JSON and HTML reports and validate per-version artifacts at one tested commit.
+- [x] Add a canonical Python 3.14 Codecov upload with informational provider statuses.
+- [x] Add successful-main-only, revision-stamped line and branch badge publishing.
+- [x] Introduce a validated v1 changeset ledger without adding a Node package manager or replacing app/chart version files.
+- [x] Remove the test that asserted historical StepController outputs; retain the bounded step-controller test.
+- [x] Run the five-version CI matrix and review the initial branch baseline.
+- [ ] Verify Codecov annotations and the first main badge publication after integration is enabled.
+
+The coverage baseline is not inferred from prior line-only results. Hardware and
+operator safety still need the separate v1 release acceptance work above.
+
+- [PR #43 CI run 37169304903](https://github.com/jyje/pifanctl/actions/runs/37169304903): all five Python matrix reports, the `Coverage quality` gate, version check, chart validation, workflow lint, and ARM64 image smoke test passed. GitHub Actions measured 95.75-95.77% line coverage and 88.2129-89.1635% branch coverage.
+- The first canonical OIDC upload returned `Repository not found`. The repository owner has configured the `CODECOV_TOKEN` Actions secret; the uploader now uses that secret for main and trusted same-repository PR runs. Verify the new CI upload before marking Codecov annotations complete. Upload remains non-blocking.
+- [PR #43 CI run 37189207411](https://github.com/jyje/pifanctl/actions/runs/37189207411): all five Python versions passed 259 tests; `Coverage quality`, version, workflow, Helm, ARM64 image and Codecov jobs passed. The canonical report upload was accepted with the repository token. Codecov posted its integration welcome comment. Because PR #43 is stacked on PR #41, Codecov says coverage comparisons start after the changes reach the default branch. Path mapping, commit mapping, PR annotations and the first main badge publication remain pending verification.

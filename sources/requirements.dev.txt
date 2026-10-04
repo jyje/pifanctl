@@ -1,4 +1,5 @@
 -r requirements.common.txt
 pytest == 9.1.1
 pytest-cov == 7.1.0
+coverage == 7.16.2
 PyYAML == 6.0.3

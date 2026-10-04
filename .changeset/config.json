@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "release_streams": {
+    "pifanctl": "sources/pifanctl/__init__.py",
+    "pifanctl-chart": "charts/pifanctl/Chart.yaml",
+    "pifanctl-operator": "charts/pifanctl-operator/Chart.yaml"
+  },
+  "bump_types": ["patch", "minor", "major"],
+  "categories": ["Feature", "Fix", "Security", "Dependency", "Documentation", "Deprecated", "Removed"]
+}

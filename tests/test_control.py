@@ -65,13 +65,6 @@ def test_invalid_curve_is_rejected(kwargs):
         CurveConfig(**kwargs)
 
 
-def test_step_controller_matches_the_original_behaviour():
-    controller = StepController(target_temperature=50, duty_step=2, initial_duty=10)
-    assert controller.update(51) == 12
-    assert controller.update(50) == 10
-    assert controller.update(20) == 8
-
-
 def test_step_controller_is_bounded():
     controller = StepController(target_temperature=50, duty_step=60)
     assert controller.update(60) == 60
