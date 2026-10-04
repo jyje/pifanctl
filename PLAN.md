@@ -32,6 +32,7 @@ gates below. Local and CI results alone do not establish electrical cooling safe
 - v1 implementation roadmap: [issue #39](https://github.com/jyje/pifanctl/issues/39)
 - Implementation branch: `feat/v1-topology-runtime`, [PR #41](https://github.com/jyje/pifanctl/pull/41), merged into `main` at `eb77c0c`
 - Coverage CI follow-up: issue #42 completed by [PR #43](https://github.com/jyje/pifanctl/pull/43), merged into PR #41 at `6dc6bfa` and included in `main` at `eb77c0c` on 2026-10-04.
+- Coverage badge assets: [PR #44](https://github.com/jyje/pifanctl/pull/44), merged into `main`; generated assets live under `assets/coverage/`.
 - API: `pifanctl.jyje.online/v1alpha1`, cluster scoped Fan and CoolingZone
 - Diagrams: shared fans and one fan per board, each with normal, hot, missing-data, and expired-heartbeat scenarios in English and Korean locale files
 
@@ -45,7 +46,7 @@ checks remain below. Live trial steps and results are tracked privately.
 ## Remaining release acceptance gates
 
 - [x] Merge design PR #40 and implementation PR #41 into `main` in dependency order.
-- [ ] Verify the first successful main line and branch badge publication under `assets/coverage/`.
+- [x] Verify the first successful main line and branch badge publication under `assets/coverage/`.
 - [ ] Measure real Pi 4 GPIO and Pi 5 sysfs wiring, channel, initialization and shutdown PWM behavior.
 - [ ] Measure fan behavior during process kill, Node reboot, power loss, and network partition.
 - [ ] Complete supported hardware migration and rollback acceptance across the documented configurations.
@@ -112,7 +113,7 @@ checks remain below. Live trial steps and results are tracked privately.
 - [x] Introduce a validated v1 changeset ledger without adding a Node package manager or replacing app/chart version files.
 - [x] Remove the test that asserted historical StepController outputs; retain the bounded step-controller test.
 - [x] Run the five-version CI matrix and review the initial branch baseline.
-- [ ] Verify the first successful main badge publication under `assets/coverage/`.
+- [x] Verify the first successful main badge publication under `assets/coverage/`.
 
 The coverage baseline is not inferred from prior line-only results. Hardware and
 operator safety still need the separate v1 release acceptance work above.
@@ -120,4 +121,5 @@ operator safety still need the separate v1 release acceptance work above.
 - [PR #43 CI run 37169304903](https://github.com/jyje/pifanctl/actions/runs/37169304903): all five Python matrix reports, the `Coverage quality` gate, version check, chart validation, workflow lint, and ARM64 image smoke test passed. GitHub Actions measured 95.75-95.77% line coverage and 88.2129-89.1635% branch coverage.
 - The first canonical OIDC upload returned `Repository not found`. The repository owner configured the `CODECOV_TOKEN` Actions secret; the uploader now uses that secret for main and trusted same-repository PR runs. The authenticated upload was accepted in CI. Upload remains non-blocking.
 - [PR #43 CI run 37189547667](https://github.com/jyje/pifanctl/actions/runs/37189547667): all five Python versions passed 259 tests; `Coverage quality`, version, workflow, Helm, ARM64 image and Codecov jobs passed. The canonical report upload was accepted with the repository token. Codecov posted its integration welcome comment. PR #43 merged into PR #41 at `6dc6bfa`.
-- Main CI run [37191841522](https://github.com/jyje/pifanctl/actions/runs/37191841522) passed tests, reports and Codecov statuses on merge commit `eb77c0c`, but badge publication failed because the orphan-branch initialization attempted to remove files from an empty index. Issue #42 fix replaces that publisher with `assets/coverage/` updates on `main`.
+- Main CI run [37191841522](https://github.com/jyje/pifanctl/actions/runs/37191841522) passed tests, reports and Codecov statuses on merge commit `eb77c0c`, but badge publication failed because the orphan-branch initialization attempted to remove files from an empty index. PR #44 replaced the separate branch with `assets/coverage/` updates on `main`.
+- Main CI run [37193265541](https://github.com/jyje/pifanctl/actions/runs/37193265541) passed all required jobs, including Codecov and badge publishing. Commit `38f16a0` publishes badges measured from `99f5027`: 95.7527% line coverage and 88.2129% branch coverage. Codecov `project` and `patch` statuses succeeded on the main merge commit.
