@@ -8,9 +8,10 @@ have been reviewed.
 
 An initial local macOS run passed all 255 tests on Python 3.10-3.14. Python
 3.10-3.13 measured 95.71% line and 88.9734% branch coverage; Python 3.14
-measured 95.69% line and 88.0228% branch coverage. This is a preliminary
-local baseline, not the canonical GitHub Actions measurement. Review the first
-CI artifacts before setting a branch floor.
+measured 95.69% line and 88.0228% branch coverage. The first GitHub Actions
+matrix on PR #43 passed all 259 tests and measured 95.75-95.77% line and
+88.2129-89.1635% branch coverage. This PR is the first CI baseline. Keep the
+branch floor unset until a successful main baseline and missing-path review.
 
 ## Run locally
 
@@ -49,7 +50,9 @@ annotations, OIDC uploads and Codecov's native project view. Main and same-repo
 PR uploads use OIDC. Fork PRs use the Codecov Action's public-fork upload path
 without a token. Upload errors remain non-blocking while the repository's
 Codecov configuration is established. The GitHub workflow never exposes upload
-secrets to PR code.
+secrets to PR code. In PR #43's first upload, OIDC authentication succeeded but
+Codecov returned `Repository not found`; the repository must be activated in
+Codecov before it can produce annotations or native statuses.
 
 ## README badges
 

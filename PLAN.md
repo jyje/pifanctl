@@ -107,8 +107,11 @@ checks remain below. Live trial steps and results are tracked privately.
 - [x] Add successful-main-only, revision-stamped line and branch badge publishing.
 - [x] Introduce a validated v1 changeset ledger without adding a Node package manager or replacing app/chart version files.
 - [x] Remove the test that asserted historical StepController outputs; retain the bounded step-controller test.
-- [ ] Run the five-version CI matrix and review the initial branch baseline.
+- [x] Run the five-version CI matrix and review the initial branch baseline.
 - [ ] Verify Codecov annotations and the first main badge publication after integration is enabled.
 
 The coverage baseline is not inferred from prior line-only results. Hardware and
 operator safety still need the separate v1 release acceptance work above.
+
+- [PR #43 CI run 37169304903](https://github.com/jyje/pifanctl/actions/runs/37169304903): all five Python matrix reports, the `Coverage quality` gate, version check, chart validation, workflow lint, and ARM64 image smoke test passed. GitHub Actions measured 95.75-95.77% line coverage and 88.2129-89.1635% branch coverage.
+- The canonical report reached the Codecov uploader with OIDC, but Codecov returned `Repository not found`. Activate `jyje/pifanctl` in Codecov before expecting annotations or provider statuses. Upload remains non-blocking during setup.

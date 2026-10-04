@@ -2,10 +2,12 @@
 
 Status: v1 implementation guide for issue #42. CI measurement, reporting,
 Codecov upload configuration, Changesets validation and main badge publishing
-are implemented in this change. A local five-version baseline passed on macOS;
-the first GitHub Actions baseline, Codecov annotation and trusted badge publish
-still require the PR and a successful main workflow run. No branch floor has
-been invented. See the [coverage runbook](testing/coverage.md).
+are implemented in this change. A local five-version baseline and the first
+GitHub Actions PR matrix passed. The main baseline and trusted badge publish
+still require a successful main workflow run. Codecov received the OIDC upload
+request but returned `Repository not found`; activate the project before
+expecting annotations. No branch floor has been invented. See the
+[coverage runbook](testing/coverage.md).
 
 ## 1. Recommended architecture
 
@@ -296,7 +298,7 @@ Implement the reporting stages before adding stricter regression requirements.
 - [ ] Activate the repository's Codecov integration.
 - [x] Add `codecov.yml` with canonical project and patch statuses.
 - [x] Upload canonical XML using explicit files and disabled report discovery.
-- [ ] Verify path mapping, commit mapping and one normal PR annotation.
+- [ ] Verify path mapping, commit mapping and one normal PR annotation after enabling the project.
 - [ ] Verify fork and Dependabot behavior and a simulated upload failure.
 - [ ] Keep service statuses informational during initial observation.
 
