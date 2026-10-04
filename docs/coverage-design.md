@@ -297,12 +297,12 @@ Implement the reporting stages before adding stricter regression requirements.
 
 ### Stage B: Codecov review
 
-- [ ] Activate the repository's Codecov integration.
+- [x] Activate the repository's Codecov integration; the bot confirmed setup on PR #43.
 - [x] Add `codecov.yml` with canonical project and patch statuses.
 - [x] Upload canonical XML using explicit files and disabled report discovery.
 - [ ] Verify path mapping, commit mapping and one normal PR annotation after enabling the project.
 - [ ] Verify fork and Dependabot behavior and a simulated upload failure.
-- [ ] Keep service statuses informational during initial observation.
+- [x] Keep service statuses informational during initial observation.
 
 ### Stage C: Main badges
 
