@@ -115,3 +115,24 @@ def test_cluster_event_rbac_is_limited_to_default():
     assert binding['subjects'][0]['namespace'] == 'system'
     objects = render('--set', 'input.mode=configMap,input.configMapName=topology')
     assert not any(o['kind'] == 'Role' and o['metadata'].get('namespace') == 'default' for o in objects)
+
+
+@pytest.mark.parametrize('agent_mode', ['managed', 'reuse'])
+def test_worker_metrics_remain_visible_when_unready(agent_mode):
+    objects = render('--set', f'serviceMonitor.enabled=true,agent.mode={agent_mode},operatorId=rack,serviceMonitor.labels.release=prometheus')
+    service = next(o for o in objects if o['kind'] == 'Service' and o['metadata']['name'] == 'test-operator-worker')
+    assert service['spec']['publishNotReadyAddresses'] is True
+    assert service['spec']['selector'] == {'pifanctl.jyje.online/operator': 'rack', 'app.kubernetes.io/component': 'worker'}
+    assert service['spec']['ports'] == [{'name': 'metrics', 'port': 9103, 'targetPort': 'status'}]
+    monitor = next(o for o in objects if o['kind'] == 'ServiceMonitor' and o['metadata']['name'] == 'test-operator-worker')
+    assert monitor['metadata']['labels']['release'] == 'prometheus'
+    assert monitor['spec']['endpoints'][0] == {'port': 'metrics', 'interval': '10s'}
+    selector = monitor['spec']['selector']['matchLabels']
+    assert all(service['metadata']['labels'][key] == value for key, value in selector.items())
+    owner = {'apiVersion': 'pifanctl.jyje.online/v1alpha1', 'kind': 'Fan', 'name': 'fan-a', 'uid': 'uid'}
+    worker = worker_deployment('system', 'rack', 'pi-a', 'uid', 'host', 'plan', 'image:tag', owner)
+    assert all(worker['spec']['template']['metadata']['labels'][key] == value for key, value in service['spec']['selector'].items())
+
+
+def test_worker_scrape_is_opt_in():
+    assert not any(o['kind'] == 'ServiceMonitor' for o in render())

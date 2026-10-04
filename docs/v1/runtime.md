@@ -163,6 +163,16 @@ Metrics contain node/fan/zone labels, never a stream of config-hash labels.
 Duty is requested PWM, not RPM. The system does not detect a mechanically stuck
 fan or guarantee power-loss cooling.
 
+### Scrape safety state
+
+Enable the chart's `serviceMonitor.enabled` and configure its selector labels
+and monitoring namespace NetworkPolicy. The worker Service includes unready
+endpoints, so `pifanctl_worker_fan_ready == 0` remains visible during failsafe.
+Both reused-agent and managed-agent installations get a worker ServiceMonitor.
+Migrate legacy controller alerts/dashboard queries to worker duty/readiness
+metrics explicitly; preserve temperature alerts and monitor scrape failures.
+Scope absent-series alerts to the intended installation or fan inventory.
+
 ## 06: retire and migrate
 
 Remove zones/Fans or the input ConfigMap while the operator remains running.
@@ -185,7 +195,7 @@ verify the processes are gone, then start the alpha on **one actuator host at a
 time**. Roll back by stopping the alpha and releasing its lock before restoring
 the legacy controller. Do not uninstall the operator before resources finish
 release. Node/power loss, real Pi 4/Pi 5 PWM, server CEL/defaulting and fleet load
-remain acceptance gates in PLAN.md. No operating cluster was changed by this work.
+remain acceptance gates in PLAN.md. Live deployment requires an explicitly authorized trial and an archived rollback plan.
 
 ## Runtime compatibility with legacy cluster CAs
 

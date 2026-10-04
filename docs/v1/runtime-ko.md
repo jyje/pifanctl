@@ -157,6 +157,16 @@ Ready condition 하나를 구현했습니다. 추가 진단 conditions와 기본
 duty는 명령 PWM이며 RPM이 아닙니다. 팬이 물리적으로 멈추거나 전원이 꺼지는 상황의
 냉각을 보증하지 않습니다.
 
+### 안전 상태를 수집합니다
+
+`serviceMonitor.enabled`와 Prometheus selector label, monitoring namespace의
+NetworkPolicy를 설정합니다. worker Service는 unready endpoint도 공개하므로
+failsafe 중에도 `pifanctl_worker_fan_ready == 0` 지표를 수집할 수 있습니다.
+agent 재사용과 관리형 agent 모두 worker ServiceMonitor를 제공합니다. 기존
+controller 경보와 dashboard는 worker duty/readiness 지표로 명시적으로 이관하고,
+온도 경보와 scrape 실패 감시를 유지합니다. absent-series 경보는 설치나 팬 목록으로
+범위를 제한합니다.
+
 ## 06: 삭제와 이관을 진행합니다
 
 operator가 실행 중일 때 zone/Fan/입력 ConfigMap을 삭제합니다.
@@ -176,7 +186,7 @@ release 확인 전에 worker를 삭제하여 앱 finalizer가 대기할 수 있�
 → alpha 실행을 팬 호스트별로 진행합니다. 롤백은 alpha 중단과 lock 해제 이후
 legacy 복원 순서입니다. 리소스 삭제가 끝나기 전에 operator를 uninstall하지 않습니다.
 Node/전원 고장, 실제 Pi 4/Pi 5 PWM, API 서버 CEL/defaulting, fleet 부하는 PLAN.md의
-출시 게이트입니다. 이번 구현 작업은 운영 클러스터를 변경하지 않았습니다.
+출시 게이트입니다. 실제 배포는 명시적으로 승인된 실험과 보관된 롤백 계획이 필요합니다.
 
 ## 오래된 클러스터 CA와 런타임 호환성
 

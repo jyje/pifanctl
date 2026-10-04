@@ -24,7 +24,7 @@ helm upgrade --install pifanctl charts/pifanctl-operator \
 | `agent.mode` | `managed` or `reuse`; reused agents must export read timestamps |
 | `image.tag` | Defaults to pinned `v1.0.0-alpha.1`; never `latest` |
 | `networkPolicy.monitoringNamespaceSelector` | Namespaces allowed to read worker metrics/status |
-| `serviceMonitor.enabled` | Create agent ServiceMonitor if Prometheus Operator is installed |
+| `serviceMonitor.enabled` | Create worker and managed-agent ServiceMonitors if Prometheus Operator is installed |
 
 CRDs in `crds/` are installed by Helm, but Helm does not upgrade or delete them.
 Review and apply schema upgrades explicitly. ConfigMap mode can use
@@ -47,3 +47,18 @@ tag here; digest-based image configuration is a future packaging enhancement.
 Delete Fans/zones/input configuration while the operator is still running and
 wait for finalizers before uninstalling. An unreachable worker deliberately
 blocks deletion. Never delete CRDs or force finalizers to claim hardware safety.
+
+## Monitoring migration
+
+Worker metrics use `pifanctl_worker_fan_duty_percent` and
+`pifanctl_worker_fan_ready`, labeled by node and fan. The headless worker Service
+publishes unready endpoints so failsafe metrics remain scrapeable. Set
+`serviceMonitor.enabled=true`, the monitoring selector labels, and
+`networkPolicy.monitoringNamespaceSelector` for your Prometheus installation.
+This works with reused agents as well as chart-managed agents.
+
+Existing v0 controller alerts and dashboard queries need explicit migration.
+Preserve the agent temperature alerts, replace controller-duty absence checks
+with worker metrics, and alert on `pifanctl_worker_fan_ready == 0` plus scrape
+failures. An absent-series check should be scoped to the expected installation
+or fan inventory. Requested duty does not prove measured fan RPM.
