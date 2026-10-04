@@ -68,3 +68,14 @@ Preserve the agent temperature alerts, replace controller-duty absence checks
 with worker metrics, and alert on `pifanctl_worker_fan_ready == 0` plus scrape
 failures. An absent-series check should be scoped to the expected installation
 or fan inventory. Requested duty does not prove measured fan RPM.
+
+When migrating an existing operator Deployment from RollingUpdate with
+server-side apply, remove its old rollingUpdate settings atomically before
+synchronizing the new chart:
+
+```sh
+kubectl -n YOUR_NAMESPACE patch deployment YOUR_RELEASE-operator \
+  --type=merge -p '{"spec":{"strategy":{"type":"Recreate","rollingUpdate":null}}}'
+```
+
+This replaces operator Pods; the worker retains its plan and heartbeat failsafe.

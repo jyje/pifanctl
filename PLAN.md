@@ -74,7 +74,7 @@ checks remain below. Live trial steps and results are tracked privately.
 
 | Worker monitoring follow-up | Headless worker Service and optional ServiceMonitor in managed/reuse modes. Unready endpoints remain visible for failsafe metrics. Label/port discovery regression checks and migration guidance added. Full Python 3.14: 239 tests, 95.69%; monitoring-enabled Helm lint passed. | `d1a1409` |
 
-| Operator replacement follow-up | Default to one operator and use Recreate so leader-only readiness cannot deadlock a surge update. Chart regression/lint passed; multi-replica readiness remains a follow-up. | `🛠️ fix(chart): recreate operators with leader-only readiness` |
+| Operator replacement follow-up | Default to one operator and use Recreate so leader-only readiness cannot deadlock a surge update. Full Python 3.14: 239 tests, 95.69%; chart regression/lint passed. CI passed all nine jobs. Multi-replica readiness remains a follow-up. | `837b3d5` |
 
 ### Regressions found and fixed
 
@@ -91,3 +91,10 @@ checks remain below. Live trial steps and results are tracked privately.
 - [Runtime variant CI](https://github.com/jyje/pifanctl/actions/runs/37126362598): all nine jobs passed; local Python 3.14 passed 233 tests with 95.66% coverage.
 - kubeconform validates static schemas. It does not establish API admission, CEL, or defaulting behavior. The CRD follow-up above includes real API evidence.
 - PR #40 holds the design, CRDs and scenario SVG/PNG files. PR #41 holds the runtime and sequential implementation commits. Review PR #40 first.
+
+## Final source verification
+
+- [CI for 837b3d5](https://github.com/jyje/pifanctl/actions/runs/37165310923): all nine jobs passed.
+- [CI for d1a1409](https://github.com/jyje/pifanctl/actions/runs/37165023194): Python 3.10-3.14 each passed 239 tests, 95.75-95.77% coverage; all nine jobs passed.
+- English primary artifact policy is recorded in AGENTS.md; Korean illustration guidance moved into illustration-style-ko.md in `e5a1c64`.
+- For existing SSA-managed Deployments, clear the old rollingUpdate field when adopting Recreate, as documented in the operator chart manual.
