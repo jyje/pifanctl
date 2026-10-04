@@ -98,3 +98,17 @@ checks remain below. Live trial steps and results are tracked privately.
 - [CI for d1a1409](https://github.com/jyje/pifanctl/actions/runs/37165023194): Python 3.10-3.14 each passed 239 tests, 95.75-95.77% coverage; all nine jobs passed.
 - English primary artifact policy is recorded in AGENTS.md; Korean illustration guidance moved into illustration-style-ko.md in `e5a1c64`.
 - For existing SSA-managed Deployments, clear the old rollingUpdate field when adopting Recreate, as documented in the operator chart manual.
+
+## Coverage CI follow-up: issue #42
+
+- [x] Preserve the Python 3.10-3.14 matrix and independently enforce the existing 90% line floor.
+- [x] Collect branch-aware XML, JSON and HTML reports and validate per-version artifacts at one tested commit.
+- [x] Add a canonical Python 3.14 Codecov upload with informational provider statuses.
+- [x] Add successful-main-only, revision-stamped line and branch badge publishing.
+- [x] Introduce a validated v1 changeset ledger without adding a Node package manager or replacing app/chart version files.
+- [x] Remove the test that asserted historical StepController outputs; retain the bounded step-controller test.
+- [ ] Run the five-version CI matrix and review the initial branch baseline.
+- [ ] Verify Codecov annotations and the first main badge publication after integration is enabled.
+
+The coverage baseline is not inferred from prior line-only results. Hardware and
+operator safety still need the separate v1 release acceptance work above.
