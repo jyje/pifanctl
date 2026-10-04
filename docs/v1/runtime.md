@@ -154,6 +154,9 @@ overridden by a late query; the main loop must revalidate before clearing it.
 Reports must be at most 90 seconds old. Steady-state status writes are capped at
 one per 30 seconds per object; readiness/reason/config changes are immediate.
 Events are emitted on transitions and limited per reason in each process.
+Cluster scoped CR Events live in `default`; the chart grants only Event creation
+in that namespace. Event API failures are logged and retried without blocking
+heartbeat renewal.
 The alpha implements one Ready condition with detailed reasons; additional
 diagnostic conditions and stock alert rules remain future enhancements.
 Metrics contain node/fan/zone labels, never a stream of config-hash labels.

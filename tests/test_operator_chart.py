@@ -29,7 +29,7 @@ def test_default_operator_chart():
     assert c['readinessProbe']['httpGet']['path'] == '/readyz'
     assert len([o for o in objects if o['kind'] == 'CustomResourceDefinition']) == 2
     assert any(o['kind'] == 'NetworkPolicy' for o in objects)
-    role = next(o for o in objects if o['kind'] == 'Role')
+    role = next(o for o in objects if o['kind'] == 'Role' and o['metadata']['name'] == 'test-operator')
     assert not any('configmaps/finalizers' in r['resources'] for r in role['rules'])
 
 
@@ -38,7 +38,7 @@ def test_configmap_reuse_no_cr_write_permissions():
     assert not any(o['kind'] == 'DaemonSet' for o in objects)
     role = next(o for o in objects if o['kind'] == 'ClusterRole')
     assert role['rules'] == [{'apiGroups': [''], 'resources': ['nodes'], 'verbs': ['get', 'list', 'watch']}]
-    role = next(o for o in objects if o['kind'] == 'Role')
+    role = next(o for o in objects if o['kind'] == 'Role' and o['metadata']['name'] == 'test-operator')
     assert not any('secrets' in r['resources'] for r in role['rules'])
     assert next(r for r in role['rules'] if 'configmaps/finalizers' in r['resources']) == {
         'apiGroups': [''], 'resources': ['configmaps/finalizers'],
@@ -105,3 +105,13 @@ def test_ci_keeps_every_supported_python_minor():
     assert ci['jobs']['test']['strategy']['matrix']['python'] == ['3.10', '3.11', '3.12', '3.13', '3.14']
     test = ci['jobs']['test']['steps'][-1]['run']
     assert '--cov-fail-under=90' in test
+
+
+def test_cluster_event_rbac_is_limited_to_default():
+    objects = render()
+    role = next(o for o in objects if o['kind'] == 'Role' and o['metadata'].get('namespace') == 'default')
+    assert role['rules'] == [{'apiGroups': [''], 'resources': ['events'], 'verbs': ['create']}]
+    binding = next(o for o in objects if o['kind'] == 'RoleBinding' and o['metadata'].get('namespace') == 'default')
+    assert binding['subjects'][0]['namespace'] == 'system'
+    objects = render('--set', 'input.mode=configMap,input.configMapName=topology')
+    assert not any(o['kind'] == 'Role' and o['metadata'].get('namespace') == 'default' for o in objects)

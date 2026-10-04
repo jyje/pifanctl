@@ -36,6 +36,8 @@ gates below. Local and CI results alone do not establish electrical cooling safe
 
 ## Pending checklist
 
+- [ ] Package worker metrics scraping and document monitoring migration.
+
 Stages 01-08 have completed implementation, mock verification, sequential commits,
 and PR submission, so their pending entries have been removed. Release acceptance
 checks remain below. Live trial steps and results are tracked privately.
@@ -68,6 +70,8 @@ checks remain below. Live trial steps and results are tracked privately.
 | 08 complete | Preserve five Python versions and the 90% gate. Remote CI: 228 tests, 95.72-95.74%, nine jobs including ARM64/chart/workflow/version. Localized README alpha/chart publishing descriptions aligned; issue #39 and PR #41 evidence updated. | `0296adf` |
 | CRD admission follow-up | Real API rejected an empty curve default because CEL operands were absent. Materialized defaults in both CRD copies and the shared schema. API defaulting and five invalid curve/immutable updates verified. Local Python 3.14: 229 tests, 95.66%. | `4a9cfe7` |
 | Runtime image follow-up | Supported Python runtime selection for strict X.509 and legacy CA compatibility. Isolated SHA-py312 tags; alternate runtimes cannot publish latest/release tags. CI retains Python 3.10-3.14. actionlint and Python 3.14 full suite passed: 233 tests, 95.66%. | `2b58d9a` |
+
+| Event admission follow-up | Publish cluster scoped CR Events in default with a create-only Role. Event admission/RBAC failures are rate limited and retried without blocking reconciliation. Real API dry-run accepted the corrected Event. Full Python 3.14: 236 tests, 95.69%; Helm lint passed in both input modes. | `🛠️ fix(operator): publish cluster events without blocking reconciliation` |
 
 ### Regressions found and fixed
 

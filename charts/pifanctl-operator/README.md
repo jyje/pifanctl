@@ -30,7 +30,10 @@ CRDs in `crds/` are installed by Helm, but Helm does not upgrade or delete them.
 Review and apply schema upgrades explicitly. ConfigMap mode can use
 `--skip-crds`; its operator RBAC only needs Node cluster reads. Namespace-scoped
 permissions create workloads/config, publish Events and update the Lease. CR
-mode additionally patches topology metadata/status, never user specs. There is
+mode additionally patches topology metadata/status, never user specs. Cluster scoped
+CR Events are written in `default` using an additional Role granting only Event
+creation there. Event publication failure is logged and retried without blocking
+heartbeat renewal. There is
 no Secret read, Node label write, namespace creation or CRD write permission.
 
 Worker Pods are privileged/root with `/sys`, `/dev` and a shared host lock.

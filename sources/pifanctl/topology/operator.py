@@ -112,6 +112,7 @@ class Operator:
         self.lease = Lease(kube, namespace, operator_id)
         self.report_reader = report_reader or self.read_report
         self.last_status, self.events = {}, {}
+        self.failed_events = set()
         self.ready = False
         self.last_reconcile = 0
         self.registry = CollectorRegistry()
@@ -378,24 +379,40 @@ class Operator:
         key = item['metadata']['uid']; condition = status['conditions'][0]
         signature = (condition['status'], condition['reason'], status['topologyHash'], status['observedGeneration'])
         last = self.last_status.get(key)
-        if last and now - last[0] < 30 and last[1] == signature: return
+        retry_event = (key, condition['reason']) in self.failed_events
+        if last and now - last[0] < 30 and last[1] == signature:
+            if retry_event: self.event(item, condition, now)
+            return
         # Merge patch nulls clear old temperature/duty fields during failures.
         patch = {k: None for k in item.get('status', {}) if k not in status}; patch.update(status)
         self.patch(resource(item['kind'], item['metadata']['name']) + '/status', {'status': patch})
         self.last_status[key] = (now, signature)
-        if not last or last[1][:2] != signature[:2]:
+        if not last or last[1][:2] != signature[:2] or retry_event:
             self.event(item, condition, now)
 
     def event(self, item, condition, now):
         m = item['metadata']; key = (m['uid'], condition['reason'])
         if key in self.events and now - self.events[key] < 60: return
         event_name = 'pifanctl-' + digest([m['uid'], condition['reason'], now])[:24]
-        self.write('POST', self.core + '/events', {'apiVersion': 'v1', 'kind': 'Event',
-            'metadata': {'name': event_name, 'namespace': self.namespace},
+        # Cluster scoped objects must publish core Events in default. Do not
+        # invent an involvedObject namespace for a Fan or CoolingZone.
+        event_namespace = m.get('namespace') or 'default'
+        event = {'apiVersion': 'v1', 'kind': 'Event',
+            'metadata': {'name': event_name, 'namespace': event_namespace},
             'involvedObject': {'apiVersion': API, 'kind': item['kind'], 'name': m['name'], 'uid': m['uid']},
             'reason': condition['reason'].split(':')[0][:128], 'message': condition['message'][:2048],
             'type': 'Normal' if condition['status'] == 'True' else 'Warning',
-            'source': {'component': 'pifanctl-operator'}, 'firstTimestamp': timestamp(now), 'lastTimestamp': timestamp(now), 'count': 1})
+            'source': {'component': 'pifanctl-operator'}, 'firstTimestamp': timestamp(now), 'lastTimestamp': timestamp(now), 'count': 1}
+        if m.get('namespace'): event['involvedObject']['namespace'] = m['namespace']
+        try:
+            self.write('POST', '/api/v1/namespaces/' + name(event_namespace) + '/events', event)
+        except APIError as error:
+            # Events are diagnostic. Admission/RBAC failure must not interrupt
+            # desired plans or heartbeat renewal; retry after the rate limit.
+            log.warning('Event publication failed (API status %s)', error.status)
+            self.failed_events.add(key)
+        else:
+            self.failed_events.discard(key)
         self.events[key] = now
 
 

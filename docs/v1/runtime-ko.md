@@ -149,7 +149,9 @@ latch를 해제하지 못합니다. main loop가 재검증한 뒤에만 정상 �
 
 worker report는 최대 90초까지 유효합니다. 안정 상태의 status 쓰기는 객체당
 30초에 한 번이며 readiness/reason/config 변경은 즉시 반영합니다. Event는 전환 시
-발행하고 프로세스 내 같은 reason의 빈도를 제한합니다. alpha는 세부 사유를 담은
+발행하고 프로세스 내 같은 reason의 빈도를 제한합니다. cluster scoped CR의
+Event는 `default`에 저장하며 차트는 해당 namespace에 Event 생성 권한만 부여합니다.
+Event API 실패는 로그와 재시도로 처리하고 heartbeat 갱신을 막지 않습니다. alpha는 세부 사유를 담은
 Ready condition 하나를 구현했습니다. 추가 진단 conditions와 기본 alert rule은
 후속 개선입니다. metrics에는 node/fan/zone을 쓰고 hash를 무한한 label로 쌓지 않습니다.
 duty는 명령 PWM이며 RPM이 아닙니다. 팬이 물리적으로 멈추거나 전원이 꺼지는 상황의

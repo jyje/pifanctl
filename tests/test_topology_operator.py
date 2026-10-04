@@ -206,3 +206,32 @@ def test_configmap_delete_and_status(setup):
     k.objects[o.core + '/configmaps/topology']['metadata']['deletionTimestamp'] = 'now'
     o.reconcile()
     assert FINALIZER not in k.get(o.core + '/configmaps/topology')['metadata']['finalizers']
+
+
+def test_cluster_events_use_default_namespace(setup):
+    k, o = setup
+    o.reconcile()
+    events = [(path, body) for method, path, body in k.calls if method == 'POST' and path.endswith('/events')]
+    assert events
+    assert all(path == '/api/v1/namespaces/default/events' for path, _ in events)
+    assert all(body['metadata']['namespace'] == 'default' and 'namespace' not in body['involvedObject'] for _, body in events)
+
+
+def test_event_failure_does_not_block_reconciliation(setup, caplog):
+    k, o = setup
+    request = k.request
+    failures = []
+    def rejecting_event(method, path, body=None, **kwargs):
+        if method == 'POST' and path.endswith('/events'):
+            failures.append(path)
+            raise APIError(403, 'Forbidden')
+        return request(method, path, body, **kwargs)
+    k.request = rejecting_event
+    assert o.reconcile()
+    assert o.ready and len(failures) == 2
+    assert 'API status 403' in caplog.text
+    assert o.reconcile()
+    assert len(failures) == 2
+    assert o.reconcile(now=time.time() + 61)
+    assert len(failures) == 4
+    assert all(k.get(resource(kind, name))['status']['conditions'] for kind, name in [('Fan', 'fan-a'), ('CoolingZone', 'rack')])
