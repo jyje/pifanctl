@@ -14,8 +14,8 @@
 [![CI status for pull requests](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml/badge.svg)](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml)
 [![CI status for main branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml/badge.svg?branch=main)](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml)
 [![CI status for develop branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml)
-[![Line coverage](https://raw.githubusercontent.com/jyje/pifanctl/coverage-badges/lines.svg)](docs/testing/coverage.md)
-[![Branch coverage](https://raw.githubusercontent.com/jyje/pifanctl/coverage-badges/branches.svg)](docs/testing/coverage.md)
+[![Line coverage](assets/coverage/lines.svg)](docs/testing/coverage.md)
+[![Branch coverage](assets/coverage/branches.svg)](docs/testing/coverage.md)
 [![GitHub Repo stars](https://img.shields.io/github/stars/jyje/pifanctl?style=flat&color=yellow&label=%F0%9F%8C%9F%20Stars)](https://github.com/jyje/pifanctl)
 
 **English** | [Korean](README-ko.md)

@@ -204,17 +204,18 @@ Show two small badges near the existing CI badges:
 - `branches: measured percentage`
 
 Both use the latest successful canonical main measurement. They link to the
-coverage runbook, while `metadata.json` on the badge branch records the measured
+coverage runbook, while `assets/coverage/metadata.json` records the measured
 SHA, timestamp, workflow run and event. A separate Codecov badge is optional;
 avoid three visually redundant percentage badges if the two precise metrics
 already provide enough information. Keep badge labels consistent in README.md
 and README-ko.md.
 
-Publish generated SVG badges and metadata to a dedicated `coverage-badges`
-branch. Generate them with a small deterministic script from JSON. This avoids
-editing the source README on every run and adds no new badge SaaS dependency.
-Use GitHub raw image URLs in the README. The badges are small SVG assets, not
-the project's raster logo illustrations.
+Publish generated SVG badges and metadata under `assets/coverage/` on `main`.
+Generate them with a small deterministic script from JSON. The successful main
+workflow commits updated assets only when their contents change. The workflow
+ignores asset-only pushes to avoid redundant CI. Use repository-relative image
+links in the README. The badges are small SVG assets, not the project's raster
+logo illustrations.
 
 Publisher rules:
 

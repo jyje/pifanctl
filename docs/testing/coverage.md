@@ -59,16 +59,14 @@ now uses the configured repository upload token instead.
 
 ## README badges
 
-After a successful main CI run, the publisher creates or updates the dedicated
-`coverage-badges` branch with `lines.svg`, `branches.svg` and `metadata.json`.
-The metadata identifies the exact main commit and measurement time. The
-publisher checks that main has not advanced before updating the branch. A
-failed run retains the last successful badge and its original measurement
-metadata.
-
-The badge branch is created by the first successful post-merge main run. Until
-that run, badge images referenced from the PR source may not be available.
-Fork pull requests can produce reports and artifacts but cannot write badges.
+After a successful main CI run, the publisher updates
+`assets/coverage/lines.svg`, `assets/coverage/branches.svg` and
+`assets/coverage/metadata.json` in the repository. The metadata identifies the
+exact main commit and measurement time. The publisher checks that main has not
+advanced before updating the assets. A failed run retains the last successful
+badges and their original measurement metadata. Asset-only pushes are excluded
+from the main CI trigger. Fork pull requests can produce reports and artifacts
+but cannot publish badges.
 
 ## Interpreting branch coverage
 

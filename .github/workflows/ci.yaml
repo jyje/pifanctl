@@ -6,6 +6,8 @@ on:
   pull_request:
   push:
     branches: [main]
+    paths-ignore:
+      - "assets/coverage/**"
   workflow_dispatch:
 
 concurrency:
@@ -145,7 +147,7 @@ jobs:
           name: coverage-3.14
           path: coverage-canonical
       - name: Render line and branch SVG badges with measurement metadata
-        run: python scripts/coverage_metrics.py badges --manifest coverage-canonical/coverage-manifest.json --output "$RUNNER_TEMP/coverage-badges"
+        run: python scripts/coverage_metrics.py badges --manifest coverage-canonical/coverage-manifest.json --output assets/coverage
       - name: Publish only if this commit is still main
         env:
           GH_TOKEN: ${{ github.token }}
@@ -157,21 +159,13 @@ jobs:
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          if git ls-remote --exit-code --heads origin coverage-badges >/dev/null 2>&1; then
-            git fetch origin coverage-badges
-            git switch --create coverage-badges --track origin/coverage-badges
-          else
-            git switch --orphan coverage-badges
-            git rm -rf .
-          fi
-          cp "$RUNNER_TEMP"/coverage-badges/* .
-          git add lines.svg branches.svg metadata.json
+          git add assets/coverage/lines.svg assets/coverage/branches.svg assets/coverage/metadata.json
           if git diff --cached --quiet; then
             echo 'Coverage badge contents are unchanged.'
             exit 0
           fi
           git commit -m 'ci(coverage): publish main badges'
-          git push origin coverage-badges
+          git push origin HEAD:main
 
   chart:
     name: ⎈ Chart
