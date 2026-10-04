@@ -341,6 +341,66 @@ Each step skips what already exists, so re-running a failed workflow is safe. Ap
 
 Is there any problem? see [trouble-shooting.md](docs/trouble-shooting.md)
 
+### v1 design proposal
+
+The proposed v1 API uses Node labels to select cooling members, `CoolingZone`
+resources to group them, and `Fan` resources to assign physical PWM fans. It covers
+shared rack fans and one fan per board, with YAML, ConfigMap, Helm and kubectl/CLI
+workflows. [Read the operator design](docs/v1/README.md) and
+[review the CRDs and examples](design/v1/README.md). These are design artifacts;
+the v1 operator and CLI are not implemented yet.
+
+
+#### Cooling systems manual: scenario figures
+
+Example temperatures illustrate the proposed v1 behavior. Figures show steady-state target duty; the downward ramp is omitted. These are not hardware measurements.
+
+![Shared rack fans in normal operation](docs/v1/figures/rack-normal-en.png)
+
+<details>
+<summary>NORMAL: one fan per board</summary>
+
+Each fan follows its own board.
+
+![Per-board fans: normal](docs/v1/figures/individual-normal-en.png)
+
+</details>
+
+<details>
+<summary>HIGH TEMPERATURE: pi-03 heats up</summary>
+
+A hot member drives its assigned fan to full duty. Other cooling zones are unaffected.
+
+![Shared rack fans: hot](docs/v1/figures/rack-hot-en.png)
+
+![Per-board fans: hot](docs/v1/figures/individual-hot-en.png)
+
+</details>
+
+<details>
+<summary>DATA LOST: pi-03 stops reporting</summary>
+
+An incomplete shared zone forces its fan to 100%. With per-board fans, only the missing board's fan enters failsafe.
+
+![Shared rack fans: missing](docs/v1/figures/rack-missing-en.png)
+
+![Per-board fans: missing](docs/v1/figures/individual-missing-en.png)
+
+</details>
+
+<details>
+<summary>WATCHDOG EXPIRED: operator heartbeat lost</summary>
+
+Expired operator heartbeat forces every affected worker to hold its fans at 100%.
+
+![Shared rack fans: watchdog](docs/v1/figures/rack-watchdog-en.png)
+
+![Per-board fans: watchdog](docs/v1/figures/individual-watchdog-en.png)
+
+</details>
+
+[SVG originals and rendering instructions](docs/v1/figures/README.md).
+
 
 ---
 ## 5. References
