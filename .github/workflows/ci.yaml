@@ -97,11 +97,15 @@ jobs:
   codecov:
     name: Codecov report
     needs: [coverage]
-    if: needs.coverage.result == 'success'
+    if: >-
+      needs.coverage.result == 'success' &&
+      ((github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+       (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        github.actor != 'dependabot[bot]'))
     runs-on: ubuntu-24.04
     permissions:
       contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v7
       - name: Download canonical Python 3.14 coverage
@@ -110,14 +114,12 @@ jobs:
           name: coverage-3.14
           path: coverage-canonical
       - name: Upload the canonical report to Codecov
-        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
         with:
           files: coverage-canonical/coverage.xml
           disable_search: true
           flags: python314
-          use_oidc: >-
-            ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-                (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) }}
+          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
   publish-badges:

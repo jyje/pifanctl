@@ -114,4 +114,4 @@ The coverage baseline is not inferred from prior line-only results. Hardware and
 operator safety still need the separate v1 release acceptance work above.
 
 - [PR #43 CI run 37169304903](https://github.com/jyje/pifanctl/actions/runs/37169304903): all five Python matrix reports, the `Coverage quality` gate, version check, chart validation, workflow lint, and ARM64 image smoke test passed. GitHub Actions measured 95.75-95.77% line coverage and 88.2129-89.1635% branch coverage.
-- The canonical report reached the Codecov uploader with OIDC, but Codecov returned `Repository not found`. Activate `jyje/pifanctl` in Codecov before expecting annotations or provider statuses. Upload remains non-blocking during setup.
+- The first canonical OIDC upload returned `Repository not found`. The repository owner has configured the `CODECOV_TOKEN` Actions secret; the uploader now uses that secret for main and trusted same-repository PR runs. Verify the new CI upload before marking Codecov annotations complete. Upload remains non-blocking.

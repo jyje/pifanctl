@@ -4,9 +4,9 @@ Status: v1 implementation guide for issue #42. CI measurement, reporting,
 Codecov upload configuration, Changesets validation and main badge publishing
 are implemented in this change. A local five-version baseline and the first
 GitHub Actions PR matrix passed. The main baseline and trusted badge publish
-still require a successful main workflow run. Codecov received the OIDC upload
-request but returned `Repository not found`; activate the project before
-expecting annotations. No branch floor has been invented. See the
+still require a successful main workflow run. The first OIDC upload returned
+`Repository not found`; the workflow now uses the configured repository upload
+token. No branch floor has been invented. See the
 [coverage runbook](testing/coverage.md).
 
 ## 1. Recommended architecture
@@ -15,9 +15,11 @@ Use coverage.py through pytest-cov for measurement, GitHub Actions for enforceab
 quality checks, and Codecov for pull request review and coverage navigation.
 Generate separate line and branch badges from the same coverage.py JSON report.
 
-Codecov offers a hosted service free for open source projects. The measurement
-tool is open source; the proposal does not depend on self-hosting Codecov.
-See [Codecov for open source](https://about.codecov.io/for/open-source/).
+Codecov's hosted coverage service is free for open source projects and public
+repositories. The Codecov product is Fair Source, not OSI open source. The
+proposal does not depend on self-hosting Codecov. See
+[Codecov for open source](https://about.codecov.io/for/open-source/) and
+[Codecov's license explanation](https://about.codecov.io/blog/codecov-is-now-fair-source/).
 
 ```mermaid
 flowchart TD
@@ -236,16 +238,16 @@ repository's configured badge settings after activation. See
 
 ## 8. Authentication and event boundaries
 
-Use Codecov's GitHub integration for PR annotations and review views. Prefer
-OIDC for authenticated uploads from trusted repository runs, with
-`id-token: write` scoped to a separate uploader job. If OIDC cannot be used,
-use a repository-scoped upload token in GitHub secrets.
-See [Codecov Action authentication](https://github.com/codecov/codecov-action).
+Use Codecov's GitHub integration for PR annotations and review views. Upload
+the canonical report with the repository-scoped `CODECOV_TOKEN` Actions secret.
+The uploader runs only on main pushes and trusted same-repository PRs, never on
+fork PRs or Dependabot PRs. Keep `fail_ci_if_error: false`; local coverage gates
+remain authoritative. See
+[Codecov Action authentication](https://github.com/codecov/codecov-action).
 
-For fork PRs, use Codecov's public fork upload mechanism if supported by the
-configured integration. Local reports and gates remain available even if that
-upload cannot be accepted. Fork runs receive no publishing credentials. Test
-Dependabot behavior separately because its credential restrictions differ.
+Fork PRs still run local report generation and quality gates, but do not upload
+to Codecov because GitHub withholds repository secrets. Dependabot PRs also skip
+the upload because GitHub withholds Actions secrets from Dependabot by default.
 
 Do not use `pull_request_target` to execute PR code. Do not introduce a privileged
 `workflow_run` publisher that executes files from PR artifacts. Treat downloaded

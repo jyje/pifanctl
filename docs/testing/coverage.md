@@ -15,7 +15,11 @@ branch floor unset until a successful main baseline and missing-path review.
 
 ## Run locally
 
-Install the pinned development requirements, then run:
+`pytest`, `pytest-cov`, and `coverage` are pinned in
+`sources/requirements.dev.txt`, separate from the application runtime
+dependencies. Install that project-level development requirements file locally
+with `python -m pip install -r sources/requirements.dev.txt`. CI installs the
+same file before running the coverage command below:
 
 ```sh
 python -m pytest --cov=sources --cov-config=.coveragerc --cov-branch \
@@ -46,13 +50,12 @@ and 95% patch statuses are informational during bootstrap. An unavailable
 Codecov service cannot pass or bypass the local CI quality check.
 
 Repository owners must enable the pifanctl repository in Codecov for PR
-annotations, OIDC uploads and Codecov's native project view. Main and same-repo
-PR uploads use OIDC. Fork PRs use the Codecov Action's public-fork upload path
-without a token. Upload errors remain non-blocking while the repository's
-Codecov configuration is established. The GitHub workflow never exposes upload
-secrets to PR code. In PR #43's first upload, OIDC authentication succeeded but
-Codecov returned `Repository not found`; the repository must be activated in
-Codecov before it can produce annotations or native statuses.
+annotations and Codecov's native project view. Main and same-repository PR
+uploads use the repository-scoped `CODECOV_TOKEN` Actions secret. Fork and
+Dependabot PRs do not upload because GitHub withholds repository secrets.
+Upload errors remain non-blocking; the local coverage gates stay authoritative.
+The first OIDC upload in PR #43 returned `Repository not found`. The workflow
+now uses the configured repository upload token instead.
 
 ## README badges
 
