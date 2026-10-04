@@ -1,0 +1,15 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 0.1%
+        flags:
+          - python314
+        informational: true
+    patch:
+      default:
+        target: 95%
+        flags:
+          - python314
+        informational: true

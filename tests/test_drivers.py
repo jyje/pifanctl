@@ -63,7 +63,7 @@ def test_auto_selects_sysfs_on_a_pi5(tmp_path, monkeypatch):
 
 class FakeGpio:
     """Stands in for RPi.GPIO, which only imports on a Raspberry Pi."""
-    BCM, OUT = "BCM", "OUT"
+    BCM, OUT, HIGH = "BCM", "OUT", 1
 
     def __init__(self):
         self.calls = []
@@ -78,6 +78,8 @@ class FakeGpio:
 
             def ChangeDutyCycle(self, duty):
                 gpio.calls.append(("duty", duty))
+            def stop(self):
+                gpio.calls.append(('stop',))
 
         self.PWM = PWM
 
@@ -92,6 +94,8 @@ class FakeGpio:
 
     def cleanup(self):
         self.calls.append(("cleanup",))
+    def output(self, pin, level):
+        self.calls.append(('output', pin, level))
 
 
 @pytest.fixture

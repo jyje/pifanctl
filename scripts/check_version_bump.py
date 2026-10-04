@@ -9,6 +9,7 @@ A new application version changes the chart's `appVersion`, so it also needs a
 new chart version.
 """
 import re
+from pathlib import Path
 import subprocess
 import sys
 
@@ -67,6 +68,15 @@ def main(base: str) -> int:
         new_chart = chart_version(f.read())
 
     errors = check(changed, old_app, new_app, old_chart, new_chart)
+    for file in Path('charts').glob('*/Chart.yaml'):
+        if str(file) == CHART_FILE: continue
+        prefix = str(file.parent) + '/'
+        if not any(p.startswith(prefix) and '/ci/' not in p for p in changed): continue
+        try: old = chart_version(git('show', f'{base}:{file}'))
+        except subprocess.CalledProcessError: old = None
+        version = chart_version(file.read_text())
+        if old == version:
+            errors.append(f'The chart changed but its version is still {version} in {file}.')
     for error in errors:
         print(f"::error::{error}")
     if not errors:

@@ -1,0 +1,95 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Release.Namespace }}-{{ include "pifanctl.operatorName" . }}
+rules:
+  - apiGroups: [""]
+    resources: [nodes]
+    verbs: [get, list, watch]
+  {{- if eq .Values.input.mode "crd" }}
+  - apiGroups: [pifanctl.jyje.online]
+    resources: [fans, coolingzones, fans/status, coolingzones/status, fans/finalizers, coolingzones/finalizers]
+    verbs: [get, list, watch, patch, update]
+  {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Release.Namespace }}-{{ include "pifanctl.operatorName" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Release.Namespace }}-{{ include "pifanctl.operatorName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "pifanctl.operatorName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- if eq .Values.input.mode "crd" }}
+---
+# Core Events for cluster scoped CRs belong in default, not the installation
+# namespace. Grant only create on Events there, without cluster-wide Event access.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Release.Namespace }}-{{ include "pifanctl.operatorName" . }}-events
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Release.Namespace }}-{{ include "pifanctl.operatorName" . }}-events
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ .Release.Namespace }}-{{ include "pifanctl.operatorName" . }}-events
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "pifanctl.operatorName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "pifanctl.operatorName" . }}
+rules:
+  - apiGroups: [apps]
+    resources: [deployments]
+    verbs: [get, list, create, patch, delete]
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list]
+  - apiGroups: [""]
+    resources: [configmaps]
+    verbs: [get, list, create, patch, delete]
+  {{- if eq .Values.input.mode "configMap" }}
+  # Required by OwnerReferencesPermissionEnforcement for blockOwnerDeletion.
+  - apiGroups: [""]
+    resources: [configmaps/finalizers]
+    resourceNames: [{{ .Values.input.configMapName | quote }}]
+    verbs: [update]
+  {{- end }}
+  - apiGroups: [""]
+    resources: [events]
+    verbs: [create]
+  - apiGroups: [coordination.k8s.io]
+    resources: [leases]
+    verbs: [get, create, update]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "pifanctl.operatorName" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ include "pifanctl.operatorName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "pifanctl.operatorName" . }}
+    namespace: {{ .Release.Namespace }}

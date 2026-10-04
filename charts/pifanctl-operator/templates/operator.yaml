@@ -1,0 +1,65 @@
+{{- if not (has .Values.input.mode (list "crd" "configMap")) }}{{ fail "input.mode must be crd or configMap" }}{{ end }}
+{{- if and (eq .Values.input.mode "configMap") (not .Values.input.configMapName) }}{{ fail "configMap input requires input.configMapName" }}{{ end }}
+{{- if not (has .Values.agent.mode (list "managed" "reuse")) }}{{ fail "agent.mode must be managed or reuse" }}{{ end }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "pifanctl.operatorName" . }}
+  labels:
+    {{- include "pifanctl.operatorLabels" . | nindent 4 }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pifanctl.operatorName" . }}
+  labels:
+    {{- include "pifanctl.operatorLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  # Only the Lease leader is Ready. A surge update would wait for a new leader
+  # while keeping the old leader alive, so stop old operators before replacement.
+  strategy: {type: Recreate}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: operator
+  template:
+    metadata:
+      labels:
+        {{- include "pifanctl.operatorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: operator
+    spec:
+      serviceAccountName: {{ include "pifanctl.operatorName" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: operator
+          image: {{ include "pifanctl.operatorImage" . | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: [python, main.py, operator, run]
+          args:
+            - --namespace
+            - {{ .Release.Namespace | quote }}
+            - --operator-id
+            - {{ .Values.operatorId | quote }}
+            - --image
+            - {{ include "pifanctl.operatorImage" . | quote }}
+            {{- if eq .Values.input.mode "configMap" }}
+            - --configmap
+            - {{ .Values.input.configMapName | quote }}
+            {{- end }}
+          ports:
+            - {name: health, containerPort: 9104}
+          livenessProbe:
+            httpGet: {path: /healthz, port: health}
+            initialDelaySeconds: 15
+          readinessProbe:
+            httpGet: {path: /readyz, port: health}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}

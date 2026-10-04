@@ -11,6 +11,7 @@ on:
       - main
     paths:
       - charts/pifanctl/**
+      - charts/pifanctl-operator/**
       - .github/workflows/release-chart.yaml
 
 concurrency:
@@ -22,6 +23,11 @@ permissions:
 
 jobs:
   release:
+    strategy:
+      matrix:
+        chart: [pifanctl, pifanctl-operator]
+    env:
+      CHART_NAME: ${{ matrix.chart }}
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -54,14 +60,14 @@ jobs:
         run: echo "$TOKEN" | helm registry login ghcr.io --username "$ACTOR" --password-stdin
       - name: Package and push a new version
         run: |
-          version="$(helm show chart charts/pifanctl | sed -n 's/^version: //p')"
-          ref="oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts/pifanctl"
+          version="$(helm show chart "charts/${CHART_NAME}" | sed -n 's/^version: //p')"
+          ref="oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts/${CHART_NAME}"
           if helm show chart "${ref}" --version "${version}" >/dev/null 2>&1; then
             echo "::notice::chart ${version} is already published, nothing to do"
             exit 0
           fi
-          helm package charts/pifanctl --destination dist
-          helm push "dist/pifanctl-${version}.tgz" "oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts"
+          helm package "charts/${CHART_NAME}" --destination dist
+          helm push "dist/${CHART_NAME}-${version}.tgz" "oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts"
       - name: Tag and release the chart version
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

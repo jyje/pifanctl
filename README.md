@@ -14,9 +14,11 @@
 [![CI status for pull requests](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml/badge.svg)](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml)
 [![CI status for main branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml/badge.svg?branch=main)](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml)
 [![CI status for develop branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml)
+[![Line coverage](https://raw.githubusercontent.com/jyje/pifanctl/coverage-badges/lines.svg)](docs/testing/coverage.md)
+[![Branch coverage](https://raw.githubusercontent.com/jyje/pifanctl/coverage-badges/branches.svg)](docs/testing/coverage.md)
 [![GitHub Repo stars](https://img.shields.io/github/stars/jyje/pifanctl?style=flat&color=yellow&label=%F0%9F%8C%9F%20Stars)](https://github.com/jyje/pifanctl)
 
-**English** | [한국어](README-ko.md)
+**English** | [Korean](README-ko.md)
 
 </div>
 
@@ -45,6 +47,8 @@ flowchart LR
 > **Status.** Cluster mode runs on a Raspberry Pi 4 cluster with the RPi.GPIO driver. The kernel PWM driver for Raspberry Pi 5 is covered by tests against a fake sysfs tree, but has not been run on a Pi 5 with a fan yet.
 
 ---
+> This branch contains v1 alpha source. The alpha image/chart must be built and published before registry installation. See the [runtime manual](docs/v1/runtime.md); stable v1.0.0 hardware acceptance is pending.
+
 ## 1. Run
 
 ### 1.1. Requirements
@@ -112,7 +116,7 @@ Controlling the pin needs access to GPIO and `/dev/mem`, so `start` needs `docke
 # Label the one Raspberry Pi whose GPIO controls the shared rack fan.
 kubectl label node <node-that-controls-the-rack-fan> pifanctl.jyje.online/fan=true
 
-helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.3 \
+helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.2.0-alpha.1 \
   --namespace pifanctl --create-namespace \
   --set prometheus.url=http://prometheus-operated.monitoring.svc:9090 \
   --set monitoring.serviceMonitor.enabled=true \
@@ -303,10 +307,10 @@ You can check the environment of CI/CD pipeline in [app.jyje.online#stack](https
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
 | `ci` | every pull request | Lints the workflows, runs tests on every stable Python minor release from 3.10 through 3.14, lints and schema-validates the chart (kubeconform, `promtool`), and builds the ARM64 image on the in-cluster runner without pushing |
-| `build-image-main` | push to `main` | Publishes `ghcr.io/jyje/pifanctl:latest`, the commit SHA tag and `v<version>` (once per version) |
+| `build-image-main` | push to `main` | Publishes the commit SHA tag and `v<version>` (once per version); stable versions also update `latest` |
 | `build-image-develop` | push to `develop` | Publishes `ghcr.io/jyje/pifanctl-dev:latest` and the SHA tag |
 | `build-image-issue` | push to `issue-**` | Publishes `ghcr.io/jyje/pifanctl-issue:<sha>` for temporary testing |
-| `release-chart` | push to `main` touching `charts/pifanctl` | Publishes the chart to `oci://ghcr.io/jyje/charts/pifanctl` when its version is new |
+| `release-chart` | push to `main` touching either chart | Publishes new `pifanctl` and `pifanctl-operator` charts to `oci://ghcr.io/jyje/charts/` |
 
 The three image workflows share one reusable workflow, `_build-image.yaml`.
 
@@ -319,41 +323,42 @@ The three image workflows share one reusable workflow, `_build-image.yaml`.
 
 ### 3.3. Releasing
 
-The version lives in two places, and a pull request that changes what ships has to bump it:
+Application and chart versions are tracked separately. A pull request that changes what ships has to bump the relevant versions:
 
 | Changed | Bump | Checked by |
 | --- | --- | --- |
-| `sources/main.py` or `sources/pifanctl/` | `__version__` in `sources/pifanctl/__init__.py`, and `appVersion` in `charts/pifanctl/Chart.yaml` | the `Version bump` job |
-| `charts/pifanctl/` (not its `ci/` value sets) | `version` in `charts/pifanctl/Chart.yaml`. A new application version changes `appVersion`, so it needs a new chart version too | the `Version bump` job |
+| `sources/main.py` or `sources/pifanctl/` | `__version__` in `sources/pifanctl/__init__.py`, and `appVersion` in both chart manifests | the `Version bump` job |
+| Either directory under `charts/` (not its `ci/` value sets) | `version` in the affected `Chart.yaml`. A new application version changes `appVersion`, so both charts need new versions | the `Version bump` job |
 
 Also update the image tag in `k8s/manifests/deployments.yaml` and the chart version in the install command above; a test fails when they drift.
 
 Merging to `main` does the rest:
 
-1. `build-image-main` publishes `latest`, the commit tag, and `v<version>` the first time a version appears.
+1. `build-image-main` publishes the commit tag and `v<version>` the first time a version appears. Stable versions also update `latest`; alpha versions leave it unchanged.
 2. After the image exists, it creates the git tag `v<version>` and a GitHub release with generated notes.
-3. `release-chart` waits for the image the chart points at, publishes the chart to `oci://ghcr.io/jyje/charts/pifanctl`, and creates the tag `chart-v<version>` and its release.
+3. `release-chart` waits for the referenced image, publishes both charts to `oci://ghcr.io/jyje/charts/`, and creates `chart-v<version>` or `operator-chart-v<version>` tags and releases.
 
-Each step skips what already exists, so re-running a failed workflow is safe. Application releases are tagged `v*` and chart releases `chart-v*`.
+Each step skips what already exists, so re-running a failed workflow is safe. Application releases are tagged `v*`; chart releases use `chart-v*` and `operator-chart-v*`. Alpha versions are GitHub prereleases.
 
 ---
 ## 4. Trouble Shooting
 
 Is there any problem? see [trouble-shooting.md](docs/trouble-shooting.md)
 
-### v1 design proposal
+### v1 alpha: declarative cooling topology
 
-The proposed v1 API uses Node labels to select cooling members, `CoolingZone`
+The v1 alpha API uses Node labels to select cooling members, `CoolingZone`
 resources to group them, and `Fan` resources to assign physical PWM fans. It covers
 shared rack fans and one fan per board, with YAML, ConfigMap, Helm and kubectl/CLI
 workflows. [Read the operator design](docs/v1/README.md) and
-[review the CRDs and examples](design/v1/README.md). These are design artifacts;
-the v1 operator and CLI are not implemented yet.
+[review the CRDs and examples](design/v1/README.md). The operator, worker and CLI are implemented in the alpha.
+See the [runtime manual](docs/v1/runtime.md) and [staged checklist](PLAN.md).
+Real Pi hardware and API server acceptance remain pending.
 
 
 #### Cooling systems manual: scenario figures
 
-Example temperatures illustrate the proposed v1 behavior. Figures show steady-state target duty; the downward ramp is omitted. These are not hardware measurements.
+Example temperatures illustrate the v1 model. Figures show steady-state target duty; the downward ramp is omitted. These are not hardware measurements.
 
 ![Shared rack fans in normal operation](docs/v1/figures/rack-normal-en.png)
 

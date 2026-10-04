@@ -20,12 +20,15 @@ case "${kind}" in
     published() { docker buildx imagetools inspect "${image}:${tag}" >/dev/null 2>&1; }
     ;;
   chart)
-    version="$(sed -n "s/^version: *['\"]\{0,1\}\([^'\"]*\)['\"]\{0,1\}$/\1/p" charts/pifanctl/Chart.yaml)"
+    chart_name="${CHART_NAME:-pifanctl}"
+    case "$chart_name" in pifanctl|pifanctl-operator) ;; *) exit 2 ;; esac
+    version="$(sed -n "s/^version: *['\"]\{0,1\}\([^'\"]*\)['\"]\{0,1\}$/\1/p" "charts/${chart_name}/Chart.yaml")"
     tag="chart-v${version}"
     pattern='chart-v*'
+    if [ "$chart_name" = "pifanctl-operator" ]; then tag="operator-chart-v${version}"; pattern='operator-chart-v*'; fi
     title="Helm chart ${version}"
     published() {
-      helm show chart "oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts/pifanctl" --version "${version}" >/dev/null 2>&1
+      helm show chart "oci://ghcr.io/${GITHUB_REPOSITORY_OWNER}/charts/${chart_name}" --version "${version}" >/dev/null 2>&1
     }
     ;;
   *) echo "unknown kind: ${kind}" >&2; exit 2 ;;
@@ -47,6 +50,7 @@ previous="$(git tag --list "${pattern}" --sort=-v:refname | grep -v -x "${tag}" 
 args=(--target "${GITHUB_SHA}" --title "${title}" --generate-notes)
 [ -z "${previous}" ] || args+=(--notes-start-tag "${previous}")
 [ "${kind}" = "app" ] || args+=(--latest=false)
+[[ "${version}" != *-* ]] || args+=(--prerelease --latest=false)
 
 gh release create "${tag}" "${args[@]}"
 echo "released ${tag}"

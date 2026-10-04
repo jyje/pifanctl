@@ -14,6 +14,8 @@
 [![CI status for pull requests](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml/badge.svg)](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml)
 [![CI status for main branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml/badge.svg?branch=main)](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml)
 [![CI status for develop branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml)
+[![Line coverage](https://raw.githubusercontent.com/jyje/pifanctl/coverage-badges/lines.svg)](docs/testing/coverage.md)
+[![Branch coverage](https://raw.githubusercontent.com/jyje/pifanctl/coverage-badges/branches.svg)](docs/testing/coverage.md)
 [![GitHub Repo stars](https://img.shields.io/github/stars/jyje/pifanctl?style=flat&color=yellow&label=%F0%9F%8C%9F%20Stars)](https://github.com/jyje/pifanctl)
 
 [English](README.md) | **한국어**
@@ -44,6 +46,8 @@ flowchart LR
 > **상태.** 클러스터 모드는 라즈베리 파이 4 클러스터에서 RPi.GPIO 드라이버로 운영 중입니다. 라즈베리 파이 5용 커널 PWM 드라이버는 가짜 sysfs 트리를 이용한 테스트로만 검증했고, 팬이 달린 Pi 5에서는 아직 실행해 보지 못했습니다.
 
 ---
+> 이 브랜치는 v1 alpha 소스입니다. registry 설치 전 alpha 이미지/차트 게시가 필요합니다. [런타임 매뉴얼](docs/v1/runtime-ko.md)을 확인하세요. 정식 v1.0.0의 하드웨어 검증은 남아 있습니다.
+
 ## 1. 실행
 
 ### 1.1. 요구 사항
@@ -107,7 +111,7 @@ INFO [2026-10-01 14:30:00Z] Duty: 36.6%, Temperature: 51.9°C, Following: raspbe
 # 공용 랙 팬을 제어하는 GPIO가 연결된 Raspberry Pi 노드 한 곳에 라벨을 붙입니다.
 kubectl label node <공용-랙-팬-제어-노드> pifanctl.jyje.online/fan=true
 
-helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.1.3 \
+helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.2.0-alpha.1 \
   --namespace pifanctl --create-namespace \
   --set prometheus.url=http://prometheus-operated.monitoring.svc:9090 \
   --set monitoring.serviceMonitor.enabled=true \
@@ -281,10 +285,10 @@ CI/CD 환경은 [app.jyje.online#stack](https://app.jyje.online/#stack)에서 �
 | 워크플로 | 트리거 | 하는 일 |
 | --- | --- | --- |
 | `ci` | 모든 풀 리퀘스트 | 워크플로 lint, 정식 출시된 Python 마이너 버전 3.10-3.14 전체에서 테스트, 차트 lint와 스키마 검증(kubeconform, `promtool`), 클러스터 내 러너에서 ARM64 이미지를 푸시 없이 빌드 |
-| `build-image-main` | `main` push | `ghcr.io/jyje/pifanctl:latest`, 커밋 SHA 태그, `v<version>`(버전당 한 번) 발행 |
+| `build-image-main` | `main` push | 커밋 SHA 태그와 `v<version>`(버전당 한 번) 발행. 정식 버전만 `latest` 갱신 |
 | `build-image-develop` | `develop` push | `ghcr.io/jyje/pifanctl-dev:latest`와 SHA 태그 발행 |
 | `build-image-issue` | `issue-**` push | 임시 테스트용 `ghcr.io/jyje/pifanctl-issue:<sha>` 발행 |
-| `release-chart` | `charts/pifanctl`을 바꾼 `main` push | 버전이 새로울 때 `oci://ghcr.io/jyje/charts/pifanctl`에 차트 발행 |
+| `release-chart` | 두 차트 중 하나를 바꾼 `main` push | 새 `pifanctl`, `pifanctl-operator` 차트를 `oci://ghcr.io/jyje/charts/`에 발행 |
 
 세 이미지 워크플로는 재사용 워크플로 `_build-image.yaml` 하나를 공유합니다.
 
@@ -297,41 +301,42 @@ CI/CD 환경은 [app.jyje.online#stack](https://app.jyje.online/#stack)에서 �
 
 ### 3.3. 릴리스
 
-버전은 두 곳에 있으며, 배포되는 것을 바꾸는 풀 리퀘스트는 버전을 올려야 합니다.
+앱과 각 차트의 버전을 따로 관리합니다. 배포되는 것을 바꾸는 풀 리퀘스트는 해당 버전을 올려야 합니다.
 
 | 변경 | 올릴 것 | 확인 |
 | --- | --- | --- |
-| `sources/main.py` 또는 `sources/pifanctl/` | `sources/pifanctl/__init__.py`의 `__version__`과 `charts/pifanctl/Chart.yaml`의 `appVersion` | `Version bump` 잡 |
-| `charts/pifanctl/` (`ci/` 값 파일 제외) | `charts/pifanctl/Chart.yaml`의 `version`. 애플리케이션 버전이 새로우면 `appVersion`이 바뀌므로 차트 버전도 새로워야 합니다 | `Version bump` 잡 |
+| `sources/main.py` 또는 `sources/pifanctl/` | `sources/pifanctl/__init__.py`의 `__version__`과 두 차트 manifest의 `appVersion` | `Version bump` 잡 |
+| `charts/`의 각 차트 디렉터리 (`ci/` 값 파일 제외) | 해당 `Chart.yaml`의 `version`. 앱 버전이 새로우면 `appVersion`이 바뀌므로 두 차트 버전도 새로워야 합니다 | `Version bump` 잡 |
 
 `k8s/manifests/deployments.yaml`의 이미지 태그와 위 설치 명령의 차트 버전도 함께 바꾸세요. 어긋나면 테스트가 실패합니다.
 
 `main`에 병합하면 나머지는 자동입니다.
 
-1. `build-image-main`이 `latest`, 커밋 태그, 그리고 버전이 처음 나타날 때 `v<version>`을 발행합니다.
+1. `build-image-main`이 커밋 태그와 버전이 처음 나타날 때 `v<version>`을 발행합니다. 정식 버전만 `latest`를 갱신하고 alpha는 유지합니다.
 2. 이미지가 생긴 뒤 git 태그 `v<version>`과 자동 생성 노트가 붙은 GitHub 릴리스를 만듭니다.
-3. `release-chart`가 차트가 가리키는 이미지를 기다린 뒤 `oci://ghcr.io/jyje/charts/pifanctl`에 차트를 발행하고, 태그 `chart-v<version>`과 릴리스를 만듭니다.
+3. `release-chart`가 이미지를 기다린 뒤 두 차트를 `oci://ghcr.io/jyje/charts/`에 발행하고 `chart-v<version>` 또는 `operator-chart-v<version>` 태그와 릴리스를 만듭니다.
 
-각 단계는 이미 있는 것을 건너뛰므로 실패한 워크플로를 다시 실행해도 안전합니다. 애플리케이션 릴리스는 `v*`, 차트 릴리스는 `chart-v*` 태그를 씁니다.
+각 단계는 이미 있는 것을 건너뛰므로 실패한 워크플로를 다시 실행해도 안전합니다. 앱 릴리스는 `v*`, 차트는 `chart-v*`와 `operator-chart-v*` 태그를 씁니다. alpha는 GitHub prerelease로 발행합니다.
 
 ---
 ## 4. 문제 해결
 
 문제가 있나요? [trouble-shooting.md](docs/trouble-shooting.md)를 보세요.
 
-### v1 설계 제안
+### v1 alpha: 선언형 냉각 토폴로지
 
 v1 제안은 Node 라벨로 냉각 대상을 선택하고 `CoolingZone`으로 구역을 구성한 뒤
 `Fan`으로 물리 PWM 팬을 연결합니다. 공유 랙 팬과 보드별 팬을 같은 모델로 표현하고
 YAML, ConfigMap, Helm, kubectl/CLI 흐름을 연결합니다.
 [오퍼레이터 설계](docs/v1/README-ko.md)와 [CRD·예시](design/v1/README.md)를
-검토할 수 있습니다. 현재는 설계 리소스이며 v1 오퍼레이터와 CLI는 아직 구현하지
-않았습니다.
+검토할 수 있습니다. operator·worker·CLI를 alpha로 구현했습니다.
+설치, migration과 검증 범위는 [런타임 매뉴얼](docs/v1/runtime-ko.md),
+단계별 작업과 정식 출시 게이트는 [PLAN.md](PLAN.md)를 확인하세요.
 
 
 #### 냉각 계통 설명: 시나리오 도해
 
-예시 온도로 v1의 예정 동작을 설명합니다. 출력은 정상상태 목표 duty이며 하강 지연은 생략했습니다. 실제 하드웨어 측정값이 아닙니다.
+예시 온도로 v1 모델의 동작을 설명합니다. 출력은 정상상태 목표 duty이며 하강 지연은 생략했습니다. 실제 하드웨어 측정값이 아닙니다.
 
 ![공유 랙 팬의 정상 동작](docs/v1/figures/rack-normal-ko.png)
 

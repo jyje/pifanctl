@@ -1,0 +1,86 @@
+{{- if eq .Values.agent.mode "managed" }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "pifanctl.operatorName" . }}-agent
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: agent
+  template:
+    metadata:
+      labels:
+        {{- include "pifanctl.operatorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: agent
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9101"
+    spec:
+      automountServiceAccountToken: false
+      tolerations: [{operator: Exists}]
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: agent
+          image: {{ include "pifanctl.operatorImage" . | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: [python, main.py, agent]
+          args: [--interval, {{ .Values.agent.interval | quote }}]
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef: {fieldPath: spec.nodeName}
+          ports: [{name: metrics, containerPort: 9101}]
+          volumeMounts:
+            - {name: thermal, mountPath: /sys/class/thermal, readOnly: true}
+            - {name: devices, mountPath: /sys/devices, readOnly: true}
+          livenessProbe:
+            httpGet: {path: /metrics, port: metrics}
+          readinessProbe:
+            httpGet: {path: /metrics, port: metrics}
+          resources:
+            {{- toYaml .Values.agent.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+      volumes:
+        - name: thermal
+          hostPath: {path: /sys/class/thermal, type: Directory}
+        - name: devices
+          hostPath: {path: /sys/devices, type: Directory}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pifanctl.operatorName" . }}-agent
+  labels:
+    {{- include "pifanctl.operatorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: agent
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: agent
+  ports: [{name: metrics, port: 9101, targetPort: metrics}]
+{{- if .Values.serviceMonitor.enabled }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "pifanctl.operatorName" . }}-agent
+  labels:
+    {{- toYaml .Values.serviceMonitor.labels | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: agent
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.serviceMonitor.interval }}
+{{- end }}
+{{- end }}
