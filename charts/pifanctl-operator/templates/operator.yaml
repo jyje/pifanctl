@@ -1,5 +1,3 @@
-{{- if not (has .Values.input.mode (list "crd" "configMap")) }}{{ fail "input.mode must be crd or configMap" }}{{ end }}
-{{- if and (eq .Values.input.mode "configMap") (not .Values.input.configMapName) }}{{ fail "configMap input requires input.configMapName" }}{{ end }}
 {{- if not (has .Values.agent.mode (list "managed" "reuse")) }}{{ fail "agent.mode must be managed or reuse" }}{{ end }}
 apiVersion: v1
 kind: ServiceAccount
@@ -46,10 +44,6 @@ spec:
             - {{ .Values.operatorId | quote }}
             - --image
             - {{ include "pifanctl.operatorImage" . | quote }}
-            {{- if eq .Values.input.mode "configMap" }}
-            - --configmap
-            - {{ .Values.input.configMapName | quote }}
-            {{- end }}
           ports:
             - {name: health, containerPort: 9104}
           livenessProbe:

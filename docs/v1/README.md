@@ -35,7 +35,7 @@ multiple fans. Use existing `Node` identity rather than duplicating it.
 | --- | --- | --- | --- |
 | Node labels only | Native grouping, no CRDs, easy `kubectl label` | Poor fit for PWM hardware, control curves, multiple fans, fan references and observed status; labels are not structured configuration | Use for membership, not the whole API |
 | One member and one worker CR per node | Explicit individual roles | Duplicates Node identity; one worker node may have several fans; membership updates grow with node count | Do not adopt |
-| ConfigMap containing the whole topology | Simple YAML, Helm/GitOps friendly, can also run without CRDs | Whole-document updates, custom validation and status; weak discovery and per-object RBAC | Supported alternative input |
+| ConfigMap containing the whole topology | Simple YAML and Helm/GitOps friendly | Whole-document updates, custom status and weaker API discovery | Excluded from v1; CRDs are required |
 | `CoolingZone` + `Fan`, with Node selectors | Member-centered grouping, physical fan identity, structured policy/status, native API discovery | Requires CRDs and an operator; selectors and cross-object safety need reconciliation | Preferred Kubernetes API |
 
 Labels are Kubernetes' grouping primitive. This design keeps that behavior and
@@ -112,12 +112,11 @@ separately from desired `spec`.
 | Every Pi has one fan | One single-node zone and one colocated Fan per Pi |
 | Two fans cool the same four boards | One zone references two Fans; these can be on one node with distinct pins |
 | One fan cools several logical zones | Several zones reference the same Fan; worker uses their member union |
-| Standalone Pi without Kubernetes | Same List YAML with explicit nodeNames, local telemetry and one selected fan |
+| Single-node Kubernetes cluster | One single-node CoolingZone and one colocated Fan |
 
 See [two racks](../../design/v1/examples/two-racks.yaml),
-[per-node fans](../../design/v1/examples/per-node.yaml),
-[multiple fans](../../design/v1/examples/multi-fan.yaml) and
-[standalone](../../design/v1/examples/standalone.yaml).
+[per-node fans](../../design/v1/examples/per-node.yaml), and
+[multiple fans](../../design/v1/examples/multi-fan.yaml).
 The [kernel PWM example](../../design/v1/examples/sysfs.yaml) illustrates a Pi 5
 sysfs configuration; its overlay and physical channel still need hardware verification.
 
@@ -150,32 +149,25 @@ flowchart LR
   WB --> B(("rack-b fan"))
 ```
 
-## 5. One topology, three input paths
+## 5. CRD-only desired state
 
 The portable document is a Kubernetes `v1/List` containing the same `Fan` and
 `CoolingZone` envelopes and specs as the native API. It is a serialization
-format, not a third CRD. The shared validator/planner applies identical defaults
-and semantic checks for CRs, ConfigMap content and local files.
+format for validation and planning tools. Kubernetes runtime topology is always
+represented by native `Fan` and `CoolingZone` custom resources.
 
-| Input | Source of desired state | Observed state | Kubernetes dependency |
+| Source | Desired state | Observed state | Kubernetes dependency |
 | --- | --- | --- | --- |
-| Native API | Fan and CoolingZone objects, applied by kubectl/Helm/GitOps | Resource `/status`, Events, metrics | CRDs + operator |
-| ConfigMap | Named ConfigMap, key `topology.yaml` | Separate output ConfigMap `pifanctl-topology-status`, Events, metrics | Operator in configMap mode; CRDs optional |
-| Local file | List YAML | CLI output/logs and metrics | None for nodeNames; API needed to resolve nodeSelector |
+| Native API | Fan and CoolingZone CRs rendered through the operator chart's `extraResources` values | Resource `/status`, Events, metrics | CRDs + operator |
+| Local file | List YAML for offline validation or live planning only | CLI output | API access is needed to resolve selectors; local PWM control is unsupported |
 
-The operator starts in exactly one input mode, `customResources` or `configMap`.
-It does not mirror a ConfigMap into cluster scoped CRs and does not mutate the
-input ConfigMap or Node labels. ConfigMap mode parses virtual resources into the
-same plan. Its output status includes input resourceVersion and topology hash;
-it is not another desired-state source. Switching modes requires a controlled
-handover. CRDs and ConfigMaps must never run competing controllers on the same fan.
-
-The [experimental Helm chart](../../design/v1/helm) renders either native CRs or
-the equivalent [ConfigMap](../../design/v1/examples/configmap.yaml). It emits no
-operator or worker workload, and is separate from the published production chart.
-The [operator chart](../../charts/pifanctl-operator) owns deployment settings, pinned images and input mode;
-the topology chart or GitOps owns cooling configuration. CRD installation and
-upgrades are a separate explicit lifecycle, never silently pruned on uninstall.
+The operator chart is the only supported pifanctl chart in v1. It installs the
+operator runtime and CRDs, then renders `Fan` and `CoolingZone` instances from
+`extraResources`. GitOps stores these values in the cluster repository's
+operator Application. There is no separate pifanctl instance chart or
+ConfigMap topology mode in v1. The [experimental design chart](../../design/v1/helm)
+is not a supported v1 installation path. CRD schema upgrades still require an
+explicit lifecycle procedure because Helm does not upgrade or delete CRDs.
 
 ## 6. Operator and worker responsibilities
 
@@ -221,16 +213,12 @@ private metrics/status endpoint in the operator namespace; only the operator
 may reach it. Generated owner references point to the cluster scoped Fan, with
 the lexicographically first Fan on a node as primary workload owner. When that
 Fan is removed, transfer ownership before finalization if other fans remain.
-ConfigMap mode uses the source ConfigMap as a namespaced owner in the same
-namespace. Never attach a namespaced owner to a cluster scoped resource.
-[Owner reference scope](https://kubernetes.io/docs/concepts/architecture/garbage-collection/).
-
-Mounted ConfigMap changes are eventually delivered, not immediate. Mount the
-directory, not a `subPath` or environment variables; read the complete new file,
-validate, then swap. Readiness depends on applied-hash acknowledgement. On an
-invalid or delayed plan retain the last valid plan and mark Degraded; never
-silently declare convergence.
-[ConfigMap update behavior](https://kubernetes.io/docs/concepts/configuration/configmap/).
+Kubernetes workload ConfigMaps contain internal worker plans only. They are
+operator-managed implementation details, not an alternate topology API.
+Mounted worker-plan updates are eventually delivered, not immediate. Workers
+read the complete new file, validate, then swap. Readiness depends on
+applied-hash acknowledgement. On an invalid or delayed plan, retain the last
+valid plan and mark Degraded; never silently declare convergence.
 
 ### Data correctness and physical safety
 
@@ -312,17 +300,15 @@ pifanctl --context lab zone list
 pifanctl --context lab zone describe rack-a
 pifanctl --context lab fan list
 pifanctl --context lab fan watch
-pifanctl worker run --file topology.yaml --node pi-01
 ```
 
 `validate` is offline shape/reference validation. `plan` resolves live selectors,
 shows target Nodes/UIDs, claims and membership changes without mutations. `apply`
 uses the Kubernetes API and server-side apply with a dedicated field manager,
 never shell interpolation or privileged remote GPIO access. It respects
-`KUBECONFIG`, `--kubeconfig` and `--context`. Local `worker run` touches hardware
-only on the selected fan's node and requires appropriate OS permissions. Offline
-multi-node use needs explicit nodeNames and reachable Prometheus; selectors need
-API resolution. Refuse mismatched local node identity.
+`KUBECONFIG`, `--kubeconfig` and `--context`. Hardware workers are managed only
+by the operator. Offline validation is available, while live selectors and
+application require API access.
 
 Ship an optional `kubectl-pifanctl` wrapper so `kubectl pifanctl fan list` invokes
 the same CLI. Plain `kubectl get fans,coolingzones`, `describe`, `apply`, `diff`
@@ -331,11 +317,11 @@ Argo's resource-oriented CLI: validation and useful output over native Kubernete
 resources. No extra control server is necessary in the first version.
 [Argo CLI](https://argo-workflows.readthedocs.io/en/latest/walk-through/argo-cli/).
 
-`apply` targets native CR mode; a ConfigMap workflow renders the List into
-`topology.yaml` and uses `kubectl apply` on the input ConfigMap. GitOps users edit
-the source repository. The CLI shows managed-field conflicts and does not force
-ownership or secretly modify Helm/Argo-managed configuration. Manual fan duty
-overrides and stop-at-zero commands are deferred until a safe override API exists.
+`apply` targets native CRs. GitOps users edit the source repository and can put
+the same resources in the operator chart's `extraResources` values. The CLI shows
+managed-field conflicts and does not force ownership or secretly modify
+Helm/Argo-managed configuration. Manual fan duty overrides and stop-at-zero
+commands are deferred until a safe override API exists.
 
 ## 8. Migration and delivery gates
 
@@ -347,7 +333,7 @@ overrides and stop-at-zero commands are deferred until a safe override API exist
    offline and mock behavior before Kubernetes reconciliation.
 4. Implement node workers, host locks, hot reload and safety watchdogs. Validate
    real Pi 4 GPIO and Pi 5 sysfs behavior, including abrupt process/node failure.
-5. Implement operator, status, finalizers, ConfigMap mode, CLI and kubectl wrapper.
+5. Implement operator, status, finalizers, CLI and kubectl wrapper.
    Use dry-run and mock workers in a disposable Kubernetes cluster first.
 6. Hand over one fan at a time: leave full duty, stop its legacy controller and
    verify no old PWM writer remains, then enable the v1 worker. Do not run both.
@@ -359,7 +345,7 @@ Acceptance criteria for implementation:
 
 - [ ] Two four-node zones drive independent fans and ignore the other zone's heat.
 - [ ] One PWM fan per Pi, multiple fans per node and shared fans across zones work.
-- [ ] YAML, ConfigMap and native CR input produce the same normalized plan.
+- [ ] GitOps-rendered Fan/CoolingZone CRs produce the expected normalized plan.
 - [ ] Label changes/Node deletion are visible; all missing/stale data forces full duty.
 - [ ] Conflicting claims, dangling references and invalid local-mode placement fail.
 - [ ] No concurrent hardware writers during restart, rollout, partition or handover.

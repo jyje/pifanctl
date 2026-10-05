@@ -24,6 +24,8 @@
 
 🐳 **pifanctl** (Pi Fan Control) runs its controller on one Raspberry Pi node wired to the rack's shared PWM fan. An agent on every cluster node reports temperatures to Prometheus, and the controller drives the fan according to the **hottest node**. Deploy it with Helm on Kubernetes or run it as a CLI or Docker container. See the [jyje/cluster deployment](https://github.com/jyje/cluster/blob/main/clusters/r4spi/apps/pifanctl.yaml) for an example. pifanctl is optimized for ARM64, and its GitHub Actions CI/CD builds are tested on Raspberry Pi runners managed by Actions Runner Controller (ARC).
 
+> **v1 release scope:** v1 is CRD-first and requires the operator chart. Declare `Fan` and `CoolingZone` instances through the chart's `extraResources` values. Standalone fan control and the legacy `pifanctl` chart are outside v1 support; older installation instructions below describe the existing v0 path.
+
 The sticker shows the same cluster setup: an abstract rack, one shared front fan, boards with rear-facing ports, and a whale mascot from the Kubernetes ecosystem. The Raspberry Pi logo is omitted. [See the illustration style and all three sticker concepts](docs/illustration-style.md).
 
 
@@ -331,7 +333,7 @@ You can check the environment of CI/CD pipeline in [app.jyje.online#stack](https
 | `build-image-main` | push to `main` | Publishes the commit SHA tag and `v<version>` (once per version); stable versions also update `latest` |
 | `build-image-develop` | push to `develop` | Publishes `ghcr.io/jyje/pifanctl-dev:latest` and the SHA tag |
 | `build-image-issue` | push to `issue-**` | Publishes `ghcr.io/jyje/pifanctl-issue:<sha>` for temporary testing |
-| `release-chart` | push to `main` touching either chart | Publishes new `pifanctl` and `pifanctl-operator` charts to `oci://ghcr.io/jyje/charts/` |
+| `release-chart` | push to `main` touching `charts/pifanctl-operator/` | Publishes the supported v1 operator chart to `oci://ghcr.io/jyje/charts/pifanctl-operator` |
 
 The three image workflows share one reusable workflow, `_build-image.yaml`.
 
@@ -348,18 +350,18 @@ Application and chart versions are tracked separately. A pull request that chang
 
 | Changed | Bump | Checked by |
 | --- | --- | --- |
-| `sources/main.py` or `sources/pifanctl/` | `__version__` in `sources/pifanctl/__init__.py`, and `appVersion` in both chart manifests | the `Version bump` job |
-| Either directory under `charts/` (not its `ci/` value sets) | `version` in the affected `Chart.yaml`. A new application version changes `appVersion`, so both charts need new versions | the `Version bump` job |
+| `sources/main.py` or `sources/pifanctl/` | `__version__` in `sources/pifanctl/__init__.py` | the `Version bump` job |
+| A chart directory (not its `ci/` value sets) | `version` in that chart's `Chart.yaml`; chart versions are independent from the application and other charts | the `Version bump` job |
 
-Also update the image tag in `k8s/manifests/deployments.yaml` and the chart version in the install command above; a test fails when they drift.
+The operator chart's `appVersion` pins its default image. Updating that pointer changes chart content and requires a chart version bump. An app-only release does not force a chart release.
 
 Merging to `main` does the rest:
 
 1. `build-image-main` publishes the commit tag and `v<version>` the first time a version appears. Stable versions also update `latest`; alpha versions leave it unchanged.
 2. After the image exists, it creates the git tag `v<version>` and a GitHub release with generated notes.
-3. `release-chart` waits for the referenced image, publishes both charts to `oci://ghcr.io/jyje/charts/`, and creates `chart-v<version>` or `operator-chart-v<version>` tags and releases.
+3. When the operator chart changes, `release-chart` waits for the image pinned by that chart's `appVersion`, publishes only `pifanctl-operator`, and creates an `operator-chart-v<version>` tag and release.
 
-Each step skips what already exists, so re-running a failed workflow is safe. Application releases are tagged `v*`; chart releases use `chart-v*` and `operator-chart-v*`. Alpha versions are GitHub prereleases.
+Each step skips what already exists, so re-running a failed workflow is safe. Application releases are tagged `v*`; the supported operator chart uses `operator-chart-v*`. Alpha versions are GitHub prereleases.
 
 ---
 ## 4. Trouble Shooting

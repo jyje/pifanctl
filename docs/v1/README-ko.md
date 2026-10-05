@@ -31,7 +31,7 @@ Helm에서 controller 그룹마다 노드 선택, 하드웨어, Prometheus 쿼�
 | --- | --- | --- | --- |
 | Node 라벨만 사용 | Kubernetes 기본 기능, 간편한 그룹화 | PWM 설정, 여러 팬, 제어 곡선, 참조와 상태를 라벨로 관리하기 부적절 | 냉각 대상 선택 |
 | 노드별 Member/Worker CRD | 역할을 개별적으로 표현 | Node 중복, 팬 여러 개의 정체성 불명확, 노드 수만큼 객체 증가 | 채택하지 않음 |
-| 전체 토폴로지 ConfigMap | YAML·Helm·GitOps·로컬 파일로 연결하기 쉬움 | 문서 전체 갱신, 별도 검증과 상태 관리 필요 | 대체 입력 방식 |
+| 전체 토폴로지 ConfigMap | YAML·Helm·GitOps로 연결하기 쉬움 | 문서 전체 갱신과 별도 상태 관리 필요 | v1 제외, CRD 필수 |
 | CoolingZone + Fan CRD | 대상 중심 구성, 물리 팬 구분, 구조화된 설정과 상태 | 오퍼레이터와 참조 검증 필요 | 권장 Kubernetes API |
 
 결론은 **냉각 대상은 Node 라벨이나 이름으로 선택하고, 냉각 구역과 물리 팬은
@@ -95,12 +95,11 @@ planner에서도 수행합니다. Node 라벨 key/value의 문법도 검증합�
 | 네 대를 팬 두 개로 냉각 | CoolingZone 하나에서 Fan 두 개 참조 |
 | 한 노드에서 팬 여러 개 제어 | 같은 nodeName, 서로 다른 핀/채널의 Fan |
 | 팬 하나가 여러 구역 냉각 | 여러 CoolingZone에서 같은 Fan 참조, 대상 합집합의 최고 온도 |
-| Kubernetes 없는 단일 Pi | 같은 List YAML, nodeNames와 local telemetry, 로컬 worker |
+| 단일 노드 Kubernetes | 노드 하나를 선택하는 CoolingZone과 같은 노드의 Fan |
 
 [랙 두 개](../../design/v1/examples/two-racks.yaml),
 [노드별 팬](../../design/v1/examples/per-node.yaml),
-[여러 팬](../../design/v1/examples/multi-fan.yaml),
-[단일 Pi](../../design/v1/examples/standalone.yaml) 예시를 제공합니다.
+[여러 팬](../../design/v1/examples/multi-fan.yaml) 예시를 제공합니다.
 [커널 PWM 예시](../../design/v1/examples/sysfs.yaml)는 Pi 5의 sysfs 구성을 보여주며
 overlay와 물리 채널은 실제 하드웨어에서 확인해야 합니다.
 
@@ -115,29 +114,23 @@ kubectl label nodes pi-05 pi-06 pi-07 pi-08 pifanctl.jyje.online/rack=b
 아닙니다. 팬 제어 위치는 Fan의 nodeName으로 따로 고정합니다. 선택된 노드 목록을
 상태에 보여줘 잘못 붙은 라벨을 발견할 수 있게 합니다.
 
-## 5. YAML·ConfigMap·Helm 연결
+## 5. CRD 기반 desired state
 
 공통 파일은 같은 Fan/CoolingZone spec을 담은 Kubernetes `v1/List`입니다.
-세 번째 CRD가 아니라 직렬화 형식입니다. 기본값과 의미 검증은 모든 입력 경로에서
-동일하게 적용합니다.
+세 번째 CRD가 아니라 검증과 planning 도구의 직렬화 형식입니다. Kubernetes
+런타임 토폴로지는 항상 `Fan`과 `CoolingZone` CR로 관리합니다.
 
-| 입력 | 설정의 원본 | 상태 | 필요한 환경 |
+| 원본 | Desired state | 관측 상태 | 필요한 환경 |
 | --- | --- | --- | --- |
-| CRD | kubectl/Helm/GitOps로 적용한 CR | `/status`, Event, metrics | CRD와 operator |
-| ConfigMap | `topology.yaml` 키 | 별도 `pifanctl-topology-status` ConfigMap, Event, metrics | configMap 모드 operator, CRD 선택 사항 |
-| 로컬 YAML | List 파일 | CLI 출력/로그/metrics | nodeNames는 Kubernetes 불필요, selector는 API 조회 필요 |
+| Native API | operator 차트 `extraResources` 값으로 렌더링한 Fan/CoolingZone CR | 리소스 `/status`, Event, metrics | CRD와 operator |
+| 로컬 파일 | 오프라인 검증 또는 live planning용 List YAML | CLI 출력 | selector 해석에 API 필요, 로컬 PWM 제어는 미지원 |
 
-operator는 `customResources` 또는 `configMap` 중 한 모드로 시작합니다.
-ConfigMap 내용은 메모리에서 같은 plan으로 해석하고 CR로 복제하지 않습니다.
-입력 ConfigMap이나 Node 라벨을 operator가 수정하지 않습니다. 출력 상태에는 입력
-resourceVersion과 topology hash를 넣습니다. 같은 팬에 서로 다른 입력 모드의
-worker가 동시에 실행되면 안 됩니다. 모드 변경도 제어권 인계가 필요합니다.
-
-[설계용 Helm 차트](../../design/v1/helm)는 CR 또는 동등한
-[ConfigMap](../../design/v1/examples/configmap.yaml)을 렌더링합니다. 현재 배포용
-차트와 별도이며 operator나 worker를 실행하지 않습니다. [operator 차트](../../charts/pifanctl-operator)는
-이미지/배치/입력 모드를 담당하고, 토폴로지 차트나 GitOps는 냉각 구성을 담당합니다.
-CRD 설치/갱신/삭제는 명시적으로 관리하고 Helm 삭제와 함께 자동 제거하지 않습니다.
+operator 차트는 v1에서 지원하는 유일한 pifanctl 차트입니다. 차트가 operator와
+CRD를 설치하고 `extraResources` 값에서 `Fan`과 `CoolingZone` 인스턴스를 렌더링합니다.
+GitOps에서는 cluster 저장소의 operator Application 값으로 관리합니다. 별도 pifanctl
+인스턴스 차트나 ConfigMap 토폴로지 모드는 v1에 포함하지 않습니다.
+[실험용 설계 차트](../../design/v1/helm)는 지원되는 v1 설치 경로가 아닙니다.
+Helm은 CRD를 자동 갱신하거나 삭제하지 않으므로 CRD 스키마 변경 절차는 별도로 둡니다.
 
 ## 6. 오퍼레이터와 worker 설계
 
@@ -168,16 +161,15 @@ agent는 모든 참여 노드를 대상으로 비특권 DaemonSet으로 관리�
 않습니다. worker에는 기본적으로 Kubernetes API 자격 증명을 넣지 않습니다.
 operator 전용으로 접근을 제한한 상태/metrics endpoint를 사용합니다.
 
-CR 모드의 workload는 해당 노드의 Fan 중 사전순 첫 Fan을 primary owner로 합니다.
-다른 Fan이 남아 있다면 primary Fan 삭제 전에 소유권을 옮깁니다. ConfigMap 모드는
-같은 namespace의 입력 ConfigMap을 owner로 합니다. namespace 리소스를 cluster
-scope 리소스의 owner로 지정하지 않습니다.
+CR workload는 해당 노드의 Fan 중 사전순 첫 Fan을 primary owner로 합니다.
+다른 Fan이 남아 있다면 primary Fan 삭제 전에 소유권을 옮깁니다. namespace 리소스를
+cluster scope 리소스의 owner로 지정하지 않습니다.
 [소유권 범위](https://kubernetes.io/docs/concepts/architecture/garbage-collection/).
 
-ConfigMap 파일 갱신은 즉시 보장되지 않습니다. 디렉터리로 mount하고 `subPath`나
-환경 변수로 설정을 전달하지 않습니다. 적용 hash 확인 전에는 수렴했다고 보고하지
-않습니다. 지연되거나 잘못된 plan은 이전 정상 plan을 유지하고 Degraded로 표시합니다.
-[ConfigMap 갱신 동작](https://kubernetes.io/docs/concepts/configuration/configmap/).
+Kubernetes ConfigMap은 operator가 관리하는 내부 worker plan 저장에만 사용합니다.
+토폴로지 입력 API는 아닙니다. worker는 전체 새 plan을 읽고 검증한 뒤 적용합니다.
+적용 hash 확인 전에는 수렴했다고 보고하지 않습니다. 지연되거나 잘못된 plan은 이전
+정상 plan을 유지하고 Degraded로 표시합니다.
 
 ### 데이터와 하드웨어 안전 규칙
 
@@ -211,8 +203,7 @@ ConfigMap 파일 갱신은 즉시 보장되지 않습니다. 디렉터리로 mou
 100%로 유지합니다. 팬 삭제는 full duty와 claim 해제를 확인한 뒤 필요한 소유
 workload/config만 제거합니다. 남은 구역의 끊긴 참조는 Degraded입니다. worker가
 응답하지 않으면 finalizer를 대기 상태로 유지합니다. 강제 제거는 관리자의 별도
-행동이며 하드웨어가 안전하다는 확인이 아닙니다. 입력 ConfigMap 삭제도 같은
-인계 절차를 따릅니다.
+행동이며 하드웨어가 안전하다는 확인이 아닙니다.
 
 ### 상태, 모니터링, 권한
 
@@ -246,15 +237,13 @@ pifanctl --context lab zone list
 pifanctl --context lab zone describe rack-a
 pifanctl --context lab fan list
 pifanctl --context lab fan watch
-pifanctl worker run --file topology.yaml --node pi-01
 ```
 
 validate는 오프라인 검증, plan은 실제 노드 선택과 claim/변경 내역의 읽기 전용 확인,
 apply는 Kubernetes API와 server-side apply를 사용합니다. `KUBECONFIG`,
 `--kubeconfig`, `--context`를 지원합니다. kubectl을 문자열로 조합해 실행하지 않습니다.
-로컬 worker는 실제 해당 팬 노드에서만 하드웨어를 제어하고 OS 권한이 필요합니다.
-Kubernetes 없는 다중 노드에서는 nodeNames와 접근 가능한 Prometheus를 사용합니다.
-로컬 Node 정체성이 맞지 않으면 실행을 거부합니다.
+하드웨어 worker는 operator만 관리합니다. 오프라인 검증은 가능하지만 live selector와
+apply는 Kubernetes API가 필요합니다.
 
 선택적인 `kubectl-pifanctl` wrapper로 `kubectl pifanctl fan list`도 같은 CLI를
 호출합니다. 기본 `kubectl get fans,coolingzones`, describe, apply, diff, wait를
@@ -262,10 +251,10 @@ Kubernetes 없는 다중 노드에서는 nodeNames와 접근 가능한 Prometheu
 CLI를 목표로 하며 처음부터 별도 제어 서버를 추가하지 않습니다.
 [Argo CLI](https://argo-workflows.readthedocs.io/en/latest/walk-through/argo-cli/).
 
-apply는 CR 모드를 대상으로 합니다. ConfigMap 모드는 List를 topology.yaml에
-렌더링한 입력 ConfigMap을 kubectl로 적용합니다. GitOps 환경에서는 원본 저장소를
-편집하고 CLI가 Helm/Argo의 소유권을 강제로 가져오지 않습니다. 수동 duty와
-팬 정지 명령은 안전한 override API 설계 이후로 미룹니다.
+apply는 native CR을 대상으로 합니다. GitOps 환경에서는 원본 저장소를 편집하고
+operator 차트 `extraResources`에 같은 리소스를 선언할 수 있습니다. CLI가 Helm/Argo의
+소유권을 강제로 가져오지 않습니다. 수동 duty와 팬 정지 명령은 안전한 override API
+설계 이후로 미룹니다.
 
 ## 8. 단계별 구현과 v1 출시 조건
 
@@ -275,7 +264,7 @@ apply는 CR 모드를 대상으로 합니다. ConfigMap 모드는 List를 topolo
 3. freshness metric, 공유 schema/planner와 파일 입력을 구현합니다.
 4. worker, host lock, hot reload, watchdog을 구현하고 Pi 4 GPIO와 Pi 5 sysfs의
    정상/강제 종료 및 전원 장애를 실물에서 검증합니다.
-5. operator, 상태, finalizer, ConfigMap 모드, CLI와 wrapper를 구현하고 임시 클러스터의
+5. operator, 상태, finalizer, CLI와 wrapper를 구현하고 임시 클러스터의
    dry-run과 mock worker부터 확인합니다.
 6. 팬별로 full duty → legacy 중단 → writer 해제 확인 → v1 실행을 순서대로 진행합니다.
    롤백은 v1 중단과 claim 해제 이후 legacy 복원 순서입니다.
@@ -283,7 +272,7 @@ apply는 CR 모드를 대상으로 합니다. ConfigMap 모드는 List를 topolo
 
 - [ ] 두 구역 각각 네 대의 온도가 자기 팬에만 반영됨
 - [ ] 보드별 팬, 노드당 여러 팬, 여러 구역이 공유하는 팬 지원
-- [ ] YAML/ConfigMap/CR에서 동일한 plan 생성
+- [ ] GitOps가 렌더링한 Fan/CoolingZone CR에서 예상 plan 생성
 - [ ] 라벨 변경/노드 삭제/온도 누락/오래된 데이터가 보이고 안전 동작함
 - [ ] 충돌 claim, 없는 참조, 잘못된 local 배치를 거부함
 - [ ] 재시작/배포/네트워크 분리/인계 중 동시에 PWM을 쓰지 않음

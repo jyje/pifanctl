@@ -2,10 +2,12 @@
 
 ## Goal and scope
 
-The application was v0.2.1 when this work began. The goal is v1: select cooling
-members by Node labels or names, and manage CoolingZones and physical Fans through
-YAML, ConfigMaps, or CRDs. Implement the worker, Kubernetes operator, CLI with
-kubeconfig/context support, and Helm packaging.
+The application was v0.2.1 when this work began. The goal is v1: require CRDs to
+select cooling members by Node labels or names and manage CoolingZones and
+physical Fans. Declare instances through the operator chart's `extraResources`
+values in the GitOps Application. Implement the worker, Kubernetes operator,
+cluster-aware CLI with kubeconfig/context support, and a single operator chart.
+Standalone fan control and ConfigMap topology input are outside the v1 contract.
 
 The first implementation is `1.0.0-alpha.1`. Automated checks use mock drivers,
 fake sensors, Prometheus and Kubernetes APIs, and temporary files. Live deployment
@@ -44,6 +46,20 @@ and PR submission, so their pending entries have been removed. Release acceptanc
 checks remain below. Live trial steps and results are tracked privately.
 
 ## Remaining release acceptance gates
+
+### v1 packaging and release preparation
+
+- [x] Set the v1 product contract: CRDs are required, standalone fan control is out of scope, and one operator chart owns the runtime.
+- [x] Add `extraResources` to the operator chart so the GitOps Application can declare its `Fan` and `CoolingZone` instances.
+- [x] Keep app and chart version checks independent and publish only the supported operator chart from the v1 chart workflow.
+- [x] Align primary v1 docs with CRD-only topology and the single-chart packaging model.
+- [x] Remove ConfigMap topology selection and `--configmap` from the operator chart and CLI interface.
+- [ ] Confirm whether legacy local hardware commands remain available in the v1 application package; remove them from the v1 CLI if they conflict with the CRD-only support contract.
+- [ ] Update the `jyje/cluster` Argo CD Application to the operator chart and declare the rack topology in `extraResources`.
+- [ ] Test CRD establishment, custom-resource admission, and Argo CD ordering on a disposable Kubernetes cluster.
+- [ ] Promote the CRD API to its stable version and test migration of alpha resources before stable `1.0.0`.
+- [ ] Complete the hardware, failure, migration/rollback, and fleet-scale acceptance gates below.
+- [ ] Release app `1.0.0` and operator chart `1.0.0` after all applicable gates pass; keep later app/chart versions independent.
 
 - [x] Merge design PR #40 and implementation PR #41 into `main` in dependency order.
 - [x] Verify the first successful main line and branch badge publication under `assets/coverage/`.
@@ -89,6 +105,8 @@ and hypothesis plots are in `docs/v1/thermal-load-observations.csv` and
 | 08 complete | Preserve five Python versions and the 90% gate. Remote CI: 228 tests, 95.72-95.74%, nine jobs including ARM64/chart/workflow/version. Localized README alpha/chart publishing descriptions aligned; issue #39 and PR #41 evidence updated. | `0296adf` |
 | CRD admission follow-up | Real API rejected an empty curve default because CEL operands were absent. Materialized defaults in both CRD copies and the shared schema. API defaulting and five invalid curve/immutable updates verified. Local Python 3.14: 229 tests, 95.66%. | `4a9cfe7` |
 | Runtime image follow-up | Supported Python runtime selection for strict X.509 and legacy CA compatibility. Isolated SHA-py312 tags; alternate runtimes cannot publish latest/release tags. CI retains Python 3.10-3.14. actionlint and Python 3.14 full suite passed: 233 tests, 95.66%. | `2b58d9a` |
+
+| v1 support and release preparation | Added operator-chart `extraResources` rendering and schema validation for Fan/CoolingZone instances. Removed ConfigMap topology selection from the supported operator interface, aligned v1 docs, made app/chart versions independent, and limited chart publishing to the operator chart using its pinned `appVersion`. Python 3.13: 287 passed, 1 skipped, 94.10% line coverage; Helm lint/render, actionlint, changeset and version checks passed. Disposable-cluster ordering and hardware acceptance remain open. | Pending PR |
 
 | Event admission follow-up | Publish cluster scoped CR Events in default with a create-only Role. Event admission/RBAC failures are rate limited and retried without blocking reconciliation. Real API dry-run accepted the corrected Event. Full Python 3.14: 236 tests, 95.69%; Helm lint passed in both input modes. | `6a0f5a5` |
 

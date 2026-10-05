@@ -178,37 +178,68 @@ def test_operator_chart_has_distinct_release_tag(repo, bin_dir):
 
 APP = ["sources/pifanctl/control.py"]
 CHART = ["charts/pifanctl/values.yaml"]
+CHART_FILE = "charts/pifanctl/Chart.yaml"
+OPERATOR_CHART_FILE = "charts/pifanctl-operator/Chart.yaml"
+OLD_CHARTS = {CHART_FILE: "0.1.0", OPERATOR_CHART_FILE: "0.1.0"}
+NEW_CHARTS = dict(OLD_CHARTS)
 
 
 def test_a_docs_only_change_needs_no_version():
-    assert bump.check(["README.md", "tests/test_cli.py", "docs/x.md"], "0.2.0", "0.2.0", "0.1.0", "0.1.0") == []
+    assert bump.check(["README.md", "tests/test_cli.py", "docs/x.md"], "0.2.0", "0.2.0", OLD_CHARTS, NEW_CHARTS) == []
 
 
 def test_changing_the_application_requires_a_new_version():
-    errors = bump.check(APP, "0.2.0", "0.2.0", "0.1.0", "0.1.0")
+    errors = bump.check(APP, "0.2.0", "0.2.0", OLD_CHARTS, NEW_CHARTS)
     assert len(errors) == 1 and "__version__" in errors[0]
 
 
 def test_changing_the_cli_entry_point_counts_as_the_application():
-    assert bump.check(["sources/main.py"], "0.2.0", "0.2.0", "0.1.0", "0.1.0")
+    assert bump.check(["sources/main.py"], "0.2.0", "0.2.0", OLD_CHARTS, NEW_CHARTS)
 
 
 def test_changing_the_chart_requires_a_new_chart_version():
-    errors = bump.check(CHART, "0.2.0", "0.2.0", "0.1.0", "0.1.0")
+    errors = bump.check(CHART, "0.2.0", "0.2.0", OLD_CHARTS, NEW_CHARTS)
     assert len(errors) == 1 and "chart" in errors[0]
 
 
 def test_chart_test_value_sets_do_not_count_as_the_chart():
-    assert bump.check(["charts/pifanctl/ci/default-values.yaml"], "0.2.0", "0.2.0", "0.1.0", "0.1.0") == []
+    assert bump.check(["charts/pifanctl/ci/default-values.yaml"], "0.2.0", "0.2.0", OLD_CHARTS, NEW_CHARTS) == []
 
 
 def test_a_proper_release_passes():
-    assert bump.check(APP + CHART + ["charts/pifanctl/Chart.yaml"], "0.2.0", "0.3.0", "0.1.2", "0.1.3") == []
+    changed_charts = {**OLD_CHARTS, CHART_FILE: "0.1.1"}
+    assert bump.check(APP + CHART + [CHART_FILE], "0.2.0", "0.3.0", OLD_CHARTS, changed_charts) == []
 
 
-def test_a_new_application_version_still_needs_a_chart_version():
-    # appVersion lives in Chart.yaml, so Chart.yaml changed; its version did not.
-    assert bump.check(APP + ["charts/pifanctl/Chart.yaml"], "0.2.0", "0.3.0", "0.1.2", "0.1.2")
+def test_app_version_can_advance_without_a_chart_release():
+    assert bump.check(APP, "0.2.0", "0.3.0", OLD_CHARTS, NEW_CHARTS) == []
+
+
+def test_chart_versions_advance_independently():
+    changed = ["charts/pifanctl-operator/templates/extra-resources.yaml"]
+    bumped = {**OLD_CHARTS, OPERATOR_CHART_FILE: "0.1.1"}
+    assert bump.check(changed, "0.2.0", "0.2.0", OLD_CHARTS, bumped) == []
+
+
+def test_each_changed_chart_requires_its_own_version_bump():
+    changed = ["charts/pifanctl-operator/templates/extra-resources.yaml"]
+    errors = bump.check(changed, "0.2.0", "0.2.0", OLD_CHARTS, NEW_CHARTS)
+    assert len(errors) == 1 and OPERATOR_CHART_FILE in errors[0]
+
+
+def test_bumping_one_chart_does_not_require_bumping_the_other():
+    changed = ["charts/pifanctl-operator/templates/extra-resources.yaml"]
+    bumped = {**OLD_CHARTS, OPERATOR_CHART_FILE: "0.1.1"}
+    assert bump.check(changed, "0.2.0", "0.2.0", OLD_CHARTS, bumped) == []
+
+
+def test_chart_release_workflow_publishes_only_the_v1_operator_chart():
+    workflow = (ROOT / '.github/workflows/release-chart.yaml').read_text()
+    assert 'CHART_NAME: pifanctl-operator' in workflow
+    assert 'charts/pifanctl-operator/**' in workflow
+    assert 'charts/pifanctl/**' not in workflow
+    assert "sed -n 's/^appVersion: //p'" in workflow
+    assert 'helm show chart "charts/${CHART_NAME}"' in workflow
 
 
 def test_versions_are_read_from_the_files():

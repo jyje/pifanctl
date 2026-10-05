@@ -9,15 +9,15 @@ mock 테스트는 실물 PWM을 보증하지 않습니다. 단계별 검증과 �
 ## 01: 물리 냉각 관계를 선택합니다
 
 [시나리오 도해](../../README-ko.md)와 [예시](../../design/v1/examples)를 먼저
-실제 배선과 대조합니다. 공유 랙 팬 두 개, 보드별 팬, 한 노드의 여러 팬과 단일
-보드를 같은 모델로 관리합니다. `Fan`은 물리 PWM 장치 하나입니다.
+실제 배선과 대조합니다. 공유 랙 팬 두 개, 보드별 팬, 한 노드의 여러 팬을
+같은 모델로 관리합니다. `Fan`은 물리 PWM 장치 하나입니다.
 `CoolingZone`은 라벨 또는 이름으로 식힐 노드를 선택하고 팬을 연결합니다.
 팬을 여러 구역에 연결하면 전체 멤버와 제어 노드의 로컬 온도 중 최고값을 사용합니다.
 노드별 Member/Worker CRD를 따로 만들지 않습니다.
 
 ```sh
-PYTHONPATH=sources python sources/main.py topology validate design/v1/examples/standalone.yaml
-PYTHONPATH=sources python sources/main.py topology plan design/v1/examples/standalone.yaml
+PYTHONPATH=sources python sources/main.py topology validate design/v1/examples/two-racks.yaml
+PYTHONPATH=sources python sources/main.py topology plan design/v1/examples/two-racks.yaml
 # 라벨 선택자는 실제 Node가 필요합니다. API 읽기만 수행합니다.
 pifanctl --context lab topology plan design/v1/examples/two-racks.yaml --live
 ```
@@ -34,33 +34,13 @@ NaN과 재귀 alias는 거부합니다. 기존 Fan의 노드/핀/chip/channel은
 멤버 선택을 명시적으로 변경해 새 정체성을 확인합니다. 살아 있는 Node의 라벨 변경은
 의도적인 멤버 변경으로 반영합니다. 이 보호 정보는 plan에 남아 재시작을 견딥니다.
 
-## 02: 로컬 worker를 실행합니다
+## 02: operator가 관리하는 worker
 
-alpha 소스와 고정 requirements로 설치합니다. 실제 worker는 팬이 배선된 호스트에서
-실행합니다. Kubernetes Node 이름이 hostname과 다르면 해당 호스트의 `NODE_NAME`을
-설정할 수 있습니다. 다른 호스트에서 원격 하드웨어를 제어하는 옵션이 아닙니다.
-
-```sh
-# 실제 배선과 기존 writer를 확인한 팬 호스트에서만 실행합니다.
-sudo pifanctl worker run --file topology.yaml --node pi-01
-# 가짜 thermal 디렉터리를 사용하는 개발 예시입니다. 하드웨어를 쓰지 않습니다.
-pifanctl worker run --file topology.yaml --node pi-01 --mock \
-  --thermal-path ./test-thermal --lock-dir ./test-locks --port 9103
-```
-
-명시적인 nodeNames는 오프라인에서 사용할 수 있습니다. 선택자는 `--live`와
-kubeconfig가 필요하며 파일 변경 시 Node를 다시 해석합니다. operator 모드는
-라벨 변경을 계속 반영합니다. 로컬 YAML도 polling으로 전체 파일을 재검증하고
-hot reload합니다. 파일은 원자적으로 교체하세요. 잘못된 변경은 이전 정상 plan을
-유지하고 팬을 100%로 합니다. 하드웨어 변경은 claim 해제 후 worker 재시작이
-필요합니다. 로컬 YAML 모드에는 operator heartbeat가 필요하지 않습니다.
-
-`/var/lock/pifanctl/worker.lock`의 호스트 전체 flock을 CLI와 Pod가 공유합니다.
-핀 번호가 달라도 여러 프로세스의 제어는 거부하고, 한 프로세스가 여러 팬을 담당합니다.
-새 legacy `start`에도 같은 잠금이 있지만 예전 v0 바이너리에는 없습니다.
-이관 전에 반드시 중단해야 합니다. sysfs는 종료 후 커널 PWM을 유지합니다.
-RPi.GPIO는 소프트웨어 PWM 스레드를 중단하고 핀을 HIGH로 유지합니다.
-이 전기적 상태가 실제 배선에서 full speed인지 반드시 실물 검증해야 합니다.
+v1 operator는 각 `Fan`이 선택한 Node에 worker를 생성하고 관리합니다. 사용자가
+독립적인 로컬 PWM controller를 실행하지 않습니다. CRD 상태, worker plan, 실제
+하드웨어 제어권을 하나의 Kubernetes 조정 경로에서 관리합니다.
+`worker run --mock`은 격리된 소프트웨어 개발에 사용할 수 있지만, 로컬 실물 팬
+제어는 v1 제품 범위에 포함되지 않습니다.
 
 ## 03: Kubernetes를 준비합니다
 
@@ -90,29 +70,26 @@ backend 한 개만 읽으면 전체 노드 데이터가 아닙니다. Prometheus
 
 Helm은 CRD를 최초 설치하지만 갱신하지 않습니다. 스키마 변경은
 `charts/pifanctl-operator/crds/`를 검토하고 명시적으로 적용합니다.
-`design/v1/helm`은 토폴로지 CR/ConfigMap을 렌더링하며 런타임을 배포하지 않습니다.
+`charts/pifanctl-operator`는 런타임을 설치하고 `extraResources`로 인스턴스 CR을
+렌더링합니다. GitOps Application의 Helm 값으로 배열을 관리합니다. 설계용 차트는
+지원되는 v1 설치 경로가 아닙니다.
 
-## 04: ConfigMap과 kubectl CLI를 연결합니다
+## 04: CR 인스턴스와 kubectl CLI를 연결합니다
 
 ```sh
-kubectl --context lab -n pifanctl-system apply -f design/v1/examples/configmap.yaml
-helm upgrade --install pifanctl charts/pifanctl-operator -n pifanctl-system \
-  --set input.mode=configMap --set input.configMapName=pifanctl-topology
 pifanctl --kubeconfig ./lab.config --context lab fan list
 pifanctl --context lab zone describe rack-a
 pifanctl --context lab fan watch
 kubectl pifanctl --context lab fan list
 ```
 
-입력 ConfigMap과 operator는 같은 namespace에 있어야 합니다. `install.sh`는
-동일 CLI로 전달하는 `kubectl-pifanctl`을 설치합니다. fan/zone 명령은 CR 모드를
-조회합니다. ConfigMap 모드는 List를 메모리에서 plan으로 변환하고 CR을 생성하지
-않습니다. 상태는 같은 namespace의
-`pifanctl-status-<sha256(input-name)[:16]>` ConfigMap에 저장합니다.
-CR `topology apply`는 server-side apply와 `fieldManager=pifanctl-cli`, `force=false`를
-사용합니다. `--dry-run`은 서버에 `dryRun=All`을 전달합니다. 여러 리소스 적용 전체가
-하나의 트랜잭션은 아닙니다. Helm/GitOps에서는 원본 저장소를 수정하고 소유권을
-강제로 가져오지 않습니다.
+operator 차트의 `extraResources` 값에 cluster `Fan`과 `CoolingZone` 객체를
+선언합니다. 차트가 CRD를 설치하고 인스턴스 리소스를 적용합니다. Argo CD에서는
+operator Application의 Helm 값에 배열을 두고 GitOps가 변경을 소유하게 합니다.
+`install.sh`는 같은 kubeconfig 기반 조회 CLI를 사용하는 `kubectl-pifanctl`을
+설치합니다. CLI `topology apply`는 `fieldManager=pifanctl-cli`, `force=false`로
+server-side apply를 사용하고 `--dry-run`은 `dryRun=All`을 보냅니다. 여러 리소스의
+적용은 하나의 트랜잭션이 아닙니다. Helm/GitOps에서는 원본 저장소를 수정합니다.
 
 ### 곡선과 온도 히스테리시스
 
@@ -188,13 +165,11 @@ controller 경보와 dashboard는 worker duty/readiness 지표로 명시적으�
 
 ## 06: 삭제와 이관을 진행합니다
 
-operator가 실행 중일 때 zone/Fan/입력 ConfigMap을 삭제합니다.
+operator가 실행 중일 때 zone/Fan을 삭제합니다.
 `kubectl delete ... --cascade=background` 기본값을 사용합니다. foreground GC는
 release 확인 전에 worker를 삭제하여 앱 finalizer가 대기할 수 있으므로 alpha의
-지원 삭제 경로가 아닙니다. ConfigMap 모드는
-[owner-reference admission](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#ownerreferencespermissionenforcement)을
-위해 입력 ConfigMap의 finalizers에만 update 권한을 추가합니다. 대체 plan의 적용
-확인을 기다리고, 구역이 없는 Fan은 100%를 유지합니다. Fan 삭제는 full duty와
+지원 삭제 경로가 아닙니다. 대체 plan의 적용 확인을 기다리고, 구역이 없는 Fan은
+100%를 유지합니다. Fan 삭제는 full duty와
 드라이버 close를 거쳐 Fan이 없는 plan을 확인합니다. 마지막 Fan이면 Deployment를
 삭제하고 Pod가 사라져야 finalizer를 제거합니다. 빈 plan의 확인 기록은 ConfigMap에
 남겨 operator 재시작을 견디며 owner GC가 정리합니다. 다른 Fan이 남으면 소유권을
