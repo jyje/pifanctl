@@ -53,6 +53,13 @@ The `mock` driver only records the duty and never touches hardware. The `auto` a
 - `RPi.GPIO is not usable here`: the container or process has no access to GPIO. In Docker use `--privileged --user 0` (the image runs as a non-root user, and `RPi.GPIO` needs `/dev/mem`); in Kubernetes the chart's controller already runs privileged. On a Raspberry Pi 5 `RPi.GPIO` does not work, use `--driver sysfs` (or leave `--driver auto`).
 - `/sys/class/pwm/pwmchip0 does not exist`: the kernel PWM overlay is not enabled. Add `dtoverlay=pwm-2chan` to `/boot/firmware/config.txt` and reboot.
 
+## Runtime: the fan keeps switching on and off
+
+If the fan duty swings between low values and the fan starts and stops every minute or so, the hottest node is sitting just above `--temp-low`: the fan cools it under the start temperature, stops, and the node heats up again.
+
+- Make sure the temperature hysteresis is on (`--temp-hysteresis`, default 5 °C; the chart value is `curve.hysteresis`). `0` turns it off. With it on, the fan keeps running until the temperature is 5 °C under its peak, so each cycle is much longer.
+- If the node still hovers just above the start temperature, lower `--temp-low` a few degrees. The fan then runs continuously at a low duty instead of cycling.
+
 ## Runtime: the fan ignores a hot neighbour
 
 Check `pifanctl_control_source` (or the dashboard's "Where the controller got its temperature" panel). `local` means the controller could not reach Prometheus and only sees its own node. `failsafe` means no temperature could be read at all, and the fan is held at the failsafe duty.

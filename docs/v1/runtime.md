@@ -1,7 +1,7 @@
 # v1 alpha runtime manual
 
 **Implemented alpha, not a stable hardware release.** Application
-`1.0.0-alpha.1` includes the portable schema/planner, freshness metric, guarded
+`1.0.0-alpha.2` includes the portable schema/planner, freshness metric, guarded
 worker, official Kubernetes client, operator, CLI and operator chart. Mock tests
 do not establish real PWM behavior. [PLAN.md](../../PLAN.md) records the staged
 checks and remaining release gates. [Korean](runtime-ko.md).
@@ -131,6 +131,20 @@ namespace. It does not create CRs. CR-mode `topology apply` uses server-side
 apply, `fieldManager=pifanctl-cli`, `force=false`; `--dry-run` sends `dryRun=All`.
 Apply is not transactional across several resources. For Helm/GitOps, edit the
 authoritative source rather than forcing managed-field ownership.
+
+### Curve and temperature hysteresis
+
+`spec.control.curve` of a Fan maps the hottest assigned temperature to a duty. The
+fields are `temperatureLow`, `temperatureHigh`, `dutyIdle`, `dutyStart`, `dutyMax`,
+`dutyDownStep` and `temperatureHysteresis`.
+
+`temperatureHysteresis` (default `5`, in degrees Celsius) is how far the temperature
+must fall below its peak before the duty follows it down. The fan starts at
+`temperatureLow` but only stops once the temperature is `temperatureHysteresis` below
+that peak, so a fan that cools its own zone below the start point does not switch on
+and off repeatedly. Rising temperatures are never delayed. Set `0` to turn it off. It
+must be below `temperatureHigh - temperatureLow`, which the CRD and the planner both
+enforce. `dutyDownStep` is separate: it limits how fast the duty falls once it may.
 
 ## 05: verify convergence and failures
 

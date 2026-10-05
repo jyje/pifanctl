@@ -131,7 +131,8 @@ def normalize(items):
             if not valid_name(spec['nodeName']):
                 raise TopologyError('invalid fan nodeName')
             c = spec['control']['curve']
-            if not c['temperatureLow'] < c['temperatureHigh'] or not 0 <= c['dutyIdle'] <= c['dutyStart'] <= c['dutyMax'] <= 100 or c['dutyDownStep'] <= 0:
+            hysteresis = c.get('temperatureHysteresis', 5)
+            if not c['temperatureLow'] < c['temperatureHigh'] or not 0 <= c['dutyIdle'] <= c['dutyStart'] <= c['dutyMax'] <= 100 or c['dutyDownStep'] <= 0 or not 0 <= hysteresis < c['temperatureHigh'] - c['temperatureLow']:
                 raise TopologyError(f'Fan/{name}: invalid control curve')
         else:
             refs = spec['fanRefs']

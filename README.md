@@ -116,7 +116,7 @@ Controlling the pin needs access to GPIO and `/dev/mem`, so `start` needs `docke
 # Label the one Raspberry Pi whose GPIO controls the shared rack fan.
 kubectl label node <node-that-controls-the-rack-fan> pifanctl.jyje.online/fan=true
 
-helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.2.0-alpha.1 \
+helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.2.0-alpha.2 \
   --namespace pifanctl --create-namespace \
   --set prometheus.url=http://prometheus-operated.monitoring.svc:9090 \
   --set monitoring.serviceMonitor.enabled=true \
@@ -242,7 +242,7 @@ A node that reported before and then disappears is warned about once (`Node 'nod
 
 #### Temperature curve
 
-`--algorithm curve` (the default) maps temperature to duty. It rises immediately and falls in steps (`--duty-down-step`), which is the hysteresis that keeps the fan from toggling around the threshold.
+`--algorithm curve` (the default) maps temperature to duty. The duty rises immediately with the temperature. On the way down two settings apply: `--temp-hysteresis` decides **when** it may fall, and `--duty-down-step` decides **how fast**.
 
 | Temperature | Duty |
 | --- | --- |
@@ -252,6 +252,23 @@ A node that reported before and then disappears is warned about once (`Node 'nod
 | `--temp-high` (70 °C) and above | `--duty-max` (100%) |
 
 `--algorithm step` keeps the original behaviour (`--target-temperature`, `--duty-cycle-step`).
+
+##### Temperature hysteresis
+
+A fan that cools the node it follows can pull the temperature back under `--temp-low`, switch off, let the node heat up again, and switch on again, over and over. A hysteresis gives the fan two different thresholds, like a thermostat: it **starts** at `--temp-low`, but only **stops** once the temperature has fallen `--temp-hysteresis` (default 5 °C) below its peak.
+
+```
+temperature
+50 °C  - - - - - - ●  fan starts here (30%)
+                    |
+48 °C               |  the fan keeps running in this band
+                    |
+45 °C  - - - - - - ●  fan may stop only below here
+```
+
+On the way down the whole curve is used shifted down by the hysteresis: after a peak of 60 °C (58%), the duty stays at 58% until the temperature is under 55 °C, and at 54 °C it is the duty the curve gives for 59 °C. On the way up nothing is delayed. These are the same 5 °C as the official Raspberry Pi 5 fan. `--temp-hysteresis 0` turns it off. It must be smaller than the width of the curve.
+
+What it does not do: if a node sits just above `--temp-low` even with the fan running, the fan still cycles between the two thresholds. The hysteresis only makes each cycle longer, as with any thermostat, and removes the rapid back-and-forth around a single threshold.
 
 #### Drivers
 

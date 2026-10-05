@@ -65,6 +65,19 @@ def test_controller_defaults_are_fail_safe():
     assert "PROMETHEUS_URL" not in values
 
 
+def test_the_curve_has_the_official_five_degree_hysteresis_by_default():
+    controller = by_name(render(), "DaemonSet")["t-pifanctl-controller-default"]
+    assert env(controller)["TEMP_HYSTERESIS"] == "5"
+
+
+def test_hysteresis_can_be_changed_per_group_and_turned_off():
+    controller = by_name(render("--set", "controllerDefaults.curve.hysteresis=0"), "DaemonSet")["t-pifanctl-controller-default"]
+    assert env(controller)["TEMP_HYSTERESIS"] == "0"
+    out = subprocess.run(["helm", "template", "t", str(CHART), "--set", "controllerDefaults.curve.hysteresis=-1"],
+                         capture_output=True, text=True)
+    assert out.returncode != 0
+
+
 def test_prometheus_url_switches_the_source():
     objects = render("--set", "prometheus.url=http://prom:9090")
     values = env(by_name(objects, "DaemonSet")["t-pifanctl-controller-default"])

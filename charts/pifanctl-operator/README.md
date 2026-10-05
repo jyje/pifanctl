@@ -22,7 +22,7 @@ helm upgrade --install pifanctl charts/pifanctl-operator \
 | `input.mode` | `crd` or `configMap` |
 | `input.configMapName` | Existing input ConfigMap in the release namespace |
 | `agent.mode` | `managed` or `reuse`; reused agents must export read timestamps |
-| `image.tag` | Defaults to pinned `v1.0.0-alpha.1`; never `latest` |
+| `image.tag` | Defaults to pinned `v1.0.0-alpha.2`; never `latest` |
 | `networkPolicy.monitoringNamespaceSelector` | Namespaces allowed to read worker metrics/status |
 | `serviceMonitor.enabled` | Create worker and managed-agent ServiceMonitors if Prometheus Operator is installed |
 
