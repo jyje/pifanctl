@@ -2,3 +2,5 @@ self-hosted-runner:
   labels:
     # The in-cluster ARC runner scale set (jyje/cluster, github-arc-scale-set-jyje-pifanctl).
     - r4spi-microk8s
+    # GitHub-hosted image label, before actionlint's built-in runner list includes it.
+    - ubuntu-26.04
