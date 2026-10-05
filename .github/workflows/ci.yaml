@@ -21,7 +21,7 @@ jobs:
   version:
     name: 🏷️ Version bump
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
         with:
@@ -31,7 +31,7 @@ jobs:
 
   workflows:
     name: 🔎 Workflows
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Lint workflows
@@ -41,7 +41,7 @@ jobs:
 
   test:
     name: 🧪 Test (Python ${{ matrix.python }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -84,7 +84,7 @@ jobs:
   coverage:
     name: Coverage quality
     needs: [test]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - name: Download every Python coverage report
@@ -105,7 +105,7 @@ jobs:
        (github.event_name == 'pull_request' &&
         github.event.pull_request.head.repo.full_name == github.repository &&
         github.actor != 'dependabot[bot]'))
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     steps:
@@ -131,7 +131,7 @@ jobs:
       github.event_name == 'push' && github.ref == 'refs/heads/main' &&
       needs.workflows.result == 'success' && needs.test.result == 'success' &&
       needs.chart.result == 'success' && needs.coverage.result == 'success'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     concurrency:
       group: coverage-badge-publish
       cancel-in-progress: false
@@ -169,7 +169,7 @@ jobs:
 
   chart:
     name: ⎈ Chart
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - uses: azure/setup-helm@v5

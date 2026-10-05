@@ -191,7 +191,7 @@ def test_ci_matrix_matches_policy_and_keeps_line_gate_separate():
 
 def test_coverage_actions_remain_outside_the_arm_runner():
     workflow = yaml.safe_load((ROOT / ".github/workflows/ci.yaml").read_text())
-    assert workflow["jobs"]["test"]["runs-on"] == "ubuntu-24.04"
+    assert workflow["jobs"]["test"]["runs-on"] == "ubuntu-26.04"
     assert "if" in workflow["jobs"]["publish-badges"]
     assert "github.event_name == 'push'" in workflow["jobs"]["publish-badges"]["if"]
     assert workflow["jobs"]["publish-badges"]["permissions"]["contents"] == "write"
