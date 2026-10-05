@@ -58,7 +58,7 @@ def test_extra_resources_require_kubernetes_resource_envelopes():
 
 
 def test_operator_cli_does_not_offer_configmap_topology_mode():
-    result = CliRunner().invoke(operator_app, ['run', '--help'])
+    result = CliRunner().invoke(operator_app, ['--help'])
     assert result.exit_code == 0
     assert '--configmap' not in result.output
 
