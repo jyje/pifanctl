@@ -270,6 +270,10 @@ On the way down the whole curve is used shifted down by the hysteresis: after a 
 
 What it does not do: if a node sits just above `--temp-low` even with the fan running, the fan still cycles between the two thresholds. The hysteresis only makes each cycle longer, as with any thermostat, and removes the rapid back-and-forth around a single threshold.
 
+![A node cooled by the fan: without hysteresis the duty swings, with a 5 °C hysteresis it settles](docs/images/hysteresis-closed-loop.svg)
+
+The figure is a closed loop on a modelled node that would sit at 55 °C without the fan. Without hysteresis (left) the duty swings between about 5% and 30%. With 5 °C (right) it settles on one duty and the node holds about 45 °C, at the price of a higher average duty. See [Temperature hysteresis](docs/hysteresis.md) for how it works, a worked example, how to choose the value and how the figures are made.
+
 #### Drivers
 
 | `--driver` | Use |
