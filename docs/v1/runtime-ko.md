@@ -1,7 +1,7 @@
 # v1 alpha 런타임 매뉴얼
 
 **구현된 alpha이며, 실물 검증을 마친 정식 버전은 아닙니다.**
-`1.0.0-alpha.1`에는 공통 스키마/planner, 센서 freshness metric, worker,
+`1.0.0-alpha.2`에는 공통 스키마/planner, 센서 freshness metric, worker,
 공식 Kubernetes client, operator, CLI와 operator Helm chart가 포함됩니다.
 mock 테스트는 실물 PWM을 보증하지 않습니다. 단계별 검증과 출시 게이트는
 [PLAN.md](../../PLAN.md)에 기록합니다. [English](runtime.md).
@@ -113,6 +113,20 @@ CR `topology apply`는 server-side apply와 `fieldManager=pifanctl-cli`, `force=
 사용합니다. `--dry-run`은 서버에 `dryRun=All`을 전달합니다. 여러 리소스 적용 전체가
 하나의 트랜잭션은 아닙니다. Helm/GitOps에서는 원본 저장소를 수정하고 소유권을
 강제로 가져오지 않습니다.
+
+### 곡선과 온도 히스테리시스
+
+Fan의 `spec.control.curve`는 가장 뜨거운 담당 온도를 duty로 바꿉니다. 필드는
+`temperatureLow`, `temperatureHigh`, `dutyIdle`, `dutyStart`, `dutyMax`,
+`dutyDownStep`, `temperatureHysteresis`입니다.
+
+`temperatureHysteresis`(기본 `5`, 섭씨)는 온도가 최고점보다 얼마나 내려와야 duty가
+따라 내려가는지를 정합니다. 팬은 `temperatureLow`에서 켜지지만 온도가 그 최고점보다
+`temperatureHysteresis` 아래로 내려와야 멈추므로, 시작점 아래로 자기 구역을 식히는
+팬이 반복해서 켜졌다 꺼지지 않습니다. 올라가는 온도는 지연하지 않습니다. `0`이면
+꺼지고, `temperatureHigh - temperatureLow`보다 작아야 하며 CRD와 planner가 모두
+검증합니다. `dutyDownStep`은 별개이며, 내려갈 수 있게 된 뒤 얼마나 빠르게 내려가는지를
+제한합니다.
 
 ## 05: 정상 제어와 장애를 확인합니다
 

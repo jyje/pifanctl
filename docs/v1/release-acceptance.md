@@ -2,7 +2,7 @@
 
 **Status:** Trial observations recorded on 2026-10-04
 **Release target:** `1.0.0`
-**Current implementation:** `1.0.0-alpha.1`
+**Current implementation:** `1.0.0-alpha.2`
 **Decision:** Not ready for a stable release. Hardware-specific acceptance remains open.
 
 This manual records the current MicroK8s trial, the bounded temperature-response test, the measured evidence, and the remaining release checks. Cluster-reported temperatures and requested duty are not electrical or RPM measurements. Values unavailable from Kubernetes are explicitly marked **Not recorded** instead of being guessed.
@@ -19,7 +19,7 @@ This manual records the current MicroK8s trial, the bounded temperature-response
 | Operator / agent / worker image | `ghcr.io/jyje/pifanctl-issue:887f6f1-py312` |
 | Image digest | `sha256:525ef9f01f7bd4d5af5ac4d4014d9f0320187628c41cd2eacd028d5fbb896cf5` |
 | Source revision | `887f6f1ff05301255e7a5f01e22e117ef8e8e9ef` |
-| Runtime chart | `pifanctl` chart `0.2.0-alpha.1`; topology source preserved from `837b3d5` |
+| Runtime chart | `pifanctl` chart `0.2.0-alpha.2`; topology source preserved from `837b3d5` |
 | Image build | [GitHub Actions run #25](https://github.com/jyje/pifanctl/actions/runs/37201259327), Python 3.12, passed |
 | Current topology | One shared rack fan cools the four Nodes in CoolingZone `r4spi-rack` |
 | Actuator | Fan `r4spi-rack-fan` on `raspi-40`, RPi.GPIO BCM pin 18, 1000 Hz |

@@ -29,6 +29,7 @@ def test_defaults_roundtrip_and_purity():
     items = normalize(raw)
     assert raw == original
     assert items[1]['spec']['control']['curve']['dutyDownStep'] == 5
+    assert items[1]['spec']['control']['curve']['temperatureHysteresis'] == 5
     assert parse(yaml.safe_dump(bundle(items))) == items
     assert plan(items) == plan(list(reversed(items)))
     assert digest({'b': 1, 'a': 2}) == digest({'a': 2, 'b': 1})
@@ -50,6 +51,9 @@ def test_bad_yaml(text):
     lambda f: f['spec'].update(control={'curve': {'temperatureLow': 80}}),
     lambda f: f['spec'].update(control={'curve': {'dutyDownStep': 0}}),
     lambda f: f['spec'].update(control={'curve': {'dutyIdle': 40}}),
+    lambda f: f['spec'].update(control={'curve': {'temperatureHysteresis': -1}}),
+    lambda f: f['spec'].update(control={'curve': {'temperatureHysteresis': 20}}),
+    lambda f: f['spec'].update(control={'curve': {'temperatureLow': 60, 'temperatureHigh': 70, 'temperatureHysteresis': 10}}),
     lambda f: f['spec'].update(control={'curve': {'temperatureLow': float('nan')}}),
 ])
 def test_bad_fans(change):

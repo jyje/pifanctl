@@ -146,3 +146,25 @@ def test_agent_serves_metrics_and_runs_until_stopped(monkeypatch):
     result = runner.invoke(app, ["agent", "--node", "node-a", "--interval", "2", "--metrics-port", "9100"])
     assert result.exit_code == 0, result.output
     assert seen == {"port": 9100, "node": "node-a", "interval": 2.0}
+
+
+def test_start_passes_the_temperature_hysteresis(captured, monkeypatch):
+    result = runner.invoke(app, ["start"])
+    assert result.exit_code == 0, result.output
+    assert captured[0]["curve"].temp_hysteresis == 5.0
+
+    captured.clear()
+    monkeypatch.setenv("TEMP_HYSTERESIS", "3")
+    assert runner.invoke(app, ["start"]).exit_code == 0
+    assert captured[0]["curve"].temp_hysteresis == 3.0
+
+    captured.clear()
+    assert runner.invoke(app, ["start", "--temp-hysteresis", "0"]).exit_code == 0
+    assert captured[0]["curve"].temp_hysteresis == 0.0
+
+
+def test_a_hysteresis_as_wide_as_the_curve_is_a_usage_error(captured):
+    result = runner.invoke(app, ["start", "--temp-low", "50", "--temp-high", "60", "--temp-hysteresis", "10"])
+    assert result.exit_code == 2
+    assert "temp_hysteresis" in plain(result)
+    assert captured == []

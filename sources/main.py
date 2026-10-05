@@ -320,7 +320,16 @@ def start(
         typer.Option(
             "--duty-down-step",
             envvar = "DUTY_DOWN_STEP",
-            help = "Curve: largest duty decrease per interval, the hysteresis. [unit: %]",
+            help = "Curve: largest duty decrease per interval, which smooths how fast the duty falls. [unit: %]",
+        )
+    ] = 5.0,
+    temp_hysteresis: Annotated[
+        float,
+        typer.Option(
+            "--temp-hysteresis",
+            envvar = "TEMP_HYSTERESIS",
+            help = "Curve: how far the temperature must fall below its peak before the duty follows it down. "
+                   "Keeps the fan from switching on and off around --temp-low. 0 disables it. [unit: °C]",
         )
     ] = 5.0,
     target_temperature: Annotated[
@@ -381,6 +390,7 @@ def start(
             duty_start = duty_start,
             duty_max = duty_max,
             duty_down_step = duty_down_step,
+            temp_hysteresis = temp_hysteresis,
         )
     except ValueError as e:
         raise typer.BadParameter(str(e))

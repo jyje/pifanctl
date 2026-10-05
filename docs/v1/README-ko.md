@@ -2,7 +2,7 @@
 
 [English](README.md) | **한국어**
 
-**구현된 alpha (`1.0.0-alpha.1`)이며 정식 v1 출시는 아닙니다.**
+**구현된 alpha (`1.0.0-alpha.2`)이며 정식 v1 출시는 아닙니다.**
 공통 planner, freshness metric, worker, operator, CLI와 차트를 구현했습니다.
 현재 명령과 제한은 [런타임 매뉴얼](runtime-ko.md), 검증과 하드웨어 출시 게이트는
 [PLAN.md](../../PLAN.md)를 확인하세요. 첫 CRD API는 `v1alpha1`입니다.

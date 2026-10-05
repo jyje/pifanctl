@@ -107,7 +107,8 @@ class Worker:
                 driver.set_duty(100)
                 self.released.discard(name)
             c = spec['control']['curve']
-            config = CurveConfig(c['temperatureLow'], c['temperatureHigh'], c['dutyIdle'], c['dutyStart'], c['dutyMax'], c['dutyDownStep'])
+            config = CurveConfig(c['temperatureLow'], c['temperatureHigh'], c['dutyIdle'], c['dutyStart'], c['dutyMax'], c['dutyDownStep'],
+                                 c.get('temperatureHysteresis', 5.0))
             if name not in self.controllers or self.controllers[name].config != config:
                 self.controllers[name] = CurveController(config, 100)
             self.specs[name] = spec

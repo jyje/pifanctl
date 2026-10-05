@@ -111,7 +111,7 @@ INFO [2026-10-01 14:30:00Z] Duty: 36.6%, Temperature: 51.9°C, Following: raspbe
 # 공용 랙 팬을 제어하는 GPIO가 연결된 Raspberry Pi 노드 한 곳에 라벨을 붙입니다.
 kubectl label node <공용-랙-팬-제어-노드> pifanctl.jyje.online/fan=true
 
-helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.2.0-alpha.1 \
+helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version 0.2.0-alpha.2 \
   --namespace pifanctl --create-namespace \
   --set prometheus.url=http://prometheus-operated.monitoring.svc:9090 \
   --set monitoring.serviceMonitor.enabled=true \
@@ -226,7 +226,7 @@ INFO [2026-10-01 14:30:05Z] Duty: 86.3%, Temperature: 70.5°C, Following: node-c
 
 #### 온도 곡선
 
-`--algorithm curve`(기본값)는 온도를 duty로 변환합니다. 올라갈 때는 즉시, 내려갈 때는 단계적으로(`--duty-down-step`) 움직이며, 이것이 임계값 근처에서 팬이 켜졌다 꺼졌다 하는 것을 막는 히스테리시스입니다.
+`--algorithm curve`(기본값)는 온도를 duty로 변환합니다. 올라갈 때는 온도를 즉시 따라가고, 내려갈 때는 두 설정이 적용됩니다. `--temp-hysteresis`는 **언제** 내려갈 수 있는지, `--duty-down-step`은 **얼마나 빠르게** 내려가는지를 정합니다.
 
 | 온도 | Duty |
 | --- | --- |
@@ -236,6 +236,23 @@ INFO [2026-10-01 14:30:05Z] Duty: 86.3%, Temperature: 70.5°C, Following: node-c
 | `--temp-high`(70 °C) 이상 | `--duty-max`(100%) |
 
 `--algorithm step`은 기존 동작(`--target-temperature`, `--duty-cycle-step`)을 유지합니다.
+
+##### 온도 히스테리시스
+
+팬이 따라가는 노드를 식히다 보면 온도가 `--temp-low` 아래로 내려가 팬이 꺼지고, 노드가 다시 달아올라 켜지는 일이 계속 반복될 수 있습니다. 히스테리시스는 서모스탯처럼 팬에 두 개의 기준을 줍니다. 팬은 `--temp-low`에서 **켜지지만**, 온도가 최고점보다 `--temp-hysteresis`(기본 5 °C) 아래로 내려와야 **멈춥니다.**
+
+```
+온도
+50 °C  - - - - - - ●  여기서 팬이 켜짐 (30%)
+                    |
+48 °C               |  이 구간에서는 팬이 계속 돎
+                    |
+45 °C  - - - - - - ●  이 아래로 내려가야 멈출 수 있음
+```
+
+내려갈 때는 곡선 전체를 히스테리시스만큼 내려서 씁니다. 60 °C(58%)를 찍은 뒤에는 55 °C 밑으로 내려갈 때까지 58%를 유지하고, 54 °C에서는 곡선이 59 °C에 주는 duty를 씁니다. 올라갈 때는 지연이 없습니다. 공식 라즈베리 파이 5 팬과 같은 5 °C입니다. `--temp-hysteresis 0`이면 꺼지고, 곡선 폭보다 작아야 합니다.
+
+하지 못하는 일도 있습니다. 팬이 도는데도 노드가 `--temp-low` 바로 위에 머문다면 팬은 두 기준 사이를 계속 오갑니다. 서모스탯과 같이 한 번의 주기가 길어질 뿐이고, 한 기준점 주변에서 빠르게 왔다 갔다 하는 것이 사라집니다.
 
 #### 드라이버
 

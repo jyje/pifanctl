@@ -147,3 +147,17 @@ def test_run_reload_and_shutdown(monkeypatch, tmp_path):
     stop.clear(); p.write_text('bad')
     w.run(p, 'pi-a', mock=True, port=0, lock_dir=tmp_path / 'locks', stop=stop)
     assert calls[-1]['reason'].startswith('PlanInvalid')
+
+
+def test_the_worker_holds_the_duty_while_the_temperature_falls_within_the_hysteresis(monkeypatch):
+    x = worker(monkeypatch)
+    temperature = {'now': 65.0}
+    monkeypatch.setattr(x.local, 'read', lambda: temperature['now'])
+    duty = None
+    for tick in range(10):
+        duty = x.cycle(now=100 + 5 * tick)['fans']['fan-a']['dutyPercent']
+    assert duty == 82.5  # the default curve at 65 C
+    temperature['now'] = 62.0  # 3 C below the peak, inside the 5 C hysteresis
+    assert x.cycle(now=200)['fans']['fan-a']['dutyPercent'] == 82.5
+    temperature['now'] = 59.0  # more than 5 C below the peak: the duty may fall
+    assert x.cycle(now=205)['fans']['fan-a']['dutyPercent'] < 82.5

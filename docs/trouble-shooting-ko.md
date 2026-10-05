@@ -55,6 +55,13 @@ python main.py start --driver mock
 - `RPi.GPIO is not usable here`: 컨테이너나 프로세스가 GPIO에 접근할 수 없습니다. Docker에서는 `--privileged --user 0`을 쓰세요(이미지는 non-root 사용자로 실행되고 `RPi.GPIO`는 `/dev/mem`이 필요합니다). Kubernetes에서는 차트의 컨트롤러가 이미 privileged로 실행됩니다. 라즈베리 파이 5에서는 `RPi.GPIO`가 동작하지 않으므로 `--driver sysfs`(또는 `--driver auto`)를 쓰세요.
 - `/sys/class/pwm/pwmchip0 does not exist`: 커널 PWM 오버레이가 꺼져 있습니다. `/boot/firmware/config.txt`에 `dtoverlay=pwm-2chan`을 추가하고 재부팅하세요.
 
+## 실행: 팬이 계속 켜졌다 꺼짐
+
+팬 duty가 낮은 값 사이에서 오르내리고 1분 안팎으로 팬이 켜졌다 멈추기를 반복한다면, 가장 뜨거운 노드가 `--temp-low` 바로 위에 머무는 경우입니다. 팬이 시작 온도 아래로 식히면 멈추고, 노드가 다시 달아오릅니다.
+
+- 온도 히스테리시스가 켜져 있는지 확인하세요(`--temp-hysteresis`, 기본 5 °C, 차트 값은 `curve.hysteresis`). `0`이면 꺼집니다. 켜져 있으면 온도가 최고점보다 5 °C 내려올 때까지 팬이 계속 돌아서 한 번의 주기가 훨씬 길어집니다.
+- 그래도 노드가 시작 온도 바로 위에 머문다면 `--temp-low`를 몇 도 낮추세요. 그러면 팬이 반복하지 않고 낮은 duty로 계속 돕니다.
+
 ## 실행: 팬이 뜨거운 이웃 노드를 무시함
 
 `pifanctl_control_source`(또는 대시보드의 "Where the controller got its temperature" 패널)를 확인하세요. `local`은 컨트롤러가 Prometheus에 닿지 못해 자기 노드만 본다는 뜻이고, `failsafe`는 온도를 전혀 읽지 못해 팬이 failsafe duty로 고정되었다는 뜻입니다.

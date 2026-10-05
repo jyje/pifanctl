@@ -113,6 +113,8 @@ spec:
               value: {{ $c.curve.dutyMax | quote }}
             - name: DUTY_DOWN_STEP
               value: {{ $c.curve.dutyDownStep | quote }}
+            - name: TEMP_HYSTERESIS
+              value: {{ $c.curve.hysteresis | quote }}
             - name: TARGET_TEMPERATURE
               value: {{ $c.step.targetTemperature | quote }}
             - name: DUTY_CYCLE_STEP

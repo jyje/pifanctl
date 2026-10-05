@@ -234,6 +234,12 @@
                 "minimum": 0,
                 "maximum": 100,
                 "default": 5
+              },
+              "temperatureHysteresis": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 120,
+                "default": 5
               }
             },
             "default": {
@@ -242,7 +248,8 @@
               "dutyIdle": 0,
               "dutyStart": 30,
               "dutyMax": 100,
-              "dutyDownStep": 5
+              "dutyDownStep": 5,
+              "temperatureHysteresis": 5
             },
             "additionalProperties": false
           },

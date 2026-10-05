@@ -145,6 +145,12 @@
                     "minimum": 0,
                     "maximum": 100,
                     "default": 5
+                  },
+                  "temperatureHysteresis": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 120,
+                    "default": 5
                   }
                 },
                 "default": {},
