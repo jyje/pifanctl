@@ -23,7 +23,7 @@ helm upgrade --install pifanctl charts/pifanctl-operator \
 | `operatorId` | Short, unique identity; another operator cannot adopt its CRs |
 | `replicas` | 1 by default; only the active Lease holder is Ready |
 | `agent.mode` | `managed` or `reuse`; reused agents must export read timestamps |
-| `image.tag` | Defaults to pinned `v1.0.0-alpha.2`; never `latest` |
+| `image.tag` | Defaults to pinned `v1.0.0-alpha.3`; never `latest` |
 | `extraResources` | Kubernetes resources submitted with the release; use `Fan` and `CoolingZone` CRs for the cooling topology |
 | `networkPolicy.monitoringNamespaceSelector` | Namespaces allowed to read worker metrics/status |
 | `serviceMonitor.enabled` | Create worker and managed-agent ServiceMonitors if Prometheus Operator is installed |

@@ -6,8 +6,6 @@ import subprocess
 import pytest
 import yaml
 
-import pifanctl
-
 CHART = pathlib.Path(__file__).resolve().parent.parent / "charts" / "pifanctl"
 
 pytestmark = pytest.mark.skipif(shutil.which("helm") is None, reason="helm is not installed")
@@ -33,13 +31,15 @@ def env(daemonset) -> dict:
 
 def test_chart_app_version_matches_the_application():
     chart = yaml.safe_load((CHART / "Chart.yaml").read_text())
-    assert chart["appVersion"] == pifanctl.__version__
+    # The v0 chart retains its independently pinned compatibility image.
+    assert chart["appVersion"] == "1.0.0-alpha.2"
 
 
 def test_image_tag_defaults_to_the_app_version_never_latest():
     agent = by_name(render(), "DaemonSet")["t-pifanctl-agent"]
     image = agent["spec"]["template"]["spec"]["containers"][0]["image"]
-    assert image == f"ghcr.io/jyje/pifanctl:v{pifanctl.__version__}"
+    chart = yaml.safe_load((CHART / "Chart.yaml").read_text())
+    assert image == f"ghcr.io/jyje/pifanctl:v{chart['appVersion']}"
 
 
 def test_agent_runs_on_every_node_unprivileged():
@@ -165,7 +165,7 @@ def test_controller_runs_as_root_because_the_image_does_not():
 def test_the_raw_manifest_and_the_install_command_follow_the_release():
     chart = yaml.safe_load((CHART / "Chart.yaml").read_text())
     manifest = (CHART.parent.parent / "k8s" / "manifests" / "deployments.yaml").read_text()
-    assert f"ghcr.io/jyje/pifanctl:v{pifanctl.__version__}" in manifest
+    assert f"ghcr.io/jyje/pifanctl:v{chart['appVersion']}" in manifest
     for readme in ("README.md", "README-ko.md"):
         text = (CHART.parent.parent / readme).read_text()
         assert f"--version {chart['version']}" in text, f"{readme} installs a different chart version"

@@ -2,7 +2,7 @@
 
 **English** | [Korean](README-ko.md)
 
-**Status: implemented alpha (`1.0.0-alpha.2`), not a stable v1 release.**
+**Status: implemented alpha (`1.0.0-alpha.3`), not a stable v1 release.**
 The shared planner, freshness metric, worker, operator, CLI and chart are implemented.
 See the [runtime manual](runtime.md) for current commands and limitations, and
 [PLAN.md](../../PLAN.md) for verification and remaining hardware release gates.
