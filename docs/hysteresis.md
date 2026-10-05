@@ -57,9 +57,9 @@ The second figure is a closed loop: a node that would sit at 55 °C with the fan
 > [!NOTE]
 > The figures are drawn by the real controller code (`scripts/plot_hysteresis.py`), and the tests check what they claim. The node in the closed loop is a model, not a measurement. It was fitted to a light-load Raspberry Pi 4 cluster (each duty percent cools the node by about 0.32 °C, with a first-order lag), and one controller update is assumed every 5 seconds. Your boards will differ in the numbers but not in the shape.
 
-## The price: a steadier, slightly cooler, slightly busier fan
+## The trade-off: steadier control at a higher average duty
 
-Hysteresis is not free. In the closed-loop example the average duty is about 18% without it, because the fan keeps stopping, and about 31% with it, because the fan keeps running. On the real r4spi cluster the average duty went from about 29% to about 37%, and the followed temperature settled a few degrees lower. In exchange the fan no longer starts and stops, which is easier on the fan and quieter than a duty that swings.
+Hysteresis is not free. In the closed-loop example the average duty is about 18% without it, because the fan keeps stopping, and about 31% with it, because the fan keeps running. For context, Prometheus recorded an average duty of 37.1% and an average followed temperature of 49.1 °C on the r4spi cluster during the first 12 minutes after the alpha.2 rollout (2026-10-05 15:14-15:26 UTC). Treat this as an early operational observation, not a controlled before-and-after comparison: the rollout also changed the fan curve, so it does not isolate the effect of hysteresis. The model shows fewer on/off cycles; fan RPM, noise and wear were not measured.
 
 If you prefer the lowest average duty over a steady fan, set `--temp-hysteresis 0` or lower the value. A node that stays just above `temp-low` will then cycle again.
 
