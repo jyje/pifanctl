@@ -128,6 +128,8 @@ Fan의 `spec.control.curve`는 가장 뜨거운 담당 온도를 duty로 바꿉�
 검증합니다. `dutyDownStep`은 별개이며, 내려갈 수 있게 된 뒤 얼마나 빠르게 내려가는지를
 제한합니다.
 
+그래프, 계산 예시, 값 고르는 법은 [온도 히스테리시스](../hysteresis-ko.md)를 보세요.
+
 ## 05: 정상 제어와 장애를 확인합니다
 
 operator는 쓰기 전에 30초 Lease를 갱신합니다. Node/CR watch가 재조정을 깨우고,

@@ -57,7 +57,7 @@ The `mock` driver only records the duty and never touches hardware. The `auto` a
 
 If the fan duty swings between low values and the fan starts and stops every minute or so, the hottest node is sitting just above `--temp-low`: the fan cools it under the start temperature, stops, and the node heats up again.
 
-- Make sure the temperature hysteresis is on (`--temp-hysteresis`, default 5 °C; the chart value is `curve.hysteresis`). `0` turns it off. With it on, the fan keeps running until the temperature is 5 °C under its peak, so each cycle is much longer.
+- Make sure the temperature hysteresis is on (`--temp-hysteresis`, default 5 °C; the chart value is `curve.hysteresis`). `0` turns it off. With it on, the fan keeps running until the temperature is 5 °C under its peak, so each cycle is much longer. [Temperature hysteresis](hysteresis.md) shows it on a graph and explains how to choose the value.
 - If the node still hovers just above the start temperature, lower `--temp-low` a few degrees. The fan then runs continuously at a low duty instead of cycling.
 
 ## Runtime: the fan ignores a hot neighbour

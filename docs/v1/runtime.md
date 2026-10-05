@@ -146,6 +146,9 @@ and off repeatedly. Rising temperatures are never delayed. Set `0` to turn it of
 must be below `temperatureHigh - temperatureLow`, which the CRD and the planner both
 enforce. `dutyDownStep` is separate: it limits how fast the duty falls once it may.
 
+For graphs, a worked example and advice on the value, see
+[Temperature hysteresis](../hysteresis.md).
+
 ## 05: verify convergence and failures
 
 The operator renews a 30-second Lease before mutations. Node/CR watches wake
