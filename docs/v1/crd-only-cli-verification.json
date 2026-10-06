@@ -1,0 +1,63 @@
+{
+  "recorded_at_utc": "2026-10-06T15:40:36.756066+00:00",
+  "application_version": "1.0.0-alpha.4",
+  "chart_app_version": "1.0.0-alpha.3",
+  "chart_version": "0.1.0-alpha.3",
+  "chart_pointer_changed": false,
+  "live_cluster_changed": false,
+  "python": "3.14.7",
+  "test_results": {
+    "tests": 307,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "passed": true,
+  "statement_coverage_percent": 96.28697293895532,
+  "branch_coverage_percent": 89.81132075471699,
+  "combined_coverage_percent": 94.66729589428977,
+  "application_tree_sha256": "41dec9fc57c50fbbc71783fe4965de7e4016a0d5c7bdd6e74d688863fd7e50c1",
+  "test_tree_sha256": "3723fee89b6e7568568ff62dc48a7f6f118ebb77d975354a6a237ce2ac37dd29",
+  "provenance": "Working tree based on 5d5d193. Hashes include sorted relative path + NUL + bytes + NUL. Image uses the dev build marker and is not a published release candidate.",
+  "command": "python -m pytest --cov=sources --cov-config=.coveragerc --cov-branch --cov-report=json --junitxml=<path> -q",
+  "image": {
+    "image_id": "sha256:96065f9ee79a46e42aaceccbbf3f0aa5432156b250213cd606243b0b5a89e1db",
+    "architecture": "arm64",
+    "os": "linux",
+    "checks": {
+      "driver_refusal": {
+        "exit_code": 0,
+        "output": "Expected hardware refusal: RPi.GPIO is not usable here: This module can only be run on a Raspberry Pi!"
+      },
+      "uid": {
+        "exit_code": 0,
+        "output": "10001"
+      },
+      "version": {
+        "exit_code": 0,
+        "output": "1.0.0-alpha.4 (dev)"
+      },
+      "standalone_rejection": {
+        "exit_code": 2,
+        "output": "Usage: pifanctl [OPTIONS] COMMAND [ARGS]...\nTry 'main.py -h' for help.\n\u256d\u2500 Error \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\n\u2502 No such command 'start'. Did you mean 'status'?                              \u2502\n\u2570\u2500\u2500\u2500\u2500\u2500\u2500"
+      },
+      "operator_help": {
+        "exit_code": 0,
+        "output": "Usage: main.py operator [OPTIONS] COMMAND [ARGS]...                            \n                                                                                \n Reconcile topology into node-bound worker plans                               "
+      },
+      "worker_yaml_rejection": {
+        "exit_code": 2,
+        "output": "local YAML execution requires --mock; hardware control requires an operator plan and heartbeat"
+      }
+    },
+    "passed": true,
+    "hardware_devices_mounted": false,
+    "privileged": false
+  },
+  "other_checks": [
+    "actionlint",
+    "helm lint charts/pifanctl-operator",
+    "git diff --check",
+    "check_changesets: five pending entries"
+  ]
+}

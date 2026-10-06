@@ -99,7 +99,4 @@ jobs:
         run: |
           image="${IMAGE}:${{ steps.tags.outputs.short_sha }}"
           test "$(docker run --rm "${image}" id -u)" != "0"
-          if docker run --rm "${image}" python main.py start --driver rpigpio; then
-            echo "the real GPIO driver must fail when there is no GPIO" >&2
-            exit 1
-          fi
+          docker run --rm "${image}" python -m pifanctl.hardware_smoke

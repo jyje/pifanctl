@@ -12,7 +12,7 @@ from pifanctl.topology.planner import plan, worker_plan
 from pifanctl.topology.worker import run
 
 topology = typer.Typer(help='Validate, plan and apply Fan/CoolingZone YAML')
-worker = typer.Typer(help='Drive only this host, never remote hardware')
+worker = typer.Typer(help='Internal operator worker, or mock-only local YAML development')
 fan = typer.Typer(help='Inspect physical fan resources')
 zone = typer.Typer(help='Inspect cooling zone resources')
 
@@ -115,6 +115,8 @@ def run_worker(ctx: typer.Context, node: Optional[str] = None, uid: str = '',
             raise TopologyError('operator plan requires --heartbeat-file and --uid')
         run(plan_file, node, uid, thermal_path, lock_dir, heartbeat_file, port, mock)
     else:
+        if not mock:
+            raise TopologyError('local YAML execution requires --mock; hardware control requires an operator plan and heartbeat')
         if heartbeat_file: raise TopologyError('local YAML does not use operator heartbeat')
         kube = api(ctx) if live else None
         _, p = checked(file, kube)

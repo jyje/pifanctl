@@ -134,3 +134,49 @@ def test_watch_wrapper_and_auth_transport_errors(monkeypatch):
     def transport_fail(*args, **kwargs): raise HTTPError('PRIVATE')
     monkeypatch.setattr(k.client, 'call_api', transport_fail)
     with pytest.raises(APIError, match='transport'): k.get('/api/v1/nodes')
+
+
+def test_hardware_worker_refuses_local_yaml(file, monkeypatch):
+    monkeypatch.setenv("NODE_NAME", "pi-a")
+    def forbidden(*args, **kwargs):
+        pytest.fail("rejected local YAML must not start a worker or read the cluster")
+    monkeypatch.setattr(cli, "run", forbidden)
+    monkeypatch.setattr(cli, "Kube", forbidden)
+    for live in ([], ["--live"]):
+        result = runner.invoke(app, ["worker", "run", "--file", str(file), "--node", "pi-a"] + live)
+        assert result.exit_code == 2
+        assert "local YAML execution requires --mock" in result.output
+
+
+def test_operator_worker_retains_plan_uid_and_heartbeat(file, monkeypatch):
+    calls = []
+    monkeypatch.setenv("NODE_NAME", "pi-a")
+    monkeypatch.setattr(cli, "run", lambda *args, **kwargs: calls.append((args, kwargs)))
+    heartbeat = file.parent / "heartbeat.json"
+    result = runner.invoke(app, ["worker", "run", "--plan-file", str(file),
+                                "--heartbeat-file", str(heartbeat), "--uid", "node-uid"])
+    assert result.exit_code == 0, result.output
+    assert len(calls) == 1
+    args, kwargs = calls[0]
+    assert args[:3] == (file, "pi-a", "node-uid")
+    assert args[5] == heartbeat and args[7] is False
+    assert kwargs == {}
+
+
+@pytest.mark.parametrize("error_event", [True, False])
+def test_resource_watch_propagates_permission_errors(monkeypatch, error_event):
+    class Fake:
+        def __init__(self, *args): pass
+        def get(self, path):
+            return {"metadata": {"resourceVersion": "1"}, "items": []}
+        def events(self, kind, rv):
+            yield {"type": "MODIFIED", "object": {"metadata": {"resourceVersion": "2"}}}
+            if error_event:
+                yield {"type": "ERROR", "object": {"code": 403, "reason": "Forbidden"}}
+            else:
+                raise APIError(403, "Forbidden")
+    monkeypatch.setattr(cli, "Kube", Fake)
+    result = runner.invoke(app, ["fan", "watch"])
+    assert result.exit_code == 2
+    assert "Forbidden" in result.output
+    assert "resourceVersion: '2'" in result.output
