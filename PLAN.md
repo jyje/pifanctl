@@ -84,6 +84,15 @@ causality and stabilization were not established. A delayed five-minute no-load
 interval also did not show a stable plateau. Timestamped samples and measured
 and hypothesis plots are in `docs/v1/thermal-load-observations.csv` and
 `docs/v1/figures/`. Physical fan-stop, rotation, and waveform checks remain open.
+On 2026-10-06, a separate remote response check used the live alpha.2 shared-fan
+deployment: an 85-second 1 vCPU load peaked at 58.95°C, then a 2 vCPU stage was
+stopped after a 15-second poll observed 61.15°C. Requested duty peaked at 58.14%
+in the first stage and was 55.06% at the stop sample. The hottest node returned
+to 46.85°C by the last sample of a three-minute no-load observation. The
+controller and four node telemetry series remained healthy, and temporary Pods
+were removed. This is not v1 CRD runtime, electrical PWM/RPM, physical rotation,
+or stable-temperature acceptance. See the [follow-up record](docs/v1/release-acceptance.md#7-2026-10-06-live-shared-fan-follow-up),
+its [CSV](docs/v1/thermal-load-observations-2026-10-06.csv), and [plot](docs/v1/figures/thermal-live-2026-10-06.png).
 
 ## Completion log
 
@@ -114,6 +123,7 @@ and hypothesis plots are in `docs/v1/thermal-load-observations.csv` and
 
 | Operator replacement follow-up | Default to one operator and use Recreate so leader-only readiness cannot deadlock a surge update. Full Python 3.14: 239 tests, 95.69%; chart regression/lint passed. CI passed all nine jobs. Multi-replica readiness remains a follow-up. | `837b3d5` |
 | Release acceptance manual and bounded thermal trial | Filled the live inventory with verified cluster data and marked unobserved hardware facts as not recorded. Ran capped 1, 2, and 3 vCPU loads on `raspi-41` with the shared fan enabled, a 65°C cutoff, and fresh Prometheus monitoring; peak was 55.1°C on `raspi-51`, with a 47.85% Fan status request. The target node peaked at 50.147°C, and neither load attribution nor stabilization was proven. The delayed five-minute no-load observation also did not stabilize. Added raw samples, measured response graph, configured-curve hypothesis, and regenerated PDF. Image `887f6f1-py312` (digest `sha256:525ef9f01f7bd4d5af5ac4d4014d9f0320187628c41cd2eacd028d5fbb896cf5`) remained deployed. Physical rotation confirmation, fan-stop recovery, PWM waveform, Pi 5, fault, rollback, and fleet-load gates remain open. | Pending |
+| Alpha.2 shared-fan response follow-up | Archived the exact live MicroK8s baseline, ran bounded 1 and 2 vCPU loads on hottest member `raspi-51`, stopped at the 60°C stage gate with a 61.15°C sampled overshoot, verified no-load cooldown and temporary-Pod cleanup, and recorded 22 Prometheus observations with an SVG/PNG graph in the updated manual and PDF. Argo CD remained Synced/Healthy; the controller and four agents remained Ready. This is not v1 CRD or physical PWM/RPM acceptance. | `b6b9aed` |
 | Coverage CI follow-up | PR #43 merged into the still-open PR #41 branch. CI passed Python 3.10-3.14 with 259 tests each, the 90% line gate, branch reporting, workflow/version/Helm checks, ARM64 image smoke test, and authenticated Codecov upload. Baseline: 95.75-95.77% line and 88.2129-89.1635% branch coverage. Codecov's main-branch comparisons and the first main badge publication remain unverified until PR #41 reaches the default branch. | `6dc6bfa` |
 
 ### Regressions found and fixed

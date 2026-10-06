@@ -1,11 +1,11 @@
 # pifanctl v1 Release Acceptance Field Manual
 
-**Status:** Trial observations recorded on 2026-10-04
+**Status:** Trial observations recorded on 2026-10-04 and live follow-up on 2026-10-06
 **Release target:** `1.0.0`
 **Current implementation:** `1.0.0-alpha.2`
 **Decision:** Not ready for a stable release. Hardware-specific acceptance remains open.
 
-This manual records the current MicroK8s trial, the bounded temperature-response test, the measured evidence, and the remaining release checks. Cluster-reported temperatures and requested duty are not electrical or RPM measurements. Values unavailable from Kubernetes are explicitly marked **Not recorded** instead of being guessed.
+This manual records the MicroK8s trials, bounded temperature-response tests, measured evidence, and remaining release checks. The 2026-10-06 follow-up used the currently deployed alpha.2 shared-fan controller and is not v1 CRD acceptance evidence. Cluster-reported temperatures and requested duty are not electrical or RPM measurements. Values unavailable from Kubernetes are explicitly marked **Not recorded** instead of being guessed.
 
 ## 1. Current trial configuration
 
@@ -138,14 +138,34 @@ Capture the archived v0 configuration and checksum. Inventory every writer of ea
 | Cooldown | Five-minute no-load observation, started about seven minutes after the final load sample | Not stable; immediate cooldown transient was not captured | [Raw samples](thermal-load-observations.csv) |
 | Electrical waveform, RPM, and physical fan-off recovery | No instruments or completed post-upgrade observation recorded | Not run | Physical acceptance evidence required |
 | Pi 5 hardware, fault injection, rollback, fleet scale | No live trial records | Not run | Procedures in Sections 5 and 3 |
+| 2026-10-06 live shared-fan follow-up | alpha.2 chart and image; bounded member CPU load | Response observed; 61.15°C sample crossed the 60°C stage gate, so load was stopped; no stable hold claimed | [Follow-up samples](thermal-load-observations-2026-10-06.csv) and Section 7 |
+
+## 7. 2026-10-06 live shared-fan follow-up
+
+This bounded follow-up exercised the currently deployed `ghcr.io/jyje/pifanctl:v1.0.0-alpha.2` controller from chart `0.2.0-alpha.2` on the four-node `microk8s` cluster. The Argo CD application was Synced and Healthy before the run. The shared fan controller stayed Ready on `raspi-40`; four agents continued publishing temperatures. A checksum-verified snapshot of the current GitOps application, chart, DaemonSets, Pods, monitoring objects, and node inventory was captured before applying load. No Helm values, ConfigMaps, CRDs, PWM settings, or production workloads were changed.
+
+Two unprivileged Pods were pinned to the hottest member, `raspi-51`, and used the deployed image with CPU and memory limits. The 1 vCPU stage ran for 85 seconds. A 2 vCPU stage was started, then deleted as soon as a 15-second Prometheus poll observed the 60°C stage gate. The load harness also stopped on stale or missing telemetry, an unavailable controller, or a 65°C hard abort guardrail. Because the threshold is evaluated at polling intervals and thermal sensors report with delay, the sampled value reached 61.15°C before the Pod was removed. The 65°C abort limit was not reached.
+
+| Observation | Result |
+| --- | --- |
+| Baseline hottest member | `raspi-51`, 47.95°C; requested duty 35.04% |
+| 1 vCPU stage | Peak 58.95°C; requested duty reached 58.14%; Pod exited after 85 seconds |
+| 2 vCPU stage | Sampled peak 61.15°C; requested duty 55.06%; stopped at the 60°C stage gate and Pod removed |
+| No-load follow-up | 12 samples over 3 minutes; `raspi-51` was 46.85°C in the final sample, with requested duty 35.18% |
+| Monitoring and controller | Four node series remained fresh; maximum observed sample age was under 4 seconds; controller stayed Ready |
+| Cleanup | Both temporary load Pods were absent after the run; GitOps and production configuration were unchanged |
+
+These observations show the shared controller's requested duty rising while the hottest member warmed and falling during cooldown. They do not establish a stable target-temperature hold, prove that injected CPU load alone caused every temperature change, or measure electrical PWM, fan RPM, or airflow. The exact board model for `raspi-51` remains unrecorded. No fan-stop, fault-injection, reboot, or power-loss test was run. Fan rotation was not directly observed during this remote follow-up.
+
+Raw timestamped samples, including the aborted-stage observation and cooldown, are in [thermal-load-observations-2026-10-06.csv](thermal-load-observations-2026-10-06.csv). The plot separates each node's temperature from the requested fan duty and marks both the 60°C stage gate and 65°C hard abort limit.
+
+![Measured 2026-10-06 MicroK8s temperature and requested fan-duty response](figures/thermal-live-2026-10-06.png)
+
+The live experiment is a response check for the deployed alpha.2 shared-fan topology only. It does not validate the v1 CRD operator, Pi 5 PWM, fail-safe behavior after hardware or process faults, electrical signal polarity, or physical cooling capacity.
 
 Do not label `1.0.0` stable until every applicable release gate has evidence for the exact release candidate. Hardware or topologies not tested must be listed as unsupported. Preserve the v0 rollback archive until the release decision is recorded.
 
 ## References
 
-- [Runtime manual](runtime.md)
-- [v1 architecture and acceptance design](README.md)
-- [Implementation and release checklist](../../PLAN.md)
-- [Raspberry Pi frequency and thermal management](https://www.raspberrypi.com/documentation/hardware/rf/)
-- [RPi.GPIO project](https://sourceforge.net/projects/raspberry-gpio-python/)
-- [Linux kernel PWM interface](https://docs.kernel.org/driver-api/pwm.html)
+- [Runtime manual](runtime.md), [v1 architecture and acceptance design](README.md), and [implementation and release checklist](../../PLAN.md)
+- [Raspberry Pi frequency and thermal management](https://www.raspberrypi.com/documentation/hardware/rf/), [RPi.GPIO project](https://sourceforge.net/projects/raspberry-gpio-python/), and [Linux kernel PWM interface](https://docs.kernel.org/driver-api/pwm.html)
