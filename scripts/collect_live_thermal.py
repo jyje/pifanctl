@@ -19,7 +19,7 @@ from verify_live_storage_migration import worker_ready
 from verify_thermal_acceptance import evaluate
 
 
-def guarded_load(seconds, cutoff, read_temperature=None, clock=None):
+def guarded_load(seconds, cutoff, read_temperature=None, clock=None, observations=None):
     """A node-local guard independent of the remote collector and Prometheus."""
     import math
     import time
@@ -31,6 +31,9 @@ def guarded_load(seconds, cutoff, read_temperature=None, clock=None):
         temperature = read_temperature()
         if not math.isfinite(temperature) or temperature < -20:
             raise RuntimeError('Invalid local thermal reading')
+        if observations is not None:
+            observations['local_peak_celsius'] = max(temperature, observations.get('local_peak_celsius', temperature))
+            observations['last_local_celsius'] = temperature
         if temperature >= cutoff:
             return 'local_temperature_cutoff'
         chunk_end = min(deadline, clock() + 0.05)
@@ -60,9 +63,9 @@ def validate_sample(values, clocks, expected, worker, fan_name, now):
 def load_pod(name, namespace, node, image, cpu, seconds, cutoff):
     source = inspect.getsource(guarded_load)
     command = source + ('\nimport json,time\nstart=time.monotonic(); cpu=time.process_time()\n'
-                        'reason=guarded_load(' + repr(seconds) + ', ' + repr(cutoff) + ')\n'
+                        'observations={}\nreason=guarded_load(' + repr(seconds) + ', ' + repr(cutoff) + ', observations=observations)\n'
                         'print(json.dumps({"reason":reason,"elapsed_seconds":time.monotonic()-start,'
-                        '"cpu_seconds":time.process_time()-cpu}),flush=True)\n')
+                        '"cpu_seconds":time.process_time()-cpu,**observations}),flush=True)\n')
     return {'apiVersion': 'v1', 'kind': 'Pod',
             'metadata': {'name': name, 'namespace': namespace,
                          'labels': {'app.kubernetes.io/name': 'pifanctl-thermal-trial'}},
@@ -207,7 +210,19 @@ def main():
                 report['load_stop_reason'] = 'approved_stability_observed'
                 break
             time.sleep(5)
-        (args.archive / 'load-pod-final.json').write_text(json.dumps(get('pod', name, '-n', namespace), indent=2)+'\n')
+        final_pod = get('pod', name, '-n', namespace)
+        (args.archive / 'load-pod-final.json').write_text(json.dumps(final_pod, indent=2)+'\n')
+        if final_pod['status'].get('phase') == 'Running':
+            try:
+                code = ('import json,os,pathlib,time; '
+                        's=pathlib.Path("/proc/1/stat").read_text().rsplit(")",1)[1].split(); '
+                        'print(json.dumps({"process_cpu_seconds":'
+                        '(int(s[11])+int(s[12]))/os.sysconf("SC_CLK_TCK"),'
+                        '"observed_at_epoch":time.time()}))')
+                counter = command('exec', '-n', namespace, name, '--', 'python', '-c', code)
+                (args.archive / 'load-process-cpu.json').write_text(counter)
+            except Exception as error:
+                report['cpu_counter_error'] = str(error)
         (args.archive / 'load.log').write_text(command('logs', name, '-n', namespace))
         command('delete', 'pod', name, '-n', namespace, '--wait=true', '--timeout=30s')
         created = False

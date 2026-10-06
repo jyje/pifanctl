@@ -163,3 +163,9 @@ def test_collection_cleanup_and_cooldown_after_runtime_failure(monkeypatch, tmp_
     assert report['collector_passed'] is not fail_after_create
     assert not report['acceptance']['thermal_stability_passed']
     assert (archive / 'samples.csv').stat().st_mode & 0o777 == 0o600
+
+
+def test_local_guard_records_peak_without_changing_cutoff():
+    observations = {}
+    assert guarded_load(360, 60, lambda: 60.25, lambda: 0, observations) == 'local_temperature_cutoff'
+    assert observations == {'local_peak_celsius': 60.25, 'last_local_celsius': 60.25}
