@@ -1,0 +1,23 @@
+{
+  "application_tree_sha256": "e0f17bfe0add588a8846e7169195286b0b9e49dbea0699f2ef09ee9d047f47f5",
+  "branch_coverage_percent": 89.09774436090225,
+  "combined_coverage_percent": 94.1941477008825,
+  "command": "python -m pytest --cov=sources --cov-config=.coveragerc --cov-branch --cov-report=json --junitxml=<path>",
+  "passed": true,
+  "provenance": "303-test local regression plus the final 14-test evidence consistency check; audit working tree based on 777d873. Hashes cover sorted path + NUL + bytes + NUL.",
+  "python": "3.13.2",
+  "recorded_at_utc": "2026-10-06T15:19:34.617210+00:00",
+  "statement_coverage_percent": 95.8667489204195,
+  "supplemental_evidence_check": {
+    "failures": 0,
+    "passed": 14,
+    "tests": 14
+  },
+  "test_results": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 303
+  },
+  "test_tree_sha256": "34ae8b271c85c1f0739d867cb7e4500145180e49fe7798691daca542f94865ff"
+}

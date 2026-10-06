@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="840" viewBox="0 0 1440 840">
+<title>Measured 55°C shared-rack response</title>
+<desc>Fresh source observations from the v1 worker; requested duty is a command, not measured RPM or PWM voltage.</desc>
+<style>
+        text{font-family:Arial,sans-serif;fill:#20293a}
+        .title{font-size:27px;font-weight:700}.sub{font-size:15px;fill:#566276}
+        .tick{font-size:14px;fill:#566276}.label{font-size:16px;font-weight:600}
+        .small{font-size:13px;fill:#566276}.legend{font-size:14px}
+        </style><rect width="100%" height="100%" fill="#fff"/>
+<text class="title" x="80" y="48">Measured 55°C shared-rack response</text>
+<text class="sub" x="80" y="76">Fresh source observations from the v1 worker; requested duty is a command, not measured RPM or PWM voltage.</text>
+<line x1="120.0" y1="665.0" x2="1230.0" y2="665.0" stroke="#d8dee9" stroke-width="1"/>
+<text class="tick" x="102.0" y="670.0" text-anchor="end">45°C</text>
+<line x1="120.0" y1="559.0" x2="1230.0" y2="559.0" stroke="#d8dee9" stroke-width="1"/>
+<text class="tick" x="102.0" y="564.0" text-anchor="end">48°C</text>
+<line x1="120.0" y1="453.0" x2="1230.0" y2="453.0" stroke="#d8dee9" stroke-width="1"/>
+<text class="tick" x="102.0" y="458.0" text-anchor="end">51°C</text>
+<line x1="120.0" y1="347.0" x2="1230.0" y2="347.0" stroke="#d8dee9" stroke-width="1"/>
+<text class="tick" x="102.0" y="352.0" text-anchor="end">54°C</text>
+<line x1="120.0" y1="241.0" x2="1230.0" y2="241.0" stroke="#d8dee9" stroke-width="1"/>
+<text class="tick" x="102.0" y="246.0" text-anchor="end">57°C</text>
+<line x1="120.0" y1="135.0" x2="1230.0" y2="135.0" stroke="#d8dee9" stroke-width="1"/>
+<text class="tick" x="102.0" y="140.0" text-anchor="end">60°C</text>
+<text class="tick" x="1268.0" y="670.0" text-anchor="start">0%</text>
+<text class="tick" x="1268.0" y="537.5" text-anchor="start">15%</text>
+<text class="tick" x="1268.0" y="405.0" text-anchor="start">30%</text>
+<text class="tick" x="1268.0" y="272.5" text-anchor="start">45%</text>
+<text class="tick" x="1268.0" y="140.0" text-anchor="start">60%</text>
+<line x1="117.4" y1="135.0" x2="117.4" y2="665.0" stroke="#edf0f5" stroke-width="1"/>
+<text class="tick" x="117.4" y="690.0" text-anchor="middle">0s</text>
+<line x1="313.7" y1="135.0" x2="313.7" y2="665.0" stroke="#edf0f5" stroke-width="1"/>
+<text class="tick" x="313.7" y="690.0" text-anchor="middle">60s</text>
+<line x1="510.1" y1="135.0" x2="510.1" y2="665.0" stroke="#edf0f5" stroke-width="1"/>
+<text class="tick" x="510.1" y="690.0" text-anchor="middle">120s</text>
+<line x1="706.4" y1="135.0" x2="706.4" y2="665.0" stroke="#edf0f5" stroke-width="1"/>
+<text class="tick" x="706.4" y="690.0" text-anchor="middle">180s</text>
+<line x1="902.8" y1="135.0" x2="902.8" y2="665.0" stroke="#edf0f5" stroke-width="1"/>
+<text class="tick" x="902.8" y="690.0" text-anchor="middle">240s</text>
+<line x1="1099.1" y1="135.0" x2="1099.1" y2="665.0" stroke="#edf0f5" stroke-width="1"/>
+<text class="tick" x="1099.1" y="690.0" text-anchor="middle">300s</text>
+<rect x="235.2" y="135" width="584.8" height="530" fill="#f8e9df" opacity="0.65"/>
+<text class="small" x="527.6" y="157.0" text-anchor="middle">1 vCPU capped load</text>
+<rect x="120" y="276.3" width="1110" height="70.7" fill="#e6f4f1" opacity="0.8"/>
+<line x1="120.0" y1="135.0" x2="120.0" y2="665.0" stroke="#19264d" stroke-width="2"/>
+<line x1="120.0" y1="665.0" x2="1230.0" y2="665.0" stroke="#19264d" stroke-width="2"/>
+<text class="label" x="675.0" y="727.0" text-anchor="middle">Elapsed time from first sample</text>
+<text class="label" x="30.0" y="400.0" transform="rotate(-90 30 400.0)" text-anchor="middle">Hottest member</text>
+<polyline points="120.0,541.3 138.3,521.9 157.0,521.9 175.0,521.9 194.0,521.9 212.3,521.9 235.2,483.0 258.8,483.0 277.1,366.4 314.4,366.4 332.7,230.4 351.4,230.4 369.7,288.7 388.3,288.7 407.0,288.7 426.0,327.6 448.5,327.6 466.9,308.1 485.2,308.1 503.9,308.1 522.2,327.6 559.2,327.6 577.5,308.1 595.8,308.1 614.5,308.1 632.8,308.1 651.1,308.1 669.8,288.7 708.1,288.7 726.7,308.1 745.4,308.1 764.0,308.1 782.3,308.1 801.0,308.1 820.0,308.1 838.9,308.1 857.3,385.9 875.6,385.9 893.9,385.9 912.6,444.2 949.6,444.2 968.9,502.5 987.5,502.5 1005.8,521.9 1024.5,521.9 1042.8,521.9 1061.5,483.0 1098.8,483.0 1117.4,521.9 1135.8,521.9 1154.1,580.2 1172.7,580.2 1193.0,580.2 1211.7,521.9 1230.0,521.9" fill="none" stroke="#3478b9" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="120.0,341.9 138.3,341.9 157.0,341.9 175.0,341.9 194.0,341.9 212.3,341.9 235.2,341.9 258.8,341.9 277.1,341.9 314.4,314.7 332.7,219.4 351.4,219.4 369.7,219.4 388.3,219.4 407.0,219.4 426.0,219.4 448.5,219.4 466.9,219.4 485.2,219.4 503.9,219.4 522.2,219.4 559.2,219.4 577.5,219.4 595.8,219.4 614.5,219.4 632.8,219.4 651.1,219.4 669.8,219.4 708.1,219.4 726.7,219.4 745.4,219.4 764.0,219.4 782.3,219.4 801.0,219.4 820.0,219.4 838.9,219.4 857.3,219.4 875.6,219.4 893.9,219.4 912.6,245.4 949.6,245.4 968.9,286.2 987.5,286.2 1005.8,286.2 1024.5,299.8 1042.8,299.8 1061.5,299.8 1098.8,299.8 1117.4,299.8 1135.8,299.8 1154.1,299.8 1172.7,340.6 1193.0,340.6 1211.7,340.6 1230.0,340.6" fill="none" stroke="#ed3158" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="120.0" cy="541.3" r="2.7" fill="#3478b9"/>
+<circle cx="138.3" cy="521.9" r="2.7" fill="#3478b9"/>
+<circle cx="157.0" cy="521.9" r="2.7" fill="#3478b9"/>
+<circle cx="175.0" cy="521.9" r="2.7" fill="#3478b9"/>
+<circle cx="194.0" cy="521.9" r="2.7" fill="#3478b9"/>
+<circle cx="212.3" cy="521.9" r="2.7" fill="#3478b9"/>
+<circle cx="235.2" cy="483.0" r="2.7" fill="#3478b9"/>
+<circle cx="258.8" cy="483.0" r="2.7" fill="#3478b9"/>
+<circle cx="277.1" cy="366.4" r="2.7" fill="#3478b9"/>
+<circle cx="314.4" cy="366.4" r="2.7" fill="#3478b9"/>
+<circle cx="332.7" cy="230.4" r="2.7" fill="#3478b9"/>
+<circle cx="351.4" cy="230.4" r="2.7" fill="#3478b9"/>
+<circle cx="369.7" cy="288.7" r="2.7" fill="#3478b9"/>
+<circle cx="388.3" cy="288.7" r="2.7" fill="#3478b9"/>
+<circle cx="407.0" cy="288.7" r="2.7" fill="#3478b9"/>
+<circle cx="426.0" cy="327.6" r="2.7" fill="#3478b9"/>
+<circle cx="448.5" cy="327.6" r="2.7" fill="#3478b9"/>
+<circle cx="466.9" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="485.2" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="503.9" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="522.2" cy="327.6" r="2.7" fill="#3478b9"/>
+<circle cx="559.2" cy="327.6" r="2.7" fill="#3478b9"/>
+<circle cx="577.5" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="595.8" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="614.5" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="632.8" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="651.1" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="669.8" cy="288.7" r="2.7" fill="#3478b9"/>
+<circle cx="708.1" cy="288.7" r="2.7" fill="#3478b9"/>
+<circle cx="726.7" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="745.4" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="764.0" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="782.3" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="801.0" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="820.0" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="838.9" cy="308.1" r="2.7" fill="#3478b9"/>
+<circle cx="857.3" cy="385.9" r="2.7" fill="#3478b9"/>
+<circle cx="875.6" cy="385.9" r="2.7" fill="#3478b9"/>
+<circle cx="893.9" cy="385.9" r="2.7" fill="#3478b9"/>
+<circle cx="912.6" cy="444.2" r="2.7" fill="#3478b9"/>
+<circle cx="949.6" cy="444.2" r="2.7" fill="#3478b9"/>
+<circle cx="968.9" cy="502.5" r="2.7" fill="#3478b9"/>
+<circle cx="987.5" cy="502.5" r="2.7" fill="#3478b9"/>
+<circle cx="1005.8" cy="521.9" r="2.7" fill="#3478b9"/>
+<circle cx="1024.5" cy="521.9" r="2.7" fill="#3478b9"/>
+<circle cx="1042.8" cy="521.9" r="2.7" fill="#3478b9"/>
+<circle cx="1061.5" cy="483.0" r="2.7" fill="#3478b9"/>
+<circle cx="1098.8" cy="483.0" r="2.7" fill="#3478b9"/>
+<circle cx="1117.4" cy="521.9" r="2.7" fill="#3478b9"/>
+<circle cx="1135.8" cy="521.9" r="2.7" fill="#3478b9"/>
+<circle cx="1154.1" cy="580.2" r="2.7" fill="#3478b9"/>
+<circle cx="1172.7" cy="580.2" r="2.7" fill="#3478b9"/>
+<circle cx="1193.0" cy="580.2" r="2.7" fill="#3478b9"/>
+<circle cx="1211.7" cy="521.9" r="2.7" fill="#3478b9"/>
+<circle cx="1230.0" cy="521.9" r="2.7" fill="#3478b9"/>
+<line x1="300.0" y1="755.0" x2="335.0" y2="755.0" stroke="#3478b9" stroke-width="4"/>
+<text class="legend" x="345.0" y="760.0" text-anchor="start">Hottest zone member</text>
+<line x1="580.0" y1="755.0" x2="615.0" y2="755.0" stroke="#ed3158" stroke-width="4"/>
+<text class="legend" x="625.0" y="760.0" text-anchor="start">Requested fan duty</text>
+<rect x="900" y="746" width="22" height="16" fill="#e6f4f1"/>
+<text class="legend" x="932.0" y="760.0" text-anchor="start">54–56°C acceptance band</text>
+<text class="small" x="720.0" y="805.0" text-anchor="middle">Target band: 144s; 1°C maximum span: 75s; required: 120s. Acceptance remains open.</text>
+</svg>
