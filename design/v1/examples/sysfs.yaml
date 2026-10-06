@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: List
 items:
-  - apiVersion: pifanctl.jyje.online/v1alpha1
+  - apiVersion: pifanctl.jyje.online/v1
     kind: Fan
     metadata:
       name: pi5-fan
@@ -13,7 +13,7 @@ items:
           chip: 0
           channel: 2
           frequencyHz: 1000
-  - apiVersion: pifanctl.jyje.online/v1alpha1
+  - apiVersion: pifanctl.jyje.online/v1
     kind: CoolingZone
     metadata:
       name: pi5-board

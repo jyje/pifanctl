@@ -65,9 +65,16 @@ def main():
     def rejected(name, mutate, error_field):
         obj = deepcopy(fan)
         mutate(obj)
-        result = command("replace", "--dry-run=server", "-f", "-", body=obj)
-        valid_error = result.returncode != 0 and "Invalid" in result.stderr and error_field in result.stderr
-        check(name, valid_error, result.stderr.strip())
+        crd = get("crd", "fans.pifanctl.jyje.online")
+        for version in crd["spec"]["versions"]:
+            if not version["served"]:
+                continue
+            version_name = version["name"]
+            obj["apiVersion"] = "pifanctl.jyje.online/" + version_name
+            path = "/apis/" + obj["apiVersion"] + "/fans/" + obj["metadata"]["name"]
+            result = command("replace", "--raw=" + path + "?dryRun=All", "-f", "-", body=obj)
+            valid_error = result.returncode != 0 and "Invalid" in result.stderr and error_field in result.stderr
+            check(name + "_" + version_name, valid_error, result.stderr.strip())
 
     rejected("curve_order_rejected", lambda x: x["spec"]["control"]["curve"].update(
         temperatureHigh=40), "temperatureLow")

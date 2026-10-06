@@ -156,3 +156,13 @@ def test_primary_readmes_install_only_operator_chart():
         assert "oci://ghcr.io/jyje/charts/pifanctl --" not in text
         assert "extraResources" in text and "CoolingZone" in text
         assert len(re.findall(r"!\[.*?\]\(docs/v1/figures/", text)) == 8
+
+
+def test_stable_and_alpha_crd_versions_have_identical_contracts():
+    for filename in ('fans.yaml', 'coolingzones.yaml'):
+        crd = yaml.safe_load((CHART / 'crds' / filename).read_text())
+        assert crd == yaml.safe_load((Path('design/v1/crds') / filename).read_text())
+        versions = crd['spec']['versions']
+        assert [(v['name'], v['served'], v['storage']) for v in versions] == [('v1', True, True), ('v1alpha1', True, False)]
+        assert crd['spec']['conversion'] == {'strategy': 'None'}
+        assert {k: v for k, v in versions[0].items() if k not in {'name', 'storage'}} == {k: v for k, v in versions[1].items() if k not in {'name', 'storage'}}

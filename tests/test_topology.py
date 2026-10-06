@@ -147,3 +147,20 @@ def test_deleted_selector_member_and_replaced_node_stay_unsafe():
     assert changed['zones']['rack']['memberUIDs']['pi-b'] == 'uid-b'
     z['metadata']['uid'] = 'reviewed-zone-replacement'
     assert not plan([fan(), z], nodes, changed['zones'])['zones']['rack']['issues']
+
+
+def test_alpha_and_stable_api_preserve_identity_and_plan():
+    alpha = [fan(), zone()]
+    for obj in alpha:
+        obj['apiVersion'] = 'pifanctl.jyje.online/v1alpha1'
+        obj['metadata'].update(uid='original-' + obj['kind'], finalizers=['pifanctl.jyje.online/release'],
+                               annotations={'pifanctl.jyje.online/operator': 'system/operator'})
+    original = copy.deepcopy(alpha)
+    canonical = normalize(alpha)
+    assert alpha == original
+    assert all(obj['apiVersion'] == API for obj in canonical)
+    assert [obj['metadata'] for obj in canonical] == [obj['metadata'] for obj in sorted(alpha, key=lambda o: o['kind'])]
+    assert plan(alpha, [node()]) == plan(canonical, [node()])
+    assert all(obj['apiVersion'] == API for obj in bundle(canonical)['items'])
+    with pytest.raises(TopologyError, match='duplicate'):
+        normalize([alpha[0], canonical[1]])

@@ -1,7 +1,7 @@
 # v1 alpha runtime manual
 
 **Implemented alpha, not a stable hardware release.** Application
-`1.0.0-alpha.4` includes the portable schema/planner, freshness metric, guarded
+`1.0.0-alpha.5` includes the portable schema/planner, freshness metric, guarded
 worker, official Kubernetes client, operator, CLI and operator chart. Mock tests
 do not establish real PWM behavior. [PLAN.md](../../PLAN.md) records the staged
 checks and remaining release gates. [Korean](runtime-ko.md).
@@ -228,3 +228,7 @@ That image uses `ghcr.io/jyje/pifanctl-issue:<sha>-py312`; it cannot publish
 published variant and verify operator readiness before assigning a physical Fan.
 The default image remains Python 3.14, and CI still tests Python 3.10-3.14.
 See the [Python SSL documentation](https://docs.python.org/3/library/ssl.html#ssl.create_default_context).
+
+## CRD API versions
+
+The candidate serves `v1` with `v1alpha1` compatibility. Read the [storage migration and rollback procedure](api-migration.md) before upgrading an existing installation.
