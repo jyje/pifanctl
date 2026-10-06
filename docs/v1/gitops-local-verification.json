@@ -1,0 +1,35 @@
+{
+  "chart_commit": "932745c7cda663330197c1c68c4125bef030ed60",
+  "harness_commit": "c13044e6a357be86eae8f81cb07d37db1ed808ab",
+  "candidate_app": "1.0.0-alpha.6",
+  "candidate_chart": "0.1.0-alpha.6",
+  "python": "3.13.2",
+  "tests_passed": 330,
+  "tests_failed": 0,
+  "tests_skipped": 0,
+  "coverage": {
+    "covered_lines": 1531,
+    "num_statements": 1590,
+    "percent_covered": 94.66981132075472,
+    "percent_covered_display": "94.67",
+    "missing_lines": 59,
+    "excluded_lines": 12,
+    "percent_statements_covered": 96.28930817610063,
+    "percent_statements_covered_display": "96.29",
+    "num_branches": 530,
+    "num_partial_branches": 46,
+    "covered_branches": 476,
+    "missing_branches": 54,
+    "percent_branches_covered": 89.81132075471699,
+    "percent_branches_covered_display": "89.81"
+  },
+  "gitops_checks_passed": 17,
+  "simulated_io": true,
+  "hardware_acceptance": false,
+  "live_microk8s_modified": false,
+  "python_310_focused": {
+    "tests_passed": 77,
+    "tests_failed": 0,
+    "tests_skipped": 0
+  }
+}

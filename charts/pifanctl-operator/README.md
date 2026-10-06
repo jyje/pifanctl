@@ -70,6 +70,8 @@ For Argo CD, place this array in the operator Application's Helm values. Keep th
 CR instances in GitOps and update them through the Application source.
 
 CRDs in `crds/` are installed by Helm, but Helm does not upgrade or delete them.
+The shared definitions also carry Argo CD `Prune=false,Delete=false` annotations
+so automatic pruning or Application deletion cannot remove the cluster-wide API.
 
 Operator replacement uses `Recreate` because leader-only readiness would block
 a surge rollout. The worker keeps its last plan during operator replacement and
@@ -92,9 +94,27 @@ restricted; worker egress must reach DNS and the configured Prometheus endpoint.
 Specify image digests via `image.tag` is not supported: use an immutable version
 tag here; digest-based image configuration is a future packaging enhancement.
 
-Delete Fans/zones/input configuration while the operator is still running and
-wait for finalizers before uninstalling. An unreachable worker deliberately
-blocks deletion. Never delete CRDs or force finalizers to claim hardware safety.
+Remove Fans/zones from their desired configuration while the operator is still
+running and wait for finalizers before uninstalling. An unreachable worker
+deliberately blocks deletion. Never delete CRDs or force finalizers to claim
+hardware safety.
+
+## Argo CD lifecycle
+
+Use the [declarative Application example](../../design/v1/examples/argocd.yaml).
+Pin a published chart release tag or immutable commit. Configure
+`PrunePropagationPolicy=background` and `PruneLast=true`: foreground pruning is
+not a supported claim-retirement path in this alpha because garbage collection
+can remove a worker before its release acknowledgement.
+
+Remove retired Fans from zone references and `extraResources` in the desired
+GitOps configuration, then let Argo CD synchronize and prune. For complete
+retirement, set `extraResources: []` first. Inventory CLI-created CRs belonging
+to this installation as well; an empty array alone does not prove they are gone.
+Wait for all associated Fan/CoolingZone finalizers, worker Deployments and Pods
+to disappear while the operator remains Ready. Only then delete the operator
+Application. The CRDs remain installed with their UIDs intact for other
+installations and future reinstallations.
 
 ## Monitoring migration
 

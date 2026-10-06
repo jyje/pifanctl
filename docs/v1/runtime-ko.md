@@ -166,6 +166,13 @@ controller 경보와 dashboard는 worker duty/readiness 지표로 명시적으�
 ## 06: 삭제와 이관을 진행합니다
 
 operator가 실행 중일 때 zone/Fan을 삭제합니다.
+Argo CD에서는 self-heal이 리소스를 다시 만들지 않도록 원하는
+`extraResources` 구성에서 먼저 제거합니다. `PrunePropagationPolicy=background`와
+`PruneLast=true`를 사용하고 [Application 예시](../../design/v1/examples/argocd.yaml)의
+단계별 삭제 절차를 따릅니다. 전체 삭제 시 `extraResources: []`로 동기화하고,
+CLI로 생성한 CR까지 포함하여 해당 설치의 CR과 worker가 해제될 때까지 기다린 뒤
+operator Application을 제거합니다. 공유 CRD는 자동 prune과 Application 삭제에서
+보존됩니다.
 `kubectl delete ... --cascade=background` 기본값을 사용합니다. foreground GC는
 release 확인 전에 worker를 삭제하여 앱 finalizer가 대기할 수 있으므로 alpha의
 지원 삭제 경로가 아닙니다. 대체 plan의 적용 확인을 기다리고, 구역이 없는 Fan은
