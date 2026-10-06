@@ -343,6 +343,8 @@ def build_pdf():
             image_path = (DOC.parent / image_match.group(1)).resolve()
             img = Image(str(image_path))
             max_height = 90 * mm if image_path.name == "thermal-live-2026-10-06.png" else 112 * mm
+            if image_path.name.startswith("thermal-fixed-"):
+                max_height = 160 * mm
             img._restrictSize(available_w, max_height)
             story.extend([Spacer(1, 3 * mm), img, Spacer(1, 3 * mm)])
             i += 1

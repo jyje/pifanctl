@@ -277,14 +277,16 @@ maintainer. Raw infrastructure snapshots remain private.
 - [x] Add and test a reusable collector with private, non-overwriting evidence,
   source-aware GitOps checks, complete per-member acquisition clocks, an
   independent node-local temperature cutoff, deadlines and cleanup.
-- [ ] Run a fixed 250m CPU scenario targeting 50 C: 30-second baseline, at most
+- [x] Run a fixed 250m CPU scenario targeting 50 C: 30-second baseline, at most
   360 seconds of load, then 120 seconds of immediate cooldown. Keep all fan
   and curve settings unchanged. Stop load at 53 C remotely or 55 C locally;
   retain any failed or interrupted attempt.
-- [ ] Evaluate the original 120-second, 1 C total-span, 5 percentage-point
+- [x] Evaluate the original 120-second, 1 C total-span, 5 percentage-point
   duty-span criteria using independent, advancing per-member source clocks.
-- [ ] Publish measured graphs and the pass/fail result, then repeat separately
-  bounded 55 C and 60 C scenarios only after reviewing the preceding result.
+- [x] Publish the first measured graph and pass/fail result in the acceptance
+  manual, anonymous CSV/JSON and visually reviewed 15-page PDF.
+- [ ] Repeat separately bounded 50 C, 55 C and 60 C scenarios after reviewing
+  the preceding failed result; do not weaken the original acceptance criteria.
 - [ ] Recheck CI and merge each reviewable concern; update the acceptance PDF
   without declaring stable v1 until all remaining hardware gates pass.
 
@@ -297,3 +299,12 @@ maintainer. Raw infrastructure snapshots remain private.
   preserve every member acquisition clock and original acceptance criteria.
   Nine projection/counter validation tests passed. Final local suite: 396
   passed with zero skips; focused Python 3.10 thermal/evidence suite: 42 passed.
+
+- First 50 C fixed-load attempt completed: 51 source-aware samples, local 55 C
+  cutoff after 155.57 seconds, 0.249 vCPU average. Remote peak was 51.8 C,
+  duty 35.04%; the 120-second cooldown ended at a recorded 50.15 C maximum.
+  Strict stability failed (0 seconds); broader band lasted 50.21 seconds.
+  Failed acceptance is preserved. Seven private raw files passed checksums.
+- Migration PR #60 merged as `0ad658f`; all PR checks including ARC ARM64 and
+  Codecov passed. Main CI `37533007374` succeeded. Collector PR #61 records
+  the next concern; completion and release readiness are separate decisions.
