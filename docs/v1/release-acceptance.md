@@ -2,16 +2,17 @@
 
 **Status:** Live v1 alpha runtime and thermal observations recorded through 2026-10-07
 **Release target:** `1.0.0`
-- **Active deployment:** alpha.3 operator and worker; alpha.2 temperature agents
+- **Active deployment:** alpha.6 Python 3.12 compatibility operator and worker; alpha.2 temperature agents
 - **v1 candidate under review:** app `1.0.0-alpha.6`, operator chart `0.1.0-alpha.6`
 **Decision:** Not ready for a stable release. Hardware-specific acceptance remains open.
 
-This manual records MicroK8s trials, bounded temperature-response tests, measured evidence, and remaining release checks. The v1 alpha.3 CRD operator, worker, Fan, and CoolingZone are active for the shared rack. The 55°C test below recorded a target-band response. Re-evaluation against the original 1°C total-range requirement leaves thermal stability acceptance open. A user visually confirmed normal fan rotation; RPM and electrical PWM measurements remain unavailable. Values unavailable from Kubernetes or direct measurements are explicitly marked **Not recorded** instead of being guessed.
+This manual records MicroK8s trials, bounded temperature-response tests, measured evidence, and remaining release checks. The alpha.6 CRD operator and worker now regulate the shared rack with v1 storage and served alpha compatibility after verified migration and image rollback. Earlier alpha.3 observations remain historical evidence. The 55°C test below recorded a target-band response. Re-evaluation against the original 1°C total-range requirement leaves thermal stability acceptance open. A user visually confirmed normal fan rotation; RPM and electrical PWM measurements remain unavailable. Values unavailable from Kubernetes or direct measurements are explicitly marked **Not recorded** instead of being guessed.
 
 ## 1. Initial alpha.2 trial configuration (2026-10-04)
 
-This inventory documents the earlier alpha.2 load trial. The active alpha.3 CRD
-operator and shared-rack worker are recorded in Sections 9 and 10.
+This inventory documents the earlier alpha.2 load trial. The later alpha.3 CRD
+operator and shared-rack worker are recorded in Sections 9 and 10; Section 14
+records the current alpha.6 deployment.
 
 | Item | Observed value |
 | --- | --- |
@@ -210,18 +211,18 @@ The requested duty is a software command, not a tachometer or airflow measuremen
 
 After the user confirmed that the physical shared fan was rotating normally, a bounded thermal-response run exercised the active v1 alpha.3 Fan and CoolingZone on MicroK8s. The worker controlled one shared fan on `raspi-40` for the four-member rack zone. A non-privileged Pod with a 1 vCPU limit was pinned to `raspi-51`, the hottest member at baseline. The fan remained enabled throughout. No Fan, CoolingZone, ConfigMap, Helm, or GPIO settings were changed.
 
-The load stage was capped at 180 seconds. The harness sampled the worker status and each Prometheus source-observation timestamp, accepted only fresh telemetry, and removed the load if the source became stale, the worker became unhealthy, or the rack maximum reached its 58°C soft stop or 62°C hard stop. The configured temperature band for this target was 54–56°C. The original acceptance criterion requires at least 120 continuous seconds inside the target band with no more than 1°C total temperature variation, fresh per-member telemetry, and at most 5 percentage points of requested-duty variation. A 65°C ceiling remained the absolute test guardrail.
+The load stage was capped at 180 seconds. The harness sampled the worker status and each Prometheus source-observation timestamp, accepted only fresh telemetry, and removed the load if the source became stale, the worker became unhealthy, or the rack maximum reached its 58°C soft stop or 62°C hard stop. The configured temperature band for this target was 54-56°C. The original acceptance criterion requires at least 120 continuous seconds inside the target band with no more than 1°C total temperature variation, fresh per-member telemetry, and at most 5 percentage points of requested-duty variation. A 65°C ceiling remained the absolute test guardrail.
 
 | Measurement | Result |
 | --- | --- |
 | Baseline hottest member | `raspi-51`, 49.05°C; 36.58% requested duty |
 | Applied load | 1 vCPU CPU limit on `raspi-51`; maximum load duration 180 seconds |
 | Load-stage peak | 57.3°C; requested duty peaked at 50.44%; neither the 58°C soft stop nor 62°C hard stop was reached |
-| Target-band interval (not a stability pass) | 23 composite observations from 2026-10-06 14:22:48 UTC through 14:25:12 UTC; 144 seconds in the 54–56°C band |
-| Temperature and requested duty in the interval | 54.55–55.65°C; fixed at 50.44% requested duty (0 percentage-point span) |
+| Target-band interval (not a stability pass) | 23 composite observations from 2026-10-06 14:22:48 UTC through 14:25:12 UTC; 144 seconds in the 54-56°C band |
+| Temperature and requested duty in the interval | 54.55-55.65°C; fixed at 50.44% requested duty (0 percentage-point span) |
 | Telemetry freshness | Maximum observed source age for the full run was 17.83 seconds; longest gap between stable-interval source observations was 10 seconds |
 | Physical fan observation | User confirmed normal rotation before the load; continuous observation during the run was not recorded. No RPM/tachometer measurement or electrical PWM waveform was recorded |
-| Cooldown and cleanup | After load removal, the hottest member returned to 47.4–49.05°C in the recorded cooldown window. The temporary load Pod was absent on follow-up. Operator and worker were Ready with zero restarts; Fan and CoolingZone were Ready. |
+| Cooldown and cleanup | After load removal, the hottest member returned to 47.4-49.05°C in the recorded cooldown window. The temporary load Pod was absent on follow-up. Operator and worker were Ready with zero restarts; Fan and CoolingZone were Ready. |
 
 This run **does not pass the original 55°C stability criterion**. The entire 144-second band interval spans 1.10°C, exceeding the required 1°C total range. The longest qualifying 1°C interval is 75 seconds, shorter than the required 120 seconds. The archived source clock is the minimum across members; individual member observation timestamps were not retained, so these 23 composite observations must not be described as independent hottest-node sensor samples. It does not prove measured RPM, airflow, PWM voltage/polarity, or fan-failure detection. The initial rise to 57.3°C and the later sensor readings are part of the observed response, not a claim that the entire load stage stayed at the target. Only the 55°C target was examined in this worker run; acceptance at 50°C, 55°C, and 60°C remains open. The cooldown samples demonstrate a return toward baseline but are not a calibrated cooling-capacity or time-to-stability measurement.
 
@@ -267,7 +268,7 @@ This is qualitative human observation of normal rotation at the confirmation poi
 
 ## 13. Software acceptance progress and remaining release gates
 
-The current software candidate is app `1.0.0-alpha.6` with operator chart `0.1.0-alpha.6`. The live shared-rack operator and worker remain alpha.3; the tests below did not upgrade MicroK8s or change physical fan commands. Disposable runtime trials use explicit GPIO and temperature simulations, while Kubernetes and Argo CD are real services.
+At this software checkpoint, the candidate was app `1.0.0-alpha.6` with operator chart `0.1.0-alpha.6`. The live shared-rack operator and worker remained alpha.3 during the tests below. They did not upgrade MicroK8s or change physical fan commands. Section 14 records the subsequent live migration. Disposable runtime trials use explicit GPIO and temperature simulations, while Kubernetes and Argo CD are real services.
 
 | Verification | Recorded result | Evidence |
 | --- | --- | --- |
@@ -295,12 +296,40 @@ The first GitOps verifier could accept a stale successful sync immediately after
 
 **Decision:** Not ready for a stable release. The software checks above do not close physical or production acceptance gates.
 
-- Archive and exercise the actual MicroK8s candidate upgrade and rollback with a single PWM writer.
+- Verify the live candidate upgrade and software rollback. Section 14 now records this completed software window; full v0 topology and supported-hardware rollback remain separate gates.
 - Repeat 50 C, 55 C and 60 C thermal acceptance with fresh timestamps for every member and the original continuous stability criteria. The earlier 55 C record still fails that criterion.
 - Measure the exact fan's electrical waveform, polarity, RPM and physical stop/restart behavior; record the fan and supply inventory.
 - Validate applicable process, power, network and sensor failures, Pi 5 hardware and a declared fleet size. Mark untested hardware/topologies unsupported rather than assuming coverage.
 
 The direct normal-rotation observation in Section 12 remains valid for its confirmation point. New candidate hardware behavior requires new evidence. Remote PR CI, merge and publication are tracked independently in [PLAN.md](../../PLAN.md).
+
+<!-- pagebreak -->
+
+## 14. Live alpha.6 migration, rollback and GitOps recovery
+
+The actual MicroK8s rack now runs alpha.6 operator/worker with operator chart 0.1.0-alpha.6 at `e04f73b53e52050a31da274723a8d4b2ca8e61a1`. Both CRDs serve v1 and v1alpha1, store v1 and retain their UIDs. Stable v1 instance manifests declare the same shared rack topology. The alpha.2 temperature agents remain reused. Argo CD returned to source-matched Synced/Healthy with automatic self-heal enabled and one Ready worker on the original actuator Node.
+
+The compatibility image is `ghcr.io/jyje/pifanctl-issue:cbc8958-py312`, digest `sha256:774e8355d08ba18bcca660c4045d7dfc8f3ed25e77661c305f97c97ea387f49f`. Python 3.12 is used for the verified legacy-CA path with normal TLS verification. The default Python 3.14 image was not substituted during the trial.
+
+| Stage | Evidence | Recorded result |
+| --- | --- | --- |
+| Archive and freeze | [Cluster PR #148](https://github.com/jyje/cluster/pull/148) | All 25 original v0 checksums passed. Current non-secret state was archived; child automatic sync was disabled before migration. |
+| Initial storage round trip | [Round trip](live-storage-roundtrip.json) | Both resources rewritten to v1 then alpha; original CRD/resource identities, specs and active worker UID retained. |
+| Initial candidate runtime | [Candidate hold](live-runtime-candidate.json) | 121.6-second hold, 22 observations, one worker, exact image, direct heartbeat and every member source clock checked. |
+| Archived image rollback | [Cluster PR #149](https://github.com/jyje/cluster/pull/149), [rollback hold](live-runtime-rollback.json) | Actual alpha.3 image restored with dual APIs and unchanged rack specs; 62.6-second hold, 12 observations passed. |
+| Complete reverse and re-promotion | [Reverse](live-storage-reverse.json), [promotion](live-storage-promotion.json) | Original alpha-only CRD specs/history restored, then all resources rewritten again and v1 declaration/history verified. No finalizer was forced. |
+| Candidate and automation recovery | [Cluster PR #150](https://github.com/jyje/cluster/pull/150), [final hold](live-runtime-restored.json) | Alpha.6 and automatic self-heal restored; 120.6-second hold, 22 observations passed. |
+| Local regression | [Local verification](live-migration-local-verification.json) | 368 tests passed, zero skips; statement coverage 96.29%, branch coverage 89.81%. Python 3.10 related checks: 44 passed. |
+
+The final recorded point, 2026-10-06 20:41:16 UTC, reported temperatures of anonymous members node-a 42.842 C, node-b 40.407 C, node-c 42.45 C and node-d 48.5 C, with 32.1% requested duty. Every original member sample stayed within the 30-second source-age limit; the maximum age in the final hold was 14.95 seconds. Direct worker heartbeat was checked separately from rate-limited CR status publication. These are timestamped observations, not fixed current values or a target-temperature stability result.
+
+Earlier failed freshness and observer attempts are retained in the [audit](live-migration-excluded-attempts.json). A published heartbeat exceeded the strict 20-second observation limit by 0.385 seconds after a successful rewrite; that report remains failed. Later storage checks wait for a genuinely fresh snapshot without increasing the age limit. The repeated complete promotion passed. Runtime observation was also corrected to avoid an unsupported Pod-proxy query, then repeated successfully.
+
+The existing curve, GPIO channel, refresh and safety duties were unchanged. No thermal load, fan-off stimulus, wiring change or hardware fault was introduced. Recreate and the common host lock govern replacement, but snapshots do not measure subsecond electrical handoff or fan RPM. The earlier human rotation confirmation was for alpha.3; no new continuous physical observation was recorded during this window.
+
+**Decision:** Software migration and runtime image rollback pass for the existing rack. Stable v1 remains not ready: target-temperature stability, electrical/RPM measurements, physical failures, full v0 topology/supported-hardware rollback and fleet acceptance remain open.
+
+Public live-migration evidence is a redacted projection: it includes anonymous measurements and check results, while full UID/IP/configuration snapshots remain private. See [the live migration procedure](live-migration.md) and [PLAN.md](../../PLAN.md) for reproduction and remaining gates. Remote CI and merge for these new verification tools are recorded independently from their local and live results.
 
 ## References
 

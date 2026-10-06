@@ -1,0 +1,454 @@
+{
+  "passed": true,
+  "started_at_utc": "2026-10-06T20:38:09.290207+00:00",
+  "finished_at_utc": "2026-10-06T20:41:16.731340+00:00",
+  "minimum_hold_seconds": 120.0,
+  "visibility": "public_redacted_summary",
+  "full_originals_excluded": true,
+  "samples": [
+    {
+      "observed_at_utc": "2026-10-06T20:39:16.095784+00:00",
+      "hold_seconds": 3.587501123547554e-05,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319155.3530774,
+      "requested_duty_percent": 80.0,
+      "member_temperatures": {
+        "node-c": 43.0,
+        "node-d": 50.7,
+        "node-a": 45.764,
+        "node-b": 41.868
+      },
+      "member_source_times": {
+        "node-c": 1791319153.302,
+        "node-d": 1791319144.502,
+        "node-a": 1791319144.169,
+        "node-b": 1791319146.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:39:21.718924+00:00",
+      "hold_seconds": 5.623153208987787,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319160.3777862,
+      "requested_duty_percent": 75.0,
+      "member_temperatures": {
+        "node-c": 43.0,
+        "node-d": 49.05,
+        "node-a": 44.303,
+        "node-b": 40.407
+      },
+      "member_source_times": {
+        "node-c": 1791319153.302,
+        "node-d": 1791319159.502,
+        "node-a": 1791319159.169,
+        "node-b": 1791319161.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:39:27.403962+00:00",
+      "hold_seconds": 11.308165916998405,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319165.390507,
+      "requested_duty_percent": 70.0,
+      "member_temperatures": {
+        "node-c": 43.0,
+        "node-d": 49.05,
+        "node-a": 44.303,
+        "node-b": 40.407
+      },
+      "member_source_times": {
+        "node-c": 1791319153.302,
+        "node-d": 1791319159.502,
+        "node-a": 1791319159.169,
+        "node-b": 1791319161.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:39:33.241116+00:00",
+      "hold_seconds": 17.145305374986492,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319170.405281,
+      "requested_duty_percent": 65.0,
+      "member_temperatures": {
+        "node-c": 43.0,
+        "node-d": 49.05,
+        "node-a": 44.303,
+        "node-b": 40.407
+      },
+      "member_source_times": {
+        "node-c": 1791319168.302,
+        "node-d": 1791319159.502,
+        "node-a": 1791319159.169,
+        "node-b": 1791319161.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:39:38.843873+00:00",
+      "hold_seconds": 22.748038167017512,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319175.419956,
+      "requested_duty_percent": 60.0,
+      "member_temperatures": {
+        "node-c": 43.0,
+        "node-d": 45.75,
+        "node-a": 41.381,
+        "node-b": 40.407
+      },
+      "member_source_times": {
+        "node-c": 1791319168.302,
+        "node-d": 1791319174.502,
+        "node-a": 1791319174.169,
+        "node-b": 1791319176.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:39:44.522988+00:00",
+      "hold_seconds": 28.42713437502971,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319180.43612,
+      "requested_duty_percent": 55.0,
+      "member_temperatures": {
+        "node-c": 40.8,
+        "node-d": 45.75,
+        "node-a": 41.381,
+        "node-b": 40.407
+      },
+      "member_source_times": {
+        "node-c": 1791319183.302,
+        "node-d": 1791319174.502,
+        "node-a": 1791319174.169,
+        "node-b": 1791319176.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:39:51.377787+00:00",
+      "hold_seconds": 35.28190820902819,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319190.4607813,
+      "requested_duty_percent": 45.0,
+      "member_temperatures": {
+        "node-c": 40.8,
+        "node-d": 46.85,
+        "node-a": 42.355,
+        "node-b": 40.407
+      },
+      "member_source_times": {
+        "node-c": 1791319183.302,
+        "node-d": 1791319189.502,
+        "node-a": 1791319189.169,
+        "node-b": 1791319176.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:39:57.015097+00:00",
+      "hold_seconds": 40.919197833980434,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319195.4749928,
+      "requested_duty_percent": 40.0,
+      "member_temperatures": {
+        "node-c": 40.8,
+        "node-d": 46.85,
+        "node-a": 42.355,
+        "node-b": 38.946
+      },
+      "member_source_times": {
+        "node-c": 1791319183.302,
+        "node-d": 1791319189.502,
+        "node-a": 1791319189.169,
+        "node-b": 1791319191.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:40:02.581178+00:00",
+      "hold_seconds": 46.48525983397849,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319200.4866445,
+      "requested_duty_percent": 35.0,
+      "member_temperatures": {
+        "node-c": 42.45,
+        "node-d": 46.85,
+        "node-a": 42.355,
+        "node-b": 38.946
+      },
+      "member_source_times": {
+        "node-c": 1791319198.302,
+        "node-d": 1791319189.502,
+        "node-a": 1791319189.169,
+        "node-b": 1791319191.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:40:08.186489+00:00",
+      "hold_seconds": 52.090553542017005,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319205.4988914,
+      "requested_duty_percent": 32.1,
+      "member_temperatures": {
+        "node-c": 42.45,
+        "node-d": 46.85,
+        "node-a": 40.894,
+        "node-b": 39.433
+      },
+      "member_source_times": {
+        "node-c": 1791319198.302,
+        "node-d": 1791319204.502,
+        "node-a": 1791319204.169,
+        "node-b": 1791319206.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:40:13.816443+00:00",
+      "hold_seconds": 57.72048766701482,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319210.5109785,
+      "requested_duty_percent": 32.1,
+      "member_temperatures": {
+        "node-c": 40.25,
+        "node-d": 46.85,
+        "node-a": 40.894,
+        "node-b": 39.433
+      },
+      "member_source_times": {
+        "node-c": 1791319213.302,
+        "node-d": 1791319204.502,
+        "node-a": 1791319204.169,
+        "node-b": 1791319206.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:40:19.515390+00:00",
+      "hold_seconds": 63.41941420902731,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319215.5257943,
+      "requested_duty_percent": 32.1,
+      "member_temperatures": {
+        "node-c": 40.25,
+        "node-d": 46.85,
+        "node-a": 38.946,
+        "node-b": 39.433
+      },
+      "member_source_times": {
+        "node-c": 1791319213.302,
+        "node-d": 1791319219.502,
+        "node-a": 1791319219.169,
+        "node-b": 1791319206.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:40:25.126919+00:00",
+      "hold_seconds": 69.03092383401236,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319220.5522892,
+      "requested_duty_percent": 32.1,
+      "member_temperatures": {
+        "node-c": 40.25,
+        "node-d": 49.05,
+        "node-a": 38.946,
+        "node-b": 38.459
+      },
+      "member_source_times": {
+        "node-c": 1791319213.302,
+        "node-d": 1791319219.502,
+        "node-a": 1791319219.169,
+        "node-b": 1791319221.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:40:31.581718+00:00",
+      "hold_seconds": 75.4856995419832,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319225.5662766,
+      "requested_duty_percent": 32.1,
+      "member_temperatures": {
+        "node-c": 42.45,
+        "node-d": 49.05,
+        "node-a": 38.946,
+        "node-b": 38.459
+      },
+      "member_source_times": {
+        "node-c": 1791319228.302,
+        "node-d": 1791319219.502,
+        "node-a": 1791319219.169,
+        "node-b": 1791319221.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:40:37.333322+00:00",
+      "hold_seconds": 81.23731366702123,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319236.4226744,
+      "requested_duty_percent": 32.1,
+      "member_temperatures": {
+        "node-c": 42.45,
+        "node-d": 48.5,
+        "node-a": 41.381,
+        "node-b": 40.894
+      },
+      "member_source_times": {
+        "node-c": 1791319228.302,
+        "node-d": 1791319234.502,
+        "node-a": 1791319234.169,
+        "node-b": 1791319236.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:40:42.921397+00:00",
+      "hold_seconds": 86.82533841702389,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319241.4340267,
+      "requested_duty_percent": 32.1,
+      "member_temperatures": {
+        "node-c": 42.45,
+        "node-d": 48.5,
+        "node-a": 41.381,
+        "node-b": 40.894
+      },
+      "member_source_times": {
+        "node-c": 1791319228.302,
+        "node-d": 1791319234.502,
+        "node-a": 1791319234.169,
+        "node-b": 1791319236.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:40:48.505940+00:00",
+      "hold_seconds": 92.40986175002763,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319246.450044,
+      "requested_duty_percent": 32.1,
+      "member_temperatures": {
+        "node-c": 41.9,
+        "node-d": 48.5,
+        "node-a": 41.381,
+        "node-b": 40.894
+      },
+      "member_source_times": {
+        "node-c": 1791319243.302,
+        "node-d": 1791319234.502,
+        "node-a": 1791319234.169,
+        "node-b": 1791319236.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:40:54.190516+00:00",
+      "hold_seconds": 98.0944184170221,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319251.4618547,
+      "requested_duty_percent": 32.1,
+      "member_temperatures": {
+        "node-c": 41.9,
+        "node-d": 48.5,
+        "node-a": 43.816,
+        "node-b": 40.407
+      },
+      "member_source_times": {
+        "node-c": 1791319243.302,
+        "node-d": 1791319249.502,
+        "node-a": 1791319249.169,
+        "node-b": 1791319251.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:40:59.822391+00:00",
+      "hold_seconds": 103.72627479198854,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319256.4742653,
+      "requested_duty_percent": 32.1,
+      "member_temperatures": {
+        "node-c": 43.0,
+        "node-d": 48.5,
+        "node-a": 43.816,
+        "node-b": 40.407
+      },
+      "member_source_times": {
+        "node-c": 1791319258.302,
+        "node-d": 1791319249.502,
+        "node-a": 1791319249.169,
+        "node-b": 1791319251.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:41:05.504900+00:00",
+      "hold_seconds": 109.40876129199751,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319261.4884312,
+      "requested_duty_percent": 32.1,
+      "member_temperatures": {
+        "node-c": 43.0,
+        "node-d": 48.5,
+        "node-a": 42.842,
+        "node-b": 40.407
+      },
+      "member_source_times": {
+        "node-c": 1791319258.302,
+        "node-d": 1791319264.502,
+        "node-a": 1791319264.169,
+        "node-b": 1791319251.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:41:11.102152+00:00",
+      "hold_seconds": 115.00600125000346,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319266.5017567,
+      "requested_duty_percent": 32.1,
+      "member_temperatures": {
+        "node-c": 43.0,
+        "node-d": 48.5,
+        "node-a": 42.842,
+        "node-b": 40.407
+      },
+      "member_source_times": {
+        "node-c": 1791319258.302,
+        "node-d": 1791319264.502,
+        "node-a": 1791319264.169,
+        "node-b": 1791319266.426
+      }
+    },
+    {
+      "observed_at_utc": "2026-10-06T20:41:16.731285+00:00",
+      "hold_seconds": 120.63510695903096,
+      "worker_ready": true,
+      "worker_heartbeat_time": 1791319276.5277526,
+      "requested_duty_percent": 32.1,
+      "member_temperatures": {
+        "node-c": 42.45,
+        "node-d": 48.5,
+        "node-a": 42.842,
+        "node-b": 40.407
+      },
+      "member_source_times": {
+        "node-c": 1791319273.302,
+        "node-d": 1791319264.502,
+        "node-a": 1791319264.169,
+        "node-b": 1791319266.426
+      }
+    }
+  ],
+  "final_gitops": {
+    "sync": "Synced",
+    "health": "Healthy",
+    "phase": "Succeeded",
+    "automatic_self_heal": true
+  },
+  "final_stored_versions": {
+    "Fan": [
+      "v1"
+    ],
+    "CoolingZone": [
+      "v1"
+    ]
+  },
+  "completed_guards": [
+    "current_source_and_revision",
+    "single_worker_and_no_legacy_controller",
+    "resource_identity_and_spec",
+    "image_digest",
+    "actuator_node_identity",
+    "plan_hash",
+    "no_worker_credentials",
+    "shared_host_lock",
+    "direct_worker_heartbeat",
+    "every_member_source_clock"
+  ]
+}

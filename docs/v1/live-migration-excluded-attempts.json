@@ -1,0 +1,23 @@
+{
+  "passed": false,
+  "visibility": "public_redacted_summary",
+  "original_archived_privately": true,
+  "acceptance_excluded": true,
+  "unstarted_stale_preflights": 2,
+  "preflight_mutations": false,
+  "storage_promotion_failure": {
+    "category": "strict_published_snapshot_age_limit",
+    "limit_seconds": 20,
+    "observed_seconds": 20.385,
+    "original_passed": false
+  },
+  "observer_failure": {
+    "http_status": 404,
+    "original_passed": false
+  },
+  "corrections": [
+    "Wait for genuinely fresh published snapshots without relaxing the limit.",
+    "Use direct worker heartbeat and original per-member source clocks.",
+    "Bound Pod-proxy subprocess without a request-timeout query."
+  ]
+}

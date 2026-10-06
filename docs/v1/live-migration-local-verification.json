@@ -1,0 +1,29 @@
+{
+  "tooling_commit": "b82b509",
+  "tests_passed": 368,
+  "tests_failed": 0,
+  "tests_skipped": 0,
+  "python": "3.13.2",
+  "python310_focused_passed": 44,
+  "coverage": {
+    "covered_lines": 1531,
+    "num_statements": 1590,
+    "percent_covered": 94.66981132075472,
+    "percent_covered_display": "94.67",
+    "missing_lines": 59,
+    "excluded_lines": 12,
+    "percent_statements_covered": 96.28930817610063,
+    "percent_statements_covered_display": "96.29",
+    "num_branches": 530,
+    "num_partial_branches": 46,
+    "covered_branches": 476,
+    "missing_branches": 54,
+    "percent_branches_covered": 89.81132075471699,
+    "percent_branches_covered_display": "89.81"
+  },
+  "hardware_acceptance": false,
+  "privacy_tests_passed": 8,
+  "overwrite_refusal_tests_passed": 2,
+  "public_evidence": "anonymous measurements and check results; private originals excluded",
+  "privacy_commit": "b4035af"
+}

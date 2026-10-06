@@ -1,0 +1,118 @@
+{
+  "passed": true,
+  "started_at_utc": "2026-10-06T20:20:09.250275+00:00",
+  "finished_at_utc": "2026-10-06T20:20:15.493589+00:00",
+  "visibility": "public_redacted_summary",
+  "full_originals_excluded": true,
+  "mode": "roundtrip",
+  "checks": [
+    {
+      "name": "dual_api_installed",
+      "passed": true
+    },
+    {
+      "name": "complete_v1_rewrite",
+      "passed": true
+    },
+    {
+      "name": "reverse_rewrite_and_definition_restore",
+      "passed": true
+    },
+    {
+      "name": "worker_uid_identity_readiness_preserved",
+      "passed": true
+    }
+  ],
+  "samples": [
+    {
+      "stage": "baseline",
+      "observed_at_utc": "2026-10-06T20:20:09.718905+00:00",
+      "worker_identity_unchanged": true,
+      "resource_identity_unchanged": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "ready": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "requested_duty_percent": 39.8,
+      "memberCount": 4.0,
+      "temperatureCelsius": 48.5,
+      "temperatureObservedAt": "2026-10-06T20:20:08.110356+00:00",
+      "definitions": {}
+    },
+    {
+      "stage": "dual_api_installed",
+      "observed_at_utc": "2026-10-06T20:20:11.010826+00:00",
+      "worker_identity_unchanged": true,
+      "resource_identity_unchanged": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "ready": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "requested_duty_percent": 39.8,
+      "memberCount": 4.0,
+      "temperatureCelsius": 48.5,
+      "temperatureObservedAt": "2026-10-06T20:20:08.110356+00:00",
+      "definitions": {}
+    },
+    {
+      "stage": "v1_storage_rewritten",
+      "observed_at_utc": "2026-10-06T20:20:12.416774+00:00",
+      "worker_identity_unchanged": true,
+      "resource_identity_unchanged": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "ready": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "requested_duty_percent": 39.8,
+      "memberCount": 4.0,
+      "temperatureCelsius": 48.5,
+      "temperatureObservedAt": "2026-10-06T20:20:08.110356+00:00",
+      "definitions": {}
+    },
+    {
+      "stage": "alpha_storage_restored",
+      "observed_at_utc": "2026-10-06T20:20:15.039692+00:00",
+      "worker_identity_unchanged": true,
+      "resource_identity_unchanged": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "ready": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "requested_duty_percent": 39.8,
+      "memberCount": 4.0,
+      "temperatureCelsius": 48.5,
+      "temperatureObservedAt": "2026-10-06T20:20:08.110356+00:00",
+      "definitions": {}
+    },
+    {
+      "stage": "final",
+      "observed_at_utc": "2026-10-06T20:20:15.493522+00:00",
+      "worker_identity_unchanged": true,
+      "resource_identity_unchanged": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "ready": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "requested_duty_percent": 39.8,
+      "memberCount": 4.0,
+      "temperatureCelsius": 48.5,
+      "temperatureObservedAt": "2026-10-06T20:20:08.110356+00:00",
+      "definitions": {}
+    }
+  ]
+}
