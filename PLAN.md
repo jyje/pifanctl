@@ -264,3 +264,31 @@ operator safety still need the separate v1 release acceptance work above.
 - Public projection and private/non-overwriting report guards passed eight
   privacy tests and two overwrite-refusal tests. The complete suite passed
   368 tests; statement/branch coverage remains 96.29%/89.81%.
+
+### Fixed-load thermal acceptance follow-up
+
+Publication of PR #60 and its acceptance PDF was explicitly approved by the
+maintainer. Raw infrastructure snapshots remain private.
+
+- [x] Verify the selected member can read its local thermal sensor without
+  privilege, host volumes, device access or service account credentials.
+  The read-only probe identified a Raspberry Pi 5 Model B Rev 1.0; no RPM input
+  was exposed on that selected member. This does not verify actuator hardware.
+- [x] Add and test a reusable collector with private, non-overwriting evidence,
+  source-aware GitOps checks, complete per-member acquisition clocks, an
+  independent node-local temperature cutoff, deadlines and cleanup.
+- [ ] Run a fixed 250m CPU scenario targeting 50 C: 30-second baseline, at most
+  360 seconds of load, then 120 seconds of immediate cooldown. Keep all fan
+  and curve settings unchanged. Stop load at 53 C remotely or 55 C locally;
+  retain any failed or interrupted attempt.
+- [ ] Evaluate the original 120-second, 1 C total-span, 5 percentage-point
+  duty-span criteria using independent, advancing per-member source clocks.
+- [ ] Publish measured graphs and the pass/fail result, then repeat separately
+  bounded 55 C and 60 C scenarios only after reviewing the preceding result.
+- [ ] Recheck CI and merge each reviewable concern; update the acceptance PDF
+  without declaring stable v1 until all remaining hardware gates pass.
+
+- Collector verification: 387 full Python 3.13.2 tests and 33 focused Python
+  3.10 tests passed. The initial sandbox run could not bind two local HTTP
+  servers; the unchanged tests passed with authorized loopback access.
+  Failure injection verified Pod cleanup and immediate cooldown after API loss.
