@@ -95,7 +95,7 @@ The solid line is the configured rising curve. Markers are observed Fan status s
 
 Call a temperature band stable only after the hottest member stays within a 1°C range for at least 120 seconds under a declared, repeatable workload, telemetry remains fresh, and requested duty has no unexplained increase. Record fan RPM when instrumentation is available, or direct visual rotation. The initial 2026-10-04 trial did not satisfy that criterion. The later alpha.3 run also remains partial after the original criterion was reapplied in Section 10. In the initial trial, the member temperatures varied independently, and the hottest member was outside the node receiving the test load. Its five-minute no-load interval began about seven minutes after the last CPU-load sample, so it is not evidence for the immediate cooling slope or time-to-stability.
 
-The live test ended below the 65°C abort guardrail, all temporary load Pods were removed, and no trial configuration was changed. The physical-fan-stop and recovery test has **not** been run. Its safe abort threshold is awaiting confirmation; the hardware default, RPM, and post-upgrade physical rotation also remain unverified.
+The live test ended below the 65°C abort guardrail, all temporary load Pods were removed, and no trial configuration was changed. The physical-fan-stop and recovery test has **not** been run. Its safe abort threshold is awaiting confirmation; the hardware default and RPM remain unverified. Post-upgrade normal rotation was subsequently confirmed by the user; see Section 12.
 
 ## 4. Other scenario records
 
@@ -143,7 +143,7 @@ Capture the archived v0 configuration and checksum. Inventory every writer of ea
 | Load stage B | `raspi-41`, 2 vCPU, maximum 120 seconds | Partial; maximum zone sample 52.35°C | [Raw samples](thermal-load-observations.csv) |
 | Load stage C | `raspi-41`, 3 vCPU, maximum 120 seconds | Partial; 55.1°C transient on `raspi-51`; no steady hold | [Raw samples](thermal-load-observations.csv) |
 | Cooldown | Five-minute no-load observation, started about seven minutes after the final load sample | Not stable; immediate cooldown transient was not captured | [Raw samples](thermal-load-observations.csv) |
-| Electrical waveform, RPM, and physical fan-off recovery | No instruments or completed post-upgrade observation recorded | Not run | Physical acceptance evidence required |
+| Electrical waveform, RPM, and physical fan-off recovery | Normal post-upgrade rotation confirmed by the user; no instrument measurements or fan-off recovery recorded | Not run | Electrical and fault-recovery acceptance evidence required |
 | Pi 5 hardware, fault injection, rollback, fleet scale | No live trial records | Not run | Procedures in Sections 5 and 3 |
 | 2026-10-06 live shared-fan follow-up | alpha.2 chart and image; bounded member CPU load | Response observed; 61.15°C sample crossed the 60°C stage gate, so load was stopped; no stable hold claimed | [Follow-up samples](thermal-load-observations-2026-10-06.csv) and Section 7 |
 | 2026-10-06 isolated alpha.3 CRD runtime probe | alpha.3 operator chart and Python 3.12 ARM64 issue image in a temporary namespace; probe CRs targeted nonexistent Nodes | CRD defaulting/admission, operator reconciliation, expected missing-node status, and Argo health passed; no worker or GPIO access | [Workflow run 37429082468](https://github.com/jyje/pifanctl/actions/runs/37429082468) and Section 8 |
@@ -244,6 +244,24 @@ Helm 4.3.0's readiness watcher timed out when waiting for these deliberately unh
 The local [regression report](release-local-verification-2026-10-07.json) records 303 passing tests, zero skips, 95.87% statement coverage and 89.10% branch coverage on Python 3.13.2. Matplotlib is pinned in development requirements so rendering verification runs in the Python CI matrix rather than being skipped.
 
 This result covers real API admission/defaulting and missing-node reconciliation. Disposable-cluster Argo CD ordering, finalizer lifecycle for active hardware claims, stable API migration, active worker deployment, fleet scale, electrical behavior, and physical fault recovery remain open.
+
+## 12. Direct visual rotation confirmation
+
+The user explicitly confirmed that the shared fan blades were continuing to rotate normally. This satisfies the direct visual observation check for the running deployment. The question presented a previously reported 38.12% requested duty and 49.6°C maximum temperature; those values describe that earlier remote snapshot, not measurements made by the observer.
+
+A read-only follow-up on the cluster clock at approximately 2026-10-06 15:29 UTC found:
+
+| Check | Result |
+| --- | --- |
+| Physical blades | User confirmed continuous normal rotation |
+| Worker and operator | Ready, zero restarts |
+| Fan and CoolingZone | Ready; one shared fan assigned to four members |
+| Requested duty | 38.12% |
+| Worker-reported rack maximum | 49.05°C on `raspi-51` |
+| Other member temperatures | `raspi-40`: 44.79°C; `raspi-41`: 40.407°C; `raspi-50`: 43.0°C |
+| Test changes | None; no GPIO, topology, workload, or fan-power changes |
+
+This is qualitative human observation of normal rotation at the confirmation point. It does not provide RPM, electrical PWM measurements, continuous observation during the earlier load run, or fan-stop/restart acceptance. The temperature-stability and remaining hardware gates stay open. The machine-readable [observation record](physical-rotation-confirmation.json) preserves this distinction. The timestamp above is the actual host/cluster observation clock; it is not inferred from the session's calendar date.
 
 ## References
 

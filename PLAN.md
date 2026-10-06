@@ -67,6 +67,7 @@ targets, RPM, electrical measurements, and failure acceptance remain open.
 
 - [x] Merge design PR #40 and implementation PR #41 into `main` in dependency order.
 - [x] Verify the first successful main line and branch badge publication under `assets/coverage/`.
+- [x] Record direct visual confirmation of normal shared-fan rotation for the active alpha.3 deployment. The user confirmed continuous blade rotation; RPM, waveform, and stop/restart behavior remain unmeasured. See Section 12 of the acceptance manual.
 - [ ] Measure real Pi 4 GPIO and Pi 5 sysfs wiring, channel, initialization and shutdown PWM behavior.
 - [ ] Complete 50°C and 60°C controlled-load stability runs; record requested duty and any available RPM measurement, plus immediate no-load cooldown below the 65°C stop limit.
 - [ ] Complete the 55°C controlled-load stability run. Re-evaluation of the recorded response found only 75 seconds within the required 1°C total range; 144 seconds within the broader 54–56°C band does not pass the 120-second stability criterion. Preserve each member source timestamp in the next run. Visual rotation was confirmed before the test; RPM remains unmeasured. See the [acceptance record](docs/v1/release-acceptance.md#10-2026-10-06-alpha3-55c-shared-rack-stability-run).
@@ -129,7 +130,8 @@ and [55°C stability record](docs/v1/release-acceptance.md#10-2026-10-06-alpha3-
 - Final local Python 3.13.2 regression: 303 tests passed with zero skips after installing the pinned Matplotlib development dependency. Statement coverage: 95.87%; branch coverage: 89.10%; combined: 94.19%. JUnit-derived evidence and tested-tree hashes are recorded in `docs/v1/release-local-verification-2026-10-07.json`. An initial sandbox-only run could not bind loopback sockets; rerunning with loopback access passed both HTTP integration tests.
 - Thermal evidence verifier: fourteen regression checks passed. Re-evaluation retains 144 seconds in the target band but only 75 seconds within the original 1°C total-range criterion. Per-member source clocks are absent from the old CSV, so no stability certificate is issued.
 - Disposable kind cluster: Kubernetes v1.37.0, alpha.3 compatibility operator, fifteen real-API and missing-node finalizer lifecycle checks passed. Helm 4 default waiting timed out on intentionally missing-node fixtures; installation with custom-resource waiting disabled completed. This does not establish healthy worker readiness or Argo ordering.
-- PR #53 initial CI run 37481665637 succeeded before these audit corrections. Updated-head CI must be checked after pushing.
+- PR #53 merged as `146e1c8` after updated-head CI run `37486914215` passed Python 3.10-3.14, chart/workflow/version checks, ARC ARM64 image smoke checks, and Codecov project/patch statuses.
+- Direct physical observation: the user confirmed continuous normal fan rotation. A read-only follow-up reported 38.12% requested duty and 49.05°C rack maximum with Ready operator, worker, Fan, and CoolingZone. This passes the visual observation check only.
 
 ## Completion log
 
