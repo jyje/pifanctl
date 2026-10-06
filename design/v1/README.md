@@ -32,7 +32,7 @@ fan references; it does not execute Kubernetes CEL or validate hardware claims.
 
 ## API review in a disposable cluster
 
-The proposed minimum is Kubernetes 1.30. Current real API verification covers Kubernetes 1.37.0 only; minimum-version verification remains open. See the [storage migration and rollback procedure](../../docs/v1/api-migration.md). CRDs use structural schemas, defaults,
+The declared API baseline is Kubernetes 1.30. Real API and simulated-I/O worker lifecycle verification passed on Kubernetes 1.30.0 and 1.37.0; see the [minimum-version record](../../docs/v1/minimum-kubernetes.md). Hardware and production migration acceptance remain separate release gates. See the [storage migration and rollback procedure](../../docs/v1/api-migration.md). CRDs use structural schemas, defaults,
 CEL field validation and a `/status` subresource. API server validation still
 needs to be exercised before stable release; local rendering is not that check.
 

@@ -1,0 +1,29 @@
+{
+  "harness_commit": "038767b",
+  "app_version": "1.0.0-alpha.6",
+  "chart_version": "0.1.0-alpha.5",
+  "python": "3.13.2",
+  "tests_passed": 320,
+  "tests_failed": 0,
+  "tests_skipped": 0,
+  "coverage": {
+    "covered_lines": 1531,
+    "num_statements": 1590,
+    "percent_covered": 94.66981132075472,
+    "percent_covered_display": "94.67",
+    "missing_lines": 59,
+    "excluded_lines": 12,
+    "percent_statements_covered": 96.28930817610063,
+    "percent_statements_covered_display": "96.29",
+    "num_branches": 530,
+    "num_partial_branches": 46,
+    "covered_branches": 476,
+    "missing_branches": 54,
+    "percent_branches_covered": 89.81132075471699,
+    "percent_branches_covered_display": "89.81"
+  },
+  "api_checks_passed": 19,
+  "runtime_checks_passed": 14,
+  "kubernetes_version": "1.30.0",
+  "hardware_acceptance": false
+}
