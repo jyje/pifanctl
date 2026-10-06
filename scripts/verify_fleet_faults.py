@@ -166,10 +166,16 @@ def main():
         report['error'] = str(error)
         raise
     finally:
-        if restore_operator:
-            cmd('scale', 'deployment', DEPLOY, '-n', NS, '--replicas=1')
-        if not report['passed']:
-            clean()
+        try:
+            if restore_operator:
+                cmd('scale', 'deployment', DEPLOY, '-n', NS, '--replicas=1')
+            if not report['passed']:
+                clean()
+            report['cleanup_verified'] = not get('fans,coolingzones', '-l', LABEL)['items'] and not worker()
+            if not report['cleanup_verified']:
+                report['passed'] = False
+        except Exception as error:
+            report.update(cleanup_verified=False, cleanup_error=str(error), passed=False)
         report['finished_at_utc'] = datetime.now(timezone.utc).isoformat()
         args.report.write_text(json.dumps(report, indent=2)+'\n')
 

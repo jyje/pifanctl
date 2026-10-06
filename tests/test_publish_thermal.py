@@ -83,3 +83,14 @@ def test_reassessment_refuses_an_altered_original_verdict(tmp_path):
         rows = project(list(csv.DictReader(stream)))
     with pytest.raises(ValueError, match='not reproducible'):
         reassessment(path, rows, 50)
+
+
+def test_execution_preserves_only_finite_local_guard_observations():
+    from publish_thermal_evidence import execution
+    raw = {'reason': 'local_temperature_cutoff', 'elapsed_seconds': 76,
+           'cpu_seconds': 57, 'local_peak_celsius': 60.05, 'last_local_celsius': 60.05}
+    assert execution(json.dumps(raw))['local_peak_celsius'] == 60.05
+    for value in (float('nan'), float('inf'), -21, 121):
+        raw['local_peak_celsius'] = value
+        with pytest.raises(ValueError, match='local thermal'):
+            execution(json.dumps(raw))

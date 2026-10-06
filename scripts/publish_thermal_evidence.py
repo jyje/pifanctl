@@ -86,8 +86,15 @@ def execution(log):
     elapsed, cpu = float(value['elapsed_seconds']), float(value['cpu_seconds'])
     if not math.isfinite(elapsed) or not math.isfinite(cpu) or elapsed <= 0 or cpu < 0:
         raise ValueError('Invalid load execution counters')
-    return {'reason': reason, 'elapsed_seconds': elapsed, 'cpu_seconds': cpu,
-            'average_consumed_vcpu': cpu / elapsed}
+    result = {'reason': reason, 'elapsed_seconds': elapsed, 'cpu_seconds': cpu,
+              'average_consumed_vcpu': cpu / elapsed}
+    for key in ('local_peak_celsius', 'last_local_celsius'):
+        if key in value:
+            reading = float(value[key])
+            if not math.isfinite(reading) or not -20 <= reading <= 120:
+                raise ValueError('Invalid local thermal observation')
+            result[key] = reading
+    return result
 
 
 def reassessment(path, rows, target):

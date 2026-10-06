@@ -39,7 +39,7 @@ def main():
     pods = get('pods', '-n', ns)['items']
     by_component = {p['metadata']['labels'].get('app.kubernetes.io/component'): p for p in pods
                     if p['status'].get('phase') == 'Running'}
-    if set(by_component) != {'operator', 'worker'}:
+    if len(pods) != 2 or set(by_component) != {'operator', 'worker'}:
         raise SystemExit('Require one operator and one worker')
     if any(not p['spec']['containers'][0]['image'].startswith('pifanctl-runtime-lab:') for p in pods):
         raise SystemExit('Require explicitly simulated images')
