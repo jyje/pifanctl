@@ -1,14 +1,17 @@
 # pifanctl v1 Release Acceptance Field Manual
 
-**Status:** Trial observations recorded on 2026-10-04 and live follow-ups on 2026-10-06
+**Status:** Live v1 alpha runtime and thermal observations recorded through 2026-10-06
 **Release target:** `1.0.0`
-- **Current production app:** `1.0.0-alpha.2`
+- **Active deployment:** alpha.3 operator and worker; alpha.2 temperature agents
 - **v1 candidate under review:** `1.0.0-alpha.3`
 **Decision:** Not ready for a stable release. Hardware-specific acceptance remains open.
 
-This manual records the MicroK8s trials, bounded temperature-response tests, measured evidence, and remaining release checks. The production pifanctl application remains on the alpha.2 shared-fan controller. The isolated alpha.3 probe below validates CRD admission and operator reconciliation without creating a worker or accessing GPIO. Neither run establishes electrical or RPM measurements. Values unavailable from Kubernetes are explicitly marked **Not recorded** instead of being guessed.
+This manual records MicroK8s trials, bounded temperature-response tests, measured evidence, and remaining release checks. The v1 alpha.3 CRD operator, worker, Fan, and CoolingZone are active for the shared rack. The 55°C test below passed its defined temperature-band stability criterion. A user visually confirmed normal fan rotation; RPM and electrical PWM measurements remain unavailable. Values unavailable from Kubernetes or direct measurements are explicitly marked **Not recorded** instead of being guessed.
 
-## 1. Current trial configuration
+## 1. Initial alpha.2 trial configuration (2026-10-04)
+
+This inventory documents the earlier alpha.2 load trial. The active alpha.3 CRD
+operator and shared-rack worker are recorded in Sections 9 and 10.
 
 | Item | Observed value |
 | --- | --- |
@@ -34,7 +37,10 @@ At the last recorded sample, `2026-10-04T13:23:40Z`, the Fan resource reported a
 
 ## 2. Filled hardware inventory
 
-The table describes the deployed shared-fan controller. The thermal workload test ran on member `raspi-41`, which has no local fan in this topology.
+The table describes the shared-fan controller during the initial 2026-10-04
+trial. That workload ran on member `raspi-41`, which has no local fan in this
+topology. The later alpha.3 55°C run targeted `raspi-51` and is recorded in
+Section 10.
 
 | Field | Recorded value |
 | --- | --- |
@@ -48,7 +54,7 @@ The table describes the deployed shared-fan controller. The thermal workload tes
 | Ground/reference and signal wiring | Not recorded; inspect the physical rack |
 | Independent hardware default and measured signal state | Not recorded; oscilloscope or logic-analyzer measurement required |
 | Tachometer/RPM | No RPM metric or tachometer record was available |
-| Visual rotation after the image update | Awaiting direct post-upgrade confirmation; normal rotation was confirmed before the image update |
+| Visual rotation after the image update | User visually confirmed normal fan rotation before the 2026-10-06 load run; continuous observation during the load was not recorded; tachometer/RPM was not measured |
 | Test member Node and UID | `raspi-41`; `cabfc25d-6991-427c-a941-3ff323fd6531`; Raspberry Pi 4 Model B label |
 
 `100%` is a requested PWM duty, not measured voltage, RPM, or proof that the fan has power. A floating input or GPIO HIGH must not be assumed to mean maximum cooling. No universal pull-up, pull-down, or polarity is prescribed. Verify a hardware safe default and independently powered fan circuit for the actual wiring. Software cannot correct fan-supply loss or mechanical failure.
@@ -87,7 +93,7 @@ The solid line is the configured rising curve. Markers are observed Fan status s
 
 ### Stability criteria and interpretation
 
-For a future acceptance run, call a temperature band stable only after the hottest member stays within a 1°C range for at least 120 seconds under a declared, repeatable workload, telemetry remains fresh, and requested duty has no unexplained increase. Record the fan RPM or direct visual rotation during the entire run. This trial did not satisfy that criterion. The member temperature readings varied independently, and the hottest member was outside the node receiving the test load. The recorded five-minute no-load interval began about seven minutes after the last CPU-load sample, so it is not evidence for the immediate cooling slope or time-to-stability.
+Call a temperature band stable only after the hottest member stays within a 1°C range for at least 120 seconds under a declared, repeatable workload, telemetry remains fresh, and requested duty has no unexplained increase. Record fan RPM when instrumentation is available, or direct visual rotation. The initial 2026-10-04 trial did not satisfy that criterion. The later alpha.3 55°C run passed it as recorded in Section 10. In the initial trial, the member temperatures varied independently, and the hottest member was outside the node receiving the test load. Its five-minute no-load interval began about seven minutes after the last CPU-load sample, so it is not evidence for the immediate cooling slope or time-to-stability.
 
 The live test ended below the 65°C abort guardrail, all temporary load Pods were removed, and no trial configuration was changed. The physical-fan-stop and recovery test has **not** been run. Its safe abort threshold is awaiting confirmation; the hardware default, RPM, and post-upgrade physical rotation also remain unverified.
 
@@ -95,8 +101,8 @@ The live test ended below the 65°C abort guardrail, all temporary load Pods wer
 
 | Scenario | Current evidence | Status |
 | --- | --- | --- |
-| Normal shared-rack regulation | Fan and CoolingZone Ready; Fan status follows the hottest available member samples and reports requested duty | Observed; not a stable thermal acceptance run |
-| Local node CPU load | Three capped CPU-load stages on `raspi-41`; see Section 3 and CSV | Partial; did not hold a target temperature |
+| Normal shared-rack regulation | Fan and CoolingZone Ready; Fan status follows the hottest available member samples and reports requested duty | Observed; 55°C stability target passed in Section 10 |
+| Local node CPU load | Capped stages on `raspi-41` plus a 1 vCPU capped run on `raspi-51`; see Sections 3, 7, and 10 | 55°C target passed; other target bands remain untested or partial |
 | Temperature missing or stale | The worker is configured for fail-safe 100%; no live telemetry fault was injected | Not run live; automated mock/API scenarios cover this behavior |
 | Operator heartbeat expires | Worker plan uses a 120-second heartbeat timeout and fail-safe 100%; no live heartbeat fault was injected | Not run live |
 | Physical shared fan stopped, then restored | No stop command or fan-power interruption was applied; actual fan circuit default is not yet documented | Not run; safety guardrail confirmation pending |
@@ -198,7 +204,30 @@ The GitOps change in [cluster PR #147](https://github.com/jyje/cluster/pull/147)
 
 The unforced observation confirms that the alpha.3 worker reconciles the real Fan and CoolingZone, collects rack-wide node temperatures, and changes its requested duty as the measured zone temperature changes. It is not a controlled load test or a stable target-temperature hold. The brief 65 C control reading during startup was followed by lower readings as the worker entered its control loop; it was not a staged thermal stimulus. No CPU load, fan-stop, fault injection, or target-curve modification was performed in this run.
 
-The requested duty is a software command, not a tachometer or airflow measurement. Direct physical fan rotation confirmation remains outstanding. Do not mark physical PWM/RPM verification or temperature-stabilization acceptance complete until the fan has been visually checked and a bounded test records its response under controlled load. Keep the archived v0 configuration available for rollback.
+The requested duty is a software command, not a tachometer or airflow measurement. The user visually confirmed normal rotation after the image update, but no tachometer/RPM or electrical waveform was measured. The bounded 55°C run and its remaining limitations are recorded in Section 10. Keep the archived v0 configuration available for rollback.
+
+## 10. 2026-10-06 alpha.3 55°C shared-rack stability run
+
+After the user confirmed that the physical shared fan was rotating normally, a bounded thermal-response run exercised the active v1 alpha.3 Fan and CoolingZone on MicroK8s. The worker controlled one shared fan on `raspi-40` for the four-member rack zone. A non-privileged Pod with a 1 vCPU limit was pinned to `raspi-51`, the hottest member at baseline. The fan remained enabled throughout. No Fan, CoolingZone, ConfigMap, Helm, or GPIO settings were changed.
+
+The load stage was capped at 180 seconds. The harness sampled the worker status and each Prometheus source-observation timestamp, accepted only fresh telemetry, and removed the load if the source became stale, the worker became unhealthy, or the rack maximum reached its 58°C soft stop or 62°C hard stop. The configured temperature band for this target was 54–56°C. The acceptance criterion was at least 120 continuous seconds within that band, with fresh source telemetry and no unexplained change in requested duty. A 65°C ceiling remained the absolute test guardrail.
+
+| Measurement | Result |
+| --- | --- |
+| Baseline hottest member | `raspi-51`, 49.05°C; 36.58% requested duty |
+| Applied load | 1 vCPU CPU limit on `raspi-51`; maximum load duration 180 seconds |
+| Load-stage peak | 57.3°C; requested duty peaked at 50.44%; neither the 58°C soft stop nor 62°C hard stop was reached |
+| Stable target interval | 23 fresh observations from 2026-10-06 14:22:48 UTC through 14:25:12 UTC; 144 seconds in the 54–56°C band |
+| Temperature and requested duty in the interval | 54.55–55.65°C; fixed at 50.44% requested duty (0 percentage-point span) |
+| Telemetry freshness | Maximum observed source age for the full run was 17.83 seconds; longest gap between stable-interval source observations was 10 seconds |
+| Physical fan observation | User confirmed normal rotation before the load; continuous observation during the run was not recorded. No RPM/tachometer measurement or electrical PWM waveform was recorded |
+| Cooldown and cleanup | After load removal, the hottest member returned to 47.4–49.05°C in the recorded cooldown window. The temporary load Pod was absent on follow-up. Operator and worker were Ready with zero restarts; Fan and CoolingZone were Ready. |
+
+This run **passes the 55°C temperature-band stability criterion** for the tested alpha.3 runtime and rack configuration. It does not prove measured RPM, airflow, PWM voltage/polarity, or fan-failure detection. The initial rise to 57.3°C and the later sensor readings are part of the observed response, not a claim that the entire load stage stayed at the target. Only the 55°C target was tested with this criterion; 50°C and 60°C target runs remain open. The cooldown samples demonstrate a return toward baseline but are not a calibrated cooling-capacity or time-to-stability measurement.
+
+The retained [CSV](thermal-stability-55c-2026-10-06.csv) contains host sample time, source-observation time, each member temperature, hottest member, control temperature, requested duty, source age, and worker-heartbeat age. SHA-256: `071f9ed3a9833e618ac43c0f393a442c624133aef7c20e8cd0ce2e56dbcf8a9b`. Regenerate the [figure](figures/thermal-stability-55c-2026-10-06.png) and this PDF with `python scripts/build_release_acceptance.py`.
+
+![Measured 55°C shared-rack response and requested fan duty](figures/thermal-stability-55c-2026-10-06.png)
 
 Do not label `1.0.0` stable until every applicable release gate has evidence for the exact release candidate. Hardware or topologies not tested must be listed as unsupported. Preserve the v0 rollback archive until the release decision is recorded.
 

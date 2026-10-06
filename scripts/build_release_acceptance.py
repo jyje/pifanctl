@@ -30,6 +30,7 @@ from reportlab.platypus import (
 ROOT = Path(__file__).resolve().parents[1]
 DOC = ROOT / "docs/v1/release-acceptance.md"
 CSV = ROOT / "docs/v1/thermal-load-observations.csv"
+STABILITY_CSV = ROOT / "docs/v1/thermal-stability-55c-2026-10-06.csv"
 FIGURES = ROOT / "docs/v1/figures"
 PDF = ROOT / "docs/v1/release-acceptance.pdf"
 
@@ -45,6 +46,11 @@ PINK = "#ed3158"
 
 def rows():
     with CSV.open(newline="") as stream:
+        return list(csv.DictReader(stream))
+
+
+def stability_rows():
+    with STABILITY_CSV.open(newline="") as stream:
         return list(csv.DictReader(stream))
 
 
@@ -231,6 +237,70 @@ def build_curve_figure(data):
     render_svg("thermal-control-curve", parts)
 
 
+def build_55c_stability_figure(data):
+    """Plot the alpha.3 bounded 55 C trial from its timestamped source samples."""
+    title = "Measured 55°C shared-rack response"
+    subtitle = "Fresh source observations from the v1 worker; requested duty is a command, not measured RPM or PWM voltage."
+    parts = svg_shell(title, subtitle)
+    left, top, plot_w, plot_h = 120, 135, 1110, 530
+    right, bottom = left + plot_w, top + plot_h
+    t_min, t_max = 45.0, 60.0
+    duty_max = 60.0
+    times = [float(row["elapsed_s"]) for row in data]
+    e_min, e_max = min(times), max(times)
+
+    def x_at(value):
+        return left + plot_w * (float(value) - e_min) / (e_max - e_min)
+
+    def y_temp(value):
+        return bottom - plot_h * (float(value) - t_min) / (t_max - t_min)
+
+    def y_duty(value):
+        return bottom - plot_h * float(value) / duty_max
+
+    for value in (45, 48, 51, 54, 57, 60):
+        y = y_temp(value)
+        parts.append(svg_line(left, y, right, y, GRID, 1))
+        parts.append(svg_text(left - 18, y + 5, f"{value}°C", "tick", "end"))
+    for value in (0, 15, 30, 45, 60):
+        y = y_duty(value)
+        parts.append(svg_text(right + 38, y + 5, f"{value}%", "tick", "start"))
+    for value in (0, 60, 120, 180, 240, 300):
+        x = x_at(value)
+        parts.append(svg_line(x, top, x, bottom, "#edf0f5", 1))
+        parts.append(svg_text(x, bottom + 25, f"{value}s", "tick"))
+
+    load_rows = [row for row in data if row["phase"] == "load-1cpu"]
+    cooldown_rows = [row for row in data if row["phase"] == "cooldown"]
+    if load_rows and cooldown_rows:
+        x0, x1 = x_at(load_rows[0]["elapsed_s"]), x_at(load_rows[-1]["elapsed_s"])
+        parts.append(f'<rect x="{x0:.1f}" y="{top}" width="{x1-x0:.1f}" height="{plot_h}" fill="#f8e9df" opacity="0.65"/>')
+        parts.append(svg_text((x0+x1)/2, top+22, "1 vCPU capped load", "small"))
+    band_top, band_bottom = y_temp(56), y_temp(54)
+    parts.append(f'<rect x="{left}" y="{band_top:.1f}" width="{plot_w}" height="{band_bottom-band_top:.1f}" fill="#e6f4f1" opacity="0.8"/>')
+
+    parts.extend([svg_line(left, top, left, bottom, INK, 2), svg_line(left, bottom, right, bottom, INK, 2)])
+    parts.append(svg_text((left + right) / 2, bottom + 62, "Elapsed time from first sample", "label"))
+    parts.append(svg_text(30, top + plot_h / 2, "Hottest member", "label"))
+    parts[-1] = parts[-1].replace(f'x="30.0" y="{top + plot_h / 2:.1f}"', f'x="30.0" y="{top + plot_h / 2:.1f}" transform="rotate(-90 30 {top + plot_h / 2:.1f})"')
+
+    hottest_points = " ".join(f'{x_at(r["elapsed_s"]):.1f},{y_temp(r["hottest_c"]):.1f}' for r in data)
+    duty_points = " ".join(f'{x_at(r["elapsed_s"]):.1f},{y_duty(r["requested_duty_percent"]):.1f}' for r in data)
+    parts.append(f'<polyline points="{hottest_points}" fill="none" stroke="{BLUE}" stroke-width="3" stroke-linejoin="round"/>')
+    parts.append(f'<polyline points="{duty_points}" fill="none" stroke="{PINK}" stroke-width="3" stroke-linejoin="round"/>')
+    for row in data:
+        parts.append(f'<circle cx="{x_at(row["elapsed_s"]):.1f}" cy="{y_temp(row["hottest_c"]):.1f}" r="2.7" fill="{BLUE}"/>')
+
+    parts.append(svg_line(300, 755, 335, 755, BLUE, 4))
+    parts.append(svg_text(345, 760, "Hottest zone member", "legend", "start"))
+    parts.append(svg_line(580, 755, 615, 755, PINK, 4))
+    parts.append(svg_text(625, 760, "Requested fan duty", "legend", "start"))
+    parts.append(f'<rect x="900" y="746" width="22" height="16" fill="#e6f4f1"/>')
+    parts.append(svg_text(932, 760, "54–56°C acceptance band", "legend", "start"))
+    parts.append(svg_text(720, 805, "23 fresh samples held 54.55–55.65°C for 144 seconds at a constant 50.44% request.", "small"))
+    render_svg("thermal-stability-55c-2026-10-06", parts)
+
+
 def inline_markup(text):
     value = html.escape(text, quote=False)
     value = re.sub(r"`([^`]+)`", r'<font name="Courier">\1</font>', value)
@@ -268,7 +338,7 @@ def build_pdf():
         if image_match:
             image_path = (DOC.parent / image_match.group(1)).resolve()
             img = Image(str(image_path))
-            max_height = 90 * mm if image_path.name == "thermal-live-2026-10-06.png" else 122 * mm
+            max_height = 90 * mm if image_path.name == "thermal-live-2026-10-06.png" else 112 * mm
             img._restrictSize(available_w, max_height)
             story.extend([Spacer(1, 3 * mm), img, Spacer(1, 3 * mm)])
             i += 1
@@ -363,8 +433,9 @@ def main():
     data = rows()
     build_measured_figure(data)
     build_curve_figure(data)
+    build_55c_stability_figure(stability_rows())
     build_pdf()
-    print(f"Wrote {PDF.relative_to(ROOT)} and two PNG/SVG thermal figures from {len(data)} observations.")
+    print(f"Wrote {PDF.relative_to(ROOT)} and thermal figures from {len(data)} historical and {len(stability_rows())} 55 C observations.")
 
 
 if __name__ == "__main__":
