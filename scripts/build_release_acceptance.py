@@ -9,6 +9,7 @@ import re
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
+from verify_thermal_acceptance import evaluate
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
@@ -297,7 +298,10 @@ def build_55c_stability_figure(data):
     parts.append(svg_text(625, 760, "Requested fan duty", "legend", "start"))
     parts.append(f'<rect x="900" y="746" width="22" height="16" fill="#e6f4f1"/>')
     parts.append(svg_text(932, 760, "54–56°C acceptance band", "legend", "start"))
-    parts.append(svg_text(720, 805, "23 fresh samples held 54.55–55.65°C for 144 seconds at a constant 50.44% request.", "small"))
+    result = evaluate(data)
+    parts.append(svg_text(720, 805,
+                          f'Target band: {result["target_band_seconds"]:g}s; 1°C maximum span: {result["strict_stability_seconds"]:g}s; required: 120s. Acceptance remains open.',
+                          "small"))
     render_svg("thermal-stability-55c-2026-10-06", parts)
 
 
@@ -421,7 +425,7 @@ def build_pdf():
         canvas.drawString(17 * mm, page_h - 6.7 * mm, "PIFANCTL / V1 RELEASE ACCEPTANCE")
         canvas.setFillColor(colors.HexColor(MUTED))
         canvas.setFont("Helvetica", 7.5)
-        canvas.drawString(17 * mm, 8 * mm, "FIELD MANUAL  |  UPDATED 2026-10-06  |  MEASURED TRIAL EVIDENCE")
+        canvas.drawString(17 * mm, 8 * mm, "FIELD MANUAL  |  UPDATED 2026-10-07  |  MEASURED TRIAL EVIDENCE")
         canvas.drawRightString(page_w - 17 * mm, 8 * mm, str(document.page))
         canvas.restoreState()
 

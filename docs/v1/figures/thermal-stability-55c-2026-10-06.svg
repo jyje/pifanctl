@@ -108,5 +108,5 @@
 <text class="legend" x="625.0" y="760.0" text-anchor="start">Requested fan duty</text>
 <rect x="900" y="746" width="22" height="16" fill="#e6f4f1"/>
 <text class="legend" x="932.0" y="760.0" text-anchor="start">54–56°C acceptance band</text>
-<text class="small" x="720.0" y="805.0" text-anchor="middle">23 fresh samples held 54.55–55.65°C for 144 seconds at a constant 50.44% request.</text>
+<text class="small" x="720.0" y="805.0" text-anchor="middle">Target band: 144s; 1°C maximum span: 75s; required: 120s. Acceptance remains open.</text>
 </svg>

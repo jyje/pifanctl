@@ -1,0 +1,12 @@
+{
+  "invalid_observations": 0,
+  "load_observations": 29,
+  "maximum_duty_span_percentage_points": 5.0,
+  "maximum_temperature_span_celsius": 1.0,
+  "member_source_identity_recorded": false,
+  "required_duration_seconds": 120.0,
+  "strict_stability_seconds": 75.0,
+  "target_band_seconds": 144.0,
+  "target_celsius": 55.0,
+  "thermal_stability_passed": false
+}
