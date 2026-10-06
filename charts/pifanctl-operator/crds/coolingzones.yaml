@@ -4,6 +4,7 @@ metadata:
   name: coolingzones.pifanctl.jyje.online
   annotations:
     pifanctl.jyje.online/design-status: implemented
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
 spec:
   group: pifanctl.jyje.online
   scope: Cluster

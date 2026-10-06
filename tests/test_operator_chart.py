@@ -168,6 +168,14 @@ def test_stable_and_alpha_crd_versions_have_identical_contracts():
         assert {k: v for k, v in versions[0].items() if k not in {'name', 'storage'}} == {k: v for k, v in versions[1].items() if k not in {'name', 'storage'}}
 
 
+def test_argocd_retains_shared_crds():
+    crds = [obj for obj in render() if obj['kind'] == 'CustomResourceDefinition']
+    assert len(crds) == 2
+    for obj in crds:
+        options = set(obj['metadata']['annotations']['argocd.argoproj.io/sync-options'].split(','))
+        assert options == {'Prune=false', 'Delete=false'}
+
+
 def test_worker_mounts_lock_at_direct_path_and_preserves_host_lock():
     owner = {'apiVersion': 'pifanctl.jyje.online/v1', 'kind': 'Fan', 'name': 'a', 'uid': 'uid'}
     d = worker_deployment('ns', 'operator', 'pi-a', 'node-uid', 'pi-a', 'config', 'image', owner)
