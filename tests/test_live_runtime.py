@@ -4,7 +4,7 @@ import sys
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from verify_live_runtime import telemetry
+from verify_live_runtime import main, telemetry
 
 
 def series(node, value):
@@ -27,3 +27,14 @@ def test_member_freshness_uses_source_clock_not_query_evaluation_time():
 def test_missing_hot_and_future_sources_are_rejected(values, clocks):
     with pytest.raises(RuntimeError):
         telemetry(values, clocks, ['pi'], 100)
+
+
+def test_runtime_report_is_never_overwritten_before_api_access(monkeypatch, tmp_path):
+    report = tmp_path / 'existing.json'
+    report.write_text('original')
+    monkeypatch.setattr(sys, 'argv', ['verify', '--context', 'microk8s', '--application', 'app',
+                                     '--revision', 'a' * 40, '--image', 'example', '--digest', 'example',
+                                     '--baseline', str(tmp_path / 'unused'), '--report', str(report)])
+    with pytest.raises(SystemExit, match='already exists'):
+        main()
+    assert report.read_text() == 'original'

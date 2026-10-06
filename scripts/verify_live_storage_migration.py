@@ -9,6 +9,7 @@ from copy import deepcopy
 from datetime import datetime, timezone
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import time
@@ -88,6 +89,9 @@ def main():
     args = p.parse_args()
     if not args.execute or args.context != 'microk8s':
         raise SystemExit('Explicit --execute and --context microk8s are required')
+    if args.report.exists():
+        raise SystemExit('Report already exists: retain it and choose a new path')
+    os.umask(0o077)
     prefix = ['kubectl', '--context', args.context, '--request-timeout=20s']
 
     def cmd(*parts, body=None, check=True):

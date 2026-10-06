@@ -35,7 +35,7 @@ gates below. Local and CI results alone do not establish electrical cooling safe
 - Implementation branch: `feat/v1-topology-runtime`, [PR #41](https://github.com/jyje/pifanctl/pull/41), merged into `main` at `eb77c0c`
 - Coverage CI follow-up: issue #42 completed by [PR #43](https://github.com/jyje/pifanctl/pull/43), merged into PR #41 at `6dc6bfa` and included in `main` at `eb77c0c` on 2026-10-04.
 - Coverage badge assets: [PR #44](https://github.com/jyje/pifanctl/pull/44), merged into `main`; generated assets live under `assets/coverage/`.
-- Candidate API: `pifanctl.jyje.online/v1`, cluster scoped Fan and CoolingZone, with served `v1alpha1` compatibility. Live MicroK8s remains on its alpha baseline until deployment verification.
+- Candidate API: `pifanctl.jyje.online/v1`, cluster scoped Fan and CoolingZone, with served `v1alpha1` compatibility. Live MicroK8s serves both APIs with v1 storage and the verified alpha.6 Python 3.12 compatibility operator/worker; alpha.2 temperature agents remain reused.
 - Diagrams: shared fans and one fan per board, each with normal, hot, missing-data, and expired-heartbeat scenarios in English and Korean locale files
 
 ## Pending checklist
@@ -63,12 +63,12 @@ targets, RPM, electrical measurements, and failure acceptance remain open.
 - [x] Verify disposable-cluster Argo CD ordering, active worker reconciliation, and finalizer/deletion lifecycle for active hardware claims: seventeen checks passed through real Argo CD 3.5.2 and Kubernetes 1.30.0 with explicitly simulated GPIO/thermal I/O. This verifies declared runtime claims and staged background pruning, not physical hardware behavior. See `docs/v1/gitops-lifecycle.md`.
   - [x] Verify active worker software lifecycle using explicitly simulated GPIO/thermal I/O: fourteen real Kubernetes checks passed, including two fans per worker, Node UID/credential isolation, sensor loss/recovery and cooperative Fan/CoolingZone deletion. See `docs/v1/runtime-lifecycle.md`. Hardware behavior remains open; Argo ordering is now verified separately above.
 - [x] Promote the candidate CRD API to `v1`, retaining served `v1alpha1` with identical schemas. Verified complete resource rewrites, UID/spec/finalizer/status preservation and reverse storage rollback in kind; nineteen real dual-version admission/lifecycle checks passed. See `docs/v1/api-migration.md` and its evidence reports.
-- [ ] Verify the candidate operator/worker image with the stable API, production migration/rollback, minimum Kubernetes version, and live GitOps instance conversion before stable release. MicroK8s storage promotion/reverse rollback and alpha.6 runtime/image rollback have passed; final candidate restoration is pending.
+- [x] Verify the candidate operator/worker image with the stable API, production storage migration/reverse rollback, minimum Kubernetes version and live GitOps instance conversion. Alpha.6 candidate and alpha.3 archived-image holds passed, then alpha.6 and self-heal were restored with a further 120.6-second healthy hold. This closes software migration for the current rack, not full v0 topology or supported-hardware rollback acceptance. See `docs/v1/live-migration.md`.
   - [x] Verify declared Kubernetes 1.30 minimum software compatibility: nineteen real API checks and fourteen active runtime checks passed on 1.30.0 with explicit simulated I/O. See `docs/v1/minimum-kubernetes.md`.
   - [x] Verify the alpha.6 Python 3.12 compatibility image can read the live alpha API and build a valid four-node topology plan with TLS verification enabled and no GPIO import. This read-only preflight does not pass live runtime/migration acceptance.
   - [x] Exercise live storage promotion and reverse rollback, preserving CRD/resource UIDs and the active worker. Complete v1 re-promotion passed with explicit declaration/history verification.
   - [x] Verify actual alpha.6 runtime for 121.6 seconds and archived alpha.3 image rollback for 62.6 seconds with direct worker and per-member source clocks. These are runtime holds, not thermal stability tests.
-  - [ ] Restore candidate image and automatic self-heal, then verify another source-aware healthy hold. Cluster PR #150 is pending.
+  - [x] Restore candidate image and automatic self-heal, then verify another source-aware healthy hold: 120.6 seconds, 22 observations. Cluster PR #150 merged at `fbdb9d2`; source-matched Argo Synced/Healthy, v1 storage and one worker verified.
 - [ ] Complete the hardware, failure, migration/rollback, and fleet-scale acceptance gates below.
 - [ ] Release app `1.0.0` and operator chart `1.0.0` after all applicable gates pass; keep later app/chart versions independent.
 
@@ -242,8 +242,8 @@ operator safety still need the separate v1 release acceptance work above.
   digest, single-worker/credential/host-lock checks and direct worker heartbeat.
   Each member's original Prometheus sample time is checked rather than the
   instant query evaluation timestamp.
-- 358 full Python 3.13.2 tests passed without skips; statement coverage 96.29%,
-  branch coverage 89.81%. Related Python 3.10 checks: 34 passed.
+- 368 full Python 3.13.2 tests passed without skips; statement coverage 96.29%,
+  branch coverage 89.81%. Related Python 3.10 checks: 44 passed.
 - Initial stale preflights made no mutations. A later successful storage rewrite
   failed its immediate 20-second published-heartbeat check by 0.385 seconds.
   That report stays failed. CR status publication is throttled to 30 seconds;
@@ -253,4 +253,14 @@ operator safety still need the separate v1 release acceptance work above.
   query reached the worker's exact `/status` route. The read-only observer now
   bounds its subprocess without adding that proxy query. Failed reports remain
   excluded. Candidate and archived-image holds then passed.
-- Final return-to-candidate and hardware/thermal/fleet gates remain pending.
+- Candidate return and self-heal restoration passed through cluster PR #150 and a further 120.6-second hold. Hardware/thermal/fleet and full v0 topology rollback gates remain open.
+- Tooling committed as `b82b509`. Cluster preparation #148, runtime rollback #149 and restoration #150 passed CI and merged. Public evidence, excluded attempts and the updated manual are recorded in the next documentation commit.
+
+- Automatic approval review rejected pushing complete live Kubernetes snapshots
+  to GitHub because they expose internal infrastructure identifiers and config.
+  Public evidence now contains anonymous measurements and check results only;
+  full UID/IP/configuration snapshots remain in the checksum-verified private
+  archive. Added a reproducible public projection and privacy regression tests.
+- Public projection and private/non-overwriting report guards passed eight
+  privacy tests and two overwrite-refusal tests. The complete suite passed
+  368 tests; statement/branch coverage remains 96.29%/89.81%.

@@ -3,6 +3,7 @@
 import argparse
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import subprocess
 import time
@@ -39,6 +40,9 @@ def main():
     args = p.parse_args()
     if args.context != 'microk8s' or args.duration < 60:
         raise SystemExit('Use explicit microk8s context and at least 60 seconds')
+    if args.report.exists():
+        raise SystemExit('Report already exists: retain it and choose a new path')
+    os.umask(0o077)
     # kubectl request-timeout becomes a query argument on the Pod proxy and
     # changes the worker's exact /status path. Bound the subprocess instead.
     prefix = ['kubectl', '--context', args.context]

@@ -113,3 +113,14 @@ def test_reverse_restore_requires_verified_alpha_archive(tmp_path, change):
             restore_definitions(tmp_path, originals)
     else:
         assert restore_definitions(tmp_path, originals) == crds
+
+
+def test_storage_report_is_never_overwritten_before_api_access(monkeypatch, tmp_path):
+    report = tmp_path / 'existing.json'
+    report.write_text('original')
+    monkeypatch.setattr(sys, 'argv', ['verify', '--context', 'microk8s', '--application', 'app',
+                                     '--fan', 'f', '--zone', 'z', '--archive', str(tmp_path / 'archive'),
+                                     '--report', str(report), '--execute'])
+    with pytest.raises(SystemExit, match='already exists'):
+        main()
+    assert report.read_text() == 'original'
