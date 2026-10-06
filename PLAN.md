@@ -76,8 +76,9 @@ targets, RPM, electrical measurements, and failure acceptance remain open.
 - [x] Verify the first successful main line and branch badge publication under `assets/coverage/`.
 - [x] Record direct visual confirmation of normal shared-fan rotation for the active alpha.3 deployment. The user confirmed continuous blade rotation; RPM, waveform, and stop/restart behavior remain unmeasured. See Section 12 of the acceptance manual.
 - [ ] Measure real Pi 4 GPIO and Pi 5 sysfs wiring, channel, initialization and shutdown PWM behavior.
-- [ ] Complete 50°C and 60°C controlled-load stability runs; record requested duty and any available RPM measurement, plus immediate no-load cooldown below the 65°C stop limit.
-- [ ] Complete the 55°C controlled-load stability run. Re-evaluation of the recorded response found only 75 seconds within the required 1°C total range; 144 seconds within the broader 54–56°C band does not pass the 120-second stability criterion. Preserve each member source timestamp in the next run. Visual rotation was confirmed before the test; RPM remains unmeasured. See the [acceptance record](docs/v1/release-acceptance.md#10-2026-10-06-alpha3-55c-shared-rack-stability-run).
+- [x] Pass the existing 50 C fixed-load observation under the approved `v1-3c` policy: 140.24 seconds within 49-52 C, measured span 2.75 C, duty 35.04%, complete acquisition clocks and cooldown. This is a post-hoc reassessment, not a new trial. See Section 16.
+- [ ] Complete the 60 C controlled-load stability run under `v1-3c`; record requested duty, complete source clocks and cooldown. RPM remains a separate instrumentation gate.
+- [ ] Complete the 55 C controlled-load stability run under `v1-3c`. The old record lacks per-member acquisition clocks and cannot pass certification under either policy. Its original 1 C failure remains archived. Preserve each member source timestamp in the next run. Visual rotation was confirmed before the test; RPM remains unmeasured. See the [acceptance record](docs/v1/release-acceptance.md#10-2026-10-06-alpha3-55c-shared-rack-stability-run).
 - [ ] Measure fan behavior during process kill, Node reboot, power loss, and network partition.
 - [ ] Complete supported hardware migration and rollback acceptance across the documented configurations.
 - [ ] Measure status, Prometheus, and API load at the supported fleet size.
@@ -123,7 +124,7 @@ and [55°C stability record](docs/v1/release-acceptance.md#10-2026-10-06-alpha3-
 ## Release verification sequence (2026-10-07)
 
 1. Recheck PRs, CI, source revisions, and the live single-writer deployment.
-2. Derive every thermal verdict from retained samples with `scripts/verify_thermal_acceptance.py`. Require 120 seconds in the target band, no more than 1°C total variation, fresh per-member source timestamps, and at most 5 percentage points of duty variation. Preserve failed results.
+2. Derive every thermal verdict from retained samples with `scripts/verify_thermal_acceptance.py`. Use approved `v1-3c`: 120 seconds within target - 1 C through target + 2 C, at most 3 C total variation, complete fresh per-member acquisition timestamps, and at most 5 percentage points of duty variation. Preserve the original `legacy-1c` evaluator and failed results.
 3. Establish a disposable Kubernetes cluster using a separate kubeconfig. Validate CRD admission/defaulting/CEL rejection, chart ordering, reconciliation, finalizers, and deletion without physical GPIO access.
 4. Remove unsupported standalone CLI routes, then validate the Kubernetes CLI and worker entry points. Promote the stable CRD API only after a tested alpha-to-stable migration path exists.
 5. Repeat controlled thermal targets with bounded load, server-side deadlines, temperature and freshness guards, guaranteed cleanup, and immediate cooldown capture.
@@ -285,8 +286,9 @@ maintainer. Raw infrastructure snapshots remain private.
   duty-span criteria using independent, advancing per-member source clocks.
 - [x] Publish the first measured graph and pass/fail result in the acceptance
   manual, anonymous CSV/JSON and visually reviewed 15-page PDF.
-- [ ] Repeat separately bounded 50 C, 55 C and 60 C scenarios after reviewing
-  the preceding failed result; do not weaken the original acceptance criteria.
+- [ ] Complete separately bounded 55 C and 60 C scenarios under the approved
+  `v1-3c` policy. Repeat 50 C after any configuration/runtime change that
+  invalidates the recorded observation; retain historical legacy verdicts.
 - [ ] Recheck CI and merge each reviewable concern; update the acceptance PDF
   without declaring stable v1 until all remaining hardware gates pass.
 
@@ -308,3 +310,44 @@ maintainer. Raw infrastructure snapshots remain private.
 - Migration PR #60 merged as `0ad658f`; all PR checks including ARC ARM64 and
   Codecov passed. Main CI `37533007374` succeeded. Collector PR #61 records
   the next concern; completion and release readiness are separate decisions.
+
+### Approved three-degree thermal policy
+
+The maintainer approved the 3 C stability policy after reviewing the original
+50 C observations. The active observation interval is target - 1 C through
+target + 2 C, inclusive (49-52 C for the 50 C scenario). Maximum total span is
+3 C. Duration remains 120 continuous source-clock seconds with at least eight
+observations; duty span remains at most 5 percentage points. Sensor freshness,
+worker heartbeat, identity checks and independent thermal cutoffs are unchanged.
+This approval changes the measurement policy, not the deployed control curve.
+
+- [x] Version the active policy and preserve the original 1 C evaluator as an
+  explicit legacy policy. Add fixed-boundary, duration, gap, stale-source and
+  original-evidence regression tests.
+- [x] Apply the active policy to future collection/publication. Keep the old
+  JSON/CSV/figures unchanged and publish a separately named post-hoc reassessment.
+- [x] Verify the 50 C record under both policies: original failure and approved
+  3 C pass must remain independently reproducible from the same source CSV.
+- [x] Update active acceptance guidance, PLAN, report and figures. Preserve
+  historical decisions and missing-data limitations for earlier trials.
+- [x] Regenerate and visually inspect the 17-page PDF using the PDF skill.
+- [x] Run complete/local compatibility tests, commit each concern and create
+  [PR #62](https://github.com/jyje/pifanctl/pull/62).
+- [x] Verify source-policy CI `37545369879` on `915c87c`: Python 3.10-3.14,
+  chart/version/workflow checks, ARC ARM64 image and Codecov project/patch all
+  passed. The final cover-only rerun and merge state are tracked in PR #62;
+  clean-main synchronization is verified in the final handoff report.
+
+- Policy verification: 408 full tests and 54 focused Python 3.10 tests passed.
+  New and original verdicts are separately reproducible. The reassessment CSV
+  is byte-identical to the original; original JSON, SVG and PNG also remain
+  unchanged. Section 16 and its figure were visually inspected, along with
+  the updated guidance, historical verdict and release-decision pages.
+
+- Added a duration-boundary regression: rounding a 119.999-second interval
+  to 120 seconds must not certify the approved policy. Active acceptance
+  compares the unrounded duration; original legacy verdicts remain unchanged.
+
+- Final duration-boundary verification: 409 complete tests and 55 focused
+  Python 3.10 tests passed without skips. The approved 50 C verdict remains
+  140.24 seconds; only display values are rounded.

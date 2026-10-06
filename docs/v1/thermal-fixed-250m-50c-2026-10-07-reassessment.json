@@ -1,0 +1,51 @@
+{
+  "visibility": "public_anonymous_measurements",
+  "full_originals_excluded": true,
+  "target_celsius": 50,
+  "cpu_millicores": 250,
+  "collector_passed": true,
+  "cleanup_verified": true,
+  "cooldown_recorded": true,
+  "acceptance": {
+    "target_celsius": 50,
+    "required_duration_seconds": 120.0,
+    "maximum_temperature_span_celsius": 3.0,
+    "maximum_duty_span_percentage_points": 5.0,
+    "load_observations": 27,
+    "invalid_observations": 0,
+    "target_band_seconds": 140.24,
+    "strict_stability_seconds": 0.0,
+    "member_source_identity_recorded": true,
+    "thermal_stability_passed": true,
+    "policy": "v1-3c",
+    "target_band_lower_celsius": 49,
+    "target_band_upper_celsius": 52,
+    "stability_seconds": 140.24,
+    "stability_seconds_unrounded": 140.2358160018921,
+    "minimum_observations": 8,
+    "maximum_source_gap_seconds": 20,
+    "legacy_target_band_seconds": 50.21,
+    "legacy_strict_stability_seconds": 0.0
+  },
+  "load_stop_reason": "local_guard_or_deadline",
+  "started_at_utc": "2026-10-06T21:19:10.673954+00:00",
+  "finished_at_utc": "2026-10-06T21:24:33.176043+00:00",
+  "reassessment": {
+    "kind": "post_hoc_policy_reassessment",
+    "original_evidence_file": "thermal-fixed-250m-50c-2026-10-07.json",
+    "original_policy": "legacy-1c",
+    "approved_policy": "v1-3c",
+    "original_thermal_stability_passed": false,
+    "original_strict_stability_seconds": 0.0,
+    "source_csv_sha256": "7d02e8aeac6171595744553d5cd4e50bca23a44f0afef8a8aaf8c54b7d482328",
+    "original_measurements_unchanged": true,
+    "approval_basis": "Maintainer approved target - 1 C through target + 2 C after reviewing this trial."
+  },
+  "load_execution": {
+    "reason": "local_temperature_cutoff",
+    "elapsed_seconds": 155.57362729799934,
+    "cpu_seconds": 38.717259316,
+    "average_consumed_vcpu": 0.24886775469879338
+  },
+  "load_process_cpu_seconds_at_intermediate_observation": 21.02
+}

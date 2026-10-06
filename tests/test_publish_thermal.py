@@ -49,3 +49,37 @@ def test_execution_rejects_unsupported_or_invalid_counters(reason, elapsed, cpu)
     from publish_thermal_evidence import execution
     with pytest.raises(ValueError):
         execution(json.dumps({'reason': reason, 'elapsed_seconds': elapsed, 'cpu_seconds': cpu}))
+
+
+def test_reassessment_uses_identical_original_measurements():
+    import csv
+    from publish_thermal_evidence import reassessment
+    path = Path(__file__).resolve().parents[1] / 'docs/v1/thermal-fixed-250m-50c-2026-10-07.json'
+    with path.with_suffix('.csv').open(newline='') as stream:
+        rows = project(list(csv.DictReader(stream)))
+    result = reassessment(path, rows, 50)
+    assert result['original_measurements_unchanged']
+    assert result['original_thermal_stability_passed'] is False
+    assert result['approved_policy'] == 'v1-3c'
+    assert len(result['source_csv_sha256']) == 64
+    altered = [dict(r) for r in rows]
+    altered[0]['requested_duty_percent'] += 1
+    with pytest.raises(ValueError, match='identical'):
+        reassessment(path, altered, 50)
+    with pytest.raises(ValueError, match='identical'):
+        reassessment(path, rows, 55)
+
+
+def test_reassessment_refuses_an_altered_original_verdict(tmp_path):
+    import csv
+    from publish_thermal_evidence import reassessment
+    original = Path(__file__).resolve().parents[1] / 'docs/v1/thermal-fixed-250m-50c-2026-10-07.json'
+    path = tmp_path / 'original.json'
+    value = json.loads(original.read_text())
+    value['acceptance']['thermal_stability_passed'] = True
+    path.write_text(json.dumps(value))
+    path.with_suffix('.csv').write_bytes(original.with_suffix('.csv').read_bytes())
+    with path.with_suffix('.csv').open(newline='') as stream:
+        rows = project(list(csv.DictReader(stream)))
+    with pytest.raises(ValueError, match='not reproducible'):
+        reassessment(path, rows, 50)

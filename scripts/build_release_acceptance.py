@@ -298,7 +298,7 @@ def build_55c_stability_figure(data):
     parts.append(svg_text(625, 760, "Requested fan duty", "legend", "start"))
     parts.append(f'<rect x="900" y="746" width="22" height="16" fill="#e6f4f1"/>')
     parts.append(svg_text(932, 760, "54–56°C acceptance band", "legend", "start"))
-    result = evaluate(data)
+    result = evaluate(data, policy="legacy-1c")
     parts.append(svg_text(720, 805,
                           f'Target band: {result["target_band_seconds"]:g}s; 1°C maximum span: {result["strict_stability_seconds"]:g}s; required: 120s. Acceptance remains open.',
                           "small"))
@@ -323,7 +323,7 @@ def build_pdf():
     styles.add(ParagraphStyle(name="ManualBullet", parent=styles["BodyText"], fontName="Helvetica", fontSize=8.4, leading=11, leftIndent=12, firstLineIndent=-8, bulletIndent=0, textColor=colors.HexColor("#293345"), spaceAfter=3))
     styles.add(ParagraphStyle(name="ManualTable", parent=styles["BodyText"], fontName="Helvetica", fontSize=7.1, leading=9, textColor=colors.HexColor("#263145")))
     styles.add(ParagraphStyle(name="ManualTableHead", parent=styles["BodyText"], fontName="Helvetica-Bold", fontSize=7.2, leading=9, textColor=colors.white))
-    styles.add(ParagraphStyle(name="ManualCoverNote", parent=styles["BodyText"], fontName="Helvetica-Bold", fontSize=9, leading=12, textColor=colors.HexColor("#a41d3c"), backColor=colors.HexColor("#fff0f3"), borderColor=colors.HexColor(PINK), borderWidth=0.7, borderPadding=7, spaceBefore=5, spaceAfter=10))
+    styles.add(ParagraphStyle(name="ManualCoverNote", parent=styles["BodyText"], fontName="Helvetica-Bold", fontSize=9, leading=12, textColor=colors.HexColor("#a41d3c"), backColor=colors.HexColor("#fff0f3"), borderColor=colors.HexColor(PINK), borderWidth=0.7, borderPadding=7, spaceBefore=12, spaceAfter=17))
 
     doc = SimpleDocTemplate(str(PDF), pagesize=A4, leftMargin=17 * mm, rightMargin=17 * mm, topMargin=18 * mm, bottomMargin=17 * mm, title="pifanctl v1 Release Acceptance Field Manual", author="pifanctl project", subject="Measured trial and hardware release acceptance")
     available_w = A4[0] - doc.leftMargin - doc.rightMargin
