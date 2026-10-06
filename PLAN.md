@@ -351,3 +351,18 @@ This approval changes the measurement policy, not the deployed control curve.
 - Final duration-boundary verification: 409 complete tests and 55 focused
   Python 3.10 tests passed without skips. The approved 50 C verdict remains
   140.24 seconds; only display values are rounded.
+
+### Remaining acceptance campaign (2026-10-07)
+
+- [ ] Collect a fresh 55 C fixed-load trial with complete member acquisition
+  clocks, independent local cutoff, unchanged fan settings and immediate cooldown.
+- [ ] Review the 55 C trace before selecting a separately bounded 60 C trial.
+  Preserve failed attempts and actual load execution evidence.
+- [ ] Measure the disposable runtime lab at declared fleet sizes. Separate
+  measured API/status behavior from simulated sensor/GPIO and real hardware.
+- [ ] Exercise recoverable software faults in the disposable lab and record
+  failure detection, failsafe commands, recovery and cooperative cleanup.
+- [ ] Supplement anonymized CSV/JSON/figures and the acceptance PDF. Keep
+  electrical PWM, RPM, power-loss and untested hardware gates explicitly open.
+- [ ] Run the full suite and compatibility checks, commit each concern, publish
+  a reviewable PR and monitor CI. Judge release readiness from all required gates.
