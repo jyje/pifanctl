@@ -73,26 +73,28 @@ checks remain below. Live trial steps and results are tracked privately.
 The repeatable procedures, acceptance criteria, current MicroK8s baseline,
 evidence form, and release decision record are in the [v1 release acceptance
 field manual](docs/v1/release-acceptance.md) and its [PDF](docs/v1/release-acceptance.pdf).
-The isolated trial now runs a Python 3.12 image built from current `main`
-(`887f6f1-py312`) because the cluster uses the documented legacy-CA compatibility
-path. Argo CD is Synced/Healthy and the Fan/Zone report Ready. Physical rotation
-confirmation after this upgrade and all hardware/failure acceptance gates remain
-open. A bounded load trial on `raspi-41` used 1, 2, and 3 vCPU for 120-150 seconds
-with the shared fan active and a 65°C abort limit. The hottest reading was a
-transient 55.1°C on `raspi-51`; the loaded node peaked at 50.147°C, so load
-causality and stabilization were not established. A delayed five-minute no-load
-interval also did not show a stable plateau. Timestamped samples and measured
-and hypothesis plots are in `docs/v1/thermal-load-observations.csv` and
-`docs/v1/figures/`. Physical fan-stop, rotation, and waveform checks remain open.
-On 2026-10-06, a separate remote response check used the live alpha.2 shared-fan
-deployment: an 85-second 1 vCPU load peaked at 58.95°C, then a 2 vCPU stage was
-stopped after a 15-second poll observed 61.15°C. Requested duty peaked at 58.14%
-in the first stage and was 55.06% at the stop sample. The hottest node returned
-to 46.85°C by the last sample of a three-minute no-load observation. The
-controller and four node telemetry series remained healthy, and temporary Pods
-were removed. This is not v1 CRD runtime, electrical PWM/RPM, physical rotation,
-or stable-temperature acceptance. See the [follow-up record](docs/v1/release-acceptance.md#7-2026-10-06-live-shared-fan-follow-up),
+The 2026-10-04 load trial used a Python 3.12 compatibility image because the
+cluster uses the documented legacy-CA path. The deployed production application
+currently remains on alpha.2. A separate 2026-10-06 response check used the live
+alpha.2 shared-fan deployment: an 85-second 1 vCPU load peaked at 58.95°C, then a
+2 vCPU stage was stopped after a 15-second poll observed 61.15°C. Requested duty
+peaked at 58.14% in the first stage and was 55.06% at the stop sample. The hottest
+node returned to 46.85°C by the last sample of a three-minute no-load observation.
+The controller and four telemetry series remained healthy, and temporary Pods
+were removed. This is not stable-temperature, v1 worker, electrical PWM/RPM, or
+physical rotation acceptance. See the [follow-up record](docs/v1/release-acceptance.md#7-2026-10-06-live-shared-fan-follow-up),
 its [CSV](docs/v1/thermal-load-observations-2026-10-06.csv), and [plot](docs/v1/figures/thermal-live-2026-10-06.png).
+
+An isolated alpha.3 runtime probe then established the Fan and CoolingZone CRDs,
+admitted both CRs, confirmed API defaulting, and reconciled expected missing-node
+conditions with Argo CD Synced/Healthy. The alpha.3 Python 3.12 ARM64 image passed
+its experimental issue-image workflow (run 37429082468). No worker or GPIO Pod
+was created, and the temporary CRs, Application, and namespace were removed. The
+production application remains alpha.2 with one controller on `raspi-40` GPIO18
+and four agents. This validates API/operator behavior only. A GitOps single-writer
+handoff, v1 worker startup, direct fan rotation, temperature stabilization,
+failure recovery, electrical PWM/RPM, and rollback acceptance remain open. See
+the [isolated probe record](docs/v1/release-acceptance.md#8-2026-10-06-isolated-alpha3-crd-runtime-probe).
 
 ## Completion log
 
@@ -124,6 +126,7 @@ its [CSV](docs/v1/thermal-load-observations-2026-10-06.csv), and [plot](docs/v1/
 | Operator replacement follow-up | Default to one operator and use Recreate so leader-only readiness cannot deadlock a surge update. Full Python 3.14: 239 tests, 95.69%; chart regression/lint passed. CI passed all nine jobs. Multi-replica readiness remains a follow-up. | `837b3d5` |
 | Release acceptance manual and bounded thermal trial | Filled the live inventory with verified cluster data and marked unobserved hardware facts as not recorded. Ran capped 1, 2, and 3 vCPU loads on `raspi-41` with the shared fan enabled, a 65°C cutoff, and fresh Prometheus monitoring; peak was 55.1°C on `raspi-51`, with a 47.85% Fan status request. The target node peaked at 50.147°C, and neither load attribution nor stabilization was proven. The delayed five-minute no-load observation also did not stabilize. Added raw samples, measured response graph, configured-curve hypothesis, and regenerated PDF. Image `887f6f1-py312` (digest `sha256:525ef9f01f7bd4d5af5ac4d4014d9f0320187628c41cd2eacd028d5fbb896cf5`) remained deployed. Physical rotation confirmation, fan-stop recovery, PWM waveform, Pi 5, fault, rollback, and fleet-load gates remain open. | Pending |
 | Alpha.2 shared-fan response follow-up | Archived the exact live MicroK8s baseline, ran bounded 1 and 2 vCPU loads on hottest member `raspi-51`, stopped at the 60°C stage gate with a 61.15°C sampled overshoot, verified no-load cooldown and temporary-Pod cleanup, and recorded 22 Prometheus observations with an SVG/PNG graph in the updated manual and PDF. Argo CD remained Synced/Healthy; the controller and four agents remained Ready. This is not v1 CRD or physical PWM/RPM acceptance. | `b6b9aed` |
+| Alpha.3 CRD runtime probe | Built a Python 3.12 ARM64 issue image from the PR head, installed the v1 operator chart in an isolated namespace, verified CRD establishment/defaulting/admission and expected missing-node statuses, and confirmed Argo CD Synced/Healthy. An alpha.2 image rejected the API-defaulted alpha.3 hysteresis field, exposing the image/CRD version boundary. Removed the temporary CRs, Application, and namespace; no worker or GPIO was used. The production alpha.2 controller remains the sole GPIO18 writer on `raspi-40`. | [Workflow 37429082468](https://github.com/jyje/pifanctl/actions/runs/37429082468) |
 | Coverage CI follow-up | PR #43 merged into the still-open PR #41 branch. CI passed Python 3.10-3.14 with 259 tests each, the 90% line gate, branch reporting, workflow/version/Helm checks, ARM64 image smoke test, and authenticated Codecov upload. Baseline: 95.75-95.77% line and 88.2129-89.1635% branch coverage. Codecov's main-branch comparisons and the first main badge publication remain unverified until PR #41 reaches the default branch. | `6dc6bfa` |
 
 ### Regressions found and fixed

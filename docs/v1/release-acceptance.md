@@ -1,11 +1,12 @@
 # pifanctl v1 Release Acceptance Field Manual
 
-**Status:** Trial observations recorded on 2026-10-04 and live follow-up on 2026-10-06
+**Status:** Trial observations recorded on 2026-10-04 and live follow-ups on 2026-10-06
 **Release target:** `1.0.0`
-**Current implementation:** `1.0.0-alpha.2`
+- **Current production app:** `1.0.0-alpha.2`
+- **v1 candidate under review:** `1.0.0-alpha.3`
 **Decision:** Not ready for a stable release. Hardware-specific acceptance remains open.
 
-This manual records the MicroK8s trials, bounded temperature-response tests, measured evidence, and remaining release checks. The 2026-10-06 follow-up used the currently deployed alpha.2 shared-fan controller and is not v1 CRD acceptance evidence. Cluster-reported temperatures and requested duty are not electrical or RPM measurements. Values unavailable from Kubernetes are explicitly marked **Not recorded** instead of being guessed.
+This manual records the MicroK8s trials, bounded temperature-response tests, measured evidence, and remaining release checks. The production pifanctl application remains on the alpha.2 shared-fan controller. The isolated alpha.3 probe below validates CRD admission and operator reconciliation without creating a worker or accessing GPIO. Neither run establishes electrical or RPM measurements. Values unavailable from Kubernetes are explicitly marked **Not recorded** instead of being guessed.
 
 ## 1. Current trial configuration
 
@@ -139,6 +140,7 @@ Capture the archived v0 configuration and checksum. Inventory every writer of ea
 | Electrical waveform, RPM, and physical fan-off recovery | No instruments or completed post-upgrade observation recorded | Not run | Physical acceptance evidence required |
 | Pi 5 hardware, fault injection, rollback, fleet scale | No live trial records | Not run | Procedures in Sections 5 and 3 |
 | 2026-10-06 live shared-fan follow-up | alpha.2 chart and image; bounded member CPU load | Response observed; 61.15°C sample crossed the 60°C stage gate, so load was stopped; no stable hold claimed | [Follow-up samples](thermal-load-observations-2026-10-06.csv) and Section 7 |
+| 2026-10-06 isolated alpha.3 CRD runtime probe | alpha.3 operator chart and Python 3.12 ARM64 issue image in a temporary namespace; probe CRs targeted nonexistent Nodes | CRD defaulting/admission, operator reconciliation, expected missing-node status, and Argo health passed; no worker or GPIO access | [Workflow run 37429082468](https://github.com/jyje/pifanctl/actions/runs/37429082468) and Section 8 |
 
 ## 7. 2026-10-06 live shared-fan follow-up
 
@@ -162,6 +164,24 @@ Raw timestamped samples, including the aborted-stage observation and cooldown, a
 ![Measured 2026-10-06 MicroK8s temperature and requested fan-duty response](figures/thermal-live-2026-10-06.png)
 
 The live experiment is a response check for the deployed alpha.2 shared-fan topology only. It does not validate the v1 CRD operator, Pi 5 PWM, fail-safe behavior after hardware or process faults, electrical signal polarity, or physical cooling capacity.
+
+## 8. 2026-10-06 isolated alpha.3 CRD runtime probe
+
+An isolated Argo CD Application installed the operator chart from pifanctl commit `69a829f2bb17977b692954c905129498d63abcf7` into namespace `pifanctl-v1-runtime-test`. The chart established the cluster-scoped `Fan` and `CoolingZone` CRDs, and Kubernetes admitted both probe resources. API defaulting added `temperatureHysteresis: 5` to the Fan. The probe used the commit-specific ARM64 Python 3.12 image `ghcr.io/jyje/pifanctl-issue:69a829f-py312`, built and smoke-tested by [workflow run 37429082468](https://github.com/jyje/pifanctl/actions/runs/37429082468). The deployed image digest was `sha256:1bbee7f514a3547ac9c0b1413f159f077f4ed90821ff2d39080119f3cd528115`.
+
+| Check | Observed result |
+| --- | --- |
+| CRD installation and admission | Both CRDs established; Fan and CoolingZone creation succeeded |
+| Operator image and API connection | One operator Pod Ready, zero restarts, no recurring reconciliation errors |
+| Argo CD | Synced and Healthy |
+| Missing-node conditions | Fan reported `MissingWorkerNode`; CoolingZone reported `MissingNode`, as expected |
+| Worker and GPIO | No worker Pod was created; no GPIO-capable workload ran |
+| Cleanup | Argo pruned both probe resources; the probe Application and namespace were deleted |
+| Production pifanctl | Unchanged: alpha.2 controller on `raspi-40`, four alpha.2 agents |
+
+The first probe attempt used alpha.2 with the alpha.3 CRD. Kubernetes defaulted the new hysteresis field, which the older alpha.2 topology schema rejected. The alpha.3 Python 3.12 image then reconciled the same probe successfully. This confirms the need to keep the operator image and CRD revision compatible; it does not establish cross-version compatibility.
+
+This is live MicroK8s API and operator-runtime evidence, not the disposable-cluster test, a worker startup test, physical PWM/RPM verification, or temperature stabilization acceptance. The CRDs remain installed cluster-wide after the isolated resources and namespace were removed. The next hardware test must use a single-writer handoff: the existing alpha.2 controller owns GPIO18 on `raspi-40`. Install and validate the v1 operator without Fan resources, stop and verify the old controller has exited, then declare the v1 Fan and CoolingZone and confirm the worker's full-duty startup and physical fan rotation before applying load. Preserve the archived baseline for rollback.
 
 Do not label `1.0.0` stable until every applicable release gate has evidence for the exact release candidate. Hardware or topologies not tested must be listed as unsupported. Preserve the v0 rollback archive until the release decision is recorded.
 
