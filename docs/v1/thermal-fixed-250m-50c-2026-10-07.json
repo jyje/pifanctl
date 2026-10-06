@@ -1,0 +1,31 @@
+{
+  "visibility": "public_anonymous_measurements",
+  "full_originals_excluded": true,
+  "target_celsius": 50,
+  "cpu_millicores": 250,
+  "collector_passed": true,
+  "cleanup_verified": true,
+  "cooldown_recorded": true,
+  "acceptance": {
+    "target_celsius": 50,
+    "required_duration_seconds": 120.0,
+    "maximum_temperature_span_celsius": 1.0,
+    "maximum_duty_span_percentage_points": 5.0,
+    "load_observations": 27,
+    "invalid_observations": 0,
+    "target_band_seconds": 50.21,
+    "strict_stability_seconds": 0.0,
+    "member_source_identity_recorded": true,
+    "thermal_stability_passed": false
+  },
+  "load_stop_reason": "local_guard_or_deadline",
+  "started_at_utc": "2026-10-06T21:19:10.673954+00:00",
+  "finished_at_utc": "2026-10-06T21:24:33.176043+00:00",
+  "load_execution": {
+    "reason": "local_temperature_cutoff",
+    "elapsed_seconds": 155.57362729799934,
+    "cpu_seconds": 38.717259316,
+    "average_consumed_vcpu": 0.24886775469879338
+  },
+  "load_process_cpu_seconds_at_intermediate_observation": 21.02
+}

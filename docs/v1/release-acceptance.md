@@ -331,6 +331,37 @@ The existing curve, GPIO channel, refresh and safety duties were unchanged. No t
 
 Public live-migration evidence is a redacted projection: it includes anonymous measurements and check results, while full UID/IP/configuration snapshots remain private. See [the live migration procedure](live-migration.md) and [PLAN.md](../../PLAN.md) for reproduction and remaining gates. Remote CI and merge for these new verification tools are recorded independently from their local and live results.
 
+<!-- pagebreak -->
+
+## 15. Fixed 250m CPU trial: 50 C observation target
+
+**Verdict: failed thermal stability; collection and cleanup passed.** Trial UTC: 2026-10-06 21:19:10 to 21:24:33. Alpha.6 remained deployed with unchanged fan/curve settings and source-matched GitOps state. A temporary nonprivileged Pod heated one assigned member; a read-only probe identified that member as a Raspberry Pi 5 Model B Rev 1.0. This does not identify or validate Pi 5 actuator hardware.
+
+| Check | Recorded result |
+| --- | --- |
+| Evidence inventory | 51 independent advancing composite acquisition-clock observations: 6 baseline, 27 load, 18 cooldown. Every member clock is retained. |
+| Fixed CPU execution | 250m quota; 155.57 seconds of execution, 38.72 CPU seconds, average 0.249 vCPU. |
+| Independent local guard | Local thermal sensor reached the 55 C cutoff and stopped the process. Exact peak was not recorded. Remote soft cutoff was 53 C. |
+| Remote measured response | Maximum rack temperature 51.8 C; requested duty remained 35.04%. Maximum member source age was 18.84 seconds. |
+| Original stability criterion | Required 120 seconds, at most 1 C total span and 5 percentage points of duty span. Strict qualifying duration: 0 seconds; broader target-band duration: 50.21 seconds. No invalid samples. |
+| Cleanup and cooldown | Temporary Pod deleted; 120-second immediate cooldown collected. Last sample at 21:24:22 UTC: rack maximum 50.15 C, requested duty 35.04%. |
+
+The local cutoff uses a direct local read, independently of Prometheus acquisition and scrape delays. Its activation must not be replaced by the lower remote maximum. Exact local peak and electrical/RPM behavior were not measured. Requested duty is a software command, not verified fan speed.
+
+The 50 C target is an acceptance observation band. The existing temperature curve and hysteresis remain the control policy; this trial does not add setpoint regulation. The measured temperature varied across the band and exceeded it. Ending at a lower temperature does not establish a stable plateau or complete return to baseline.
+
+Evidence: [anonymous CSV](thermal-fixed-250m-50c-2026-10-07.csv), [result JSON](thermal-fixed-250m-50c-2026-10-07.json). Seven original archive files were checksum-verified privately. Reproduce collection with `scripts/collect_live_thermal.py`, projection and figures with `scripts/publish_thermal_evidence.py`, and the verdict with `scripts/verify_thermal_acceptance.py --target 50`. Local regression: 396 tests, zero skips; related Python 3.10 suite: 42 passed.
+
+**Release decision remains not ready.** Review this failed low-load response before further target scenarios. The 55 C and 60 C repetitions and all physical/fault/fleet gates remain open.
+
+<!-- pagebreak -->
+
+### Fixed-load measured response
+
+![Fixed 250m CPU thermal observations](thermal-fixed-250m-50c-2026-10-07.png)
+
+Each line is a recorded member temperature. Dashed 50 C and the red band denote the acceptance target, not a predicted temperature. Purple shading spans the first and last sampled load observations, rather than asserting exact Pod start/stop boundaries. The lower panels show requested duty and actual acquisition/heartbeat ages. The existing [configured-curve hypothesis](figures/thermal-control-curve.png) is a separate model; hysteresis can keep duty unchanged while temperature varies.
+
 ## References
 
 - [Runtime manual](runtime.md), [v1 architecture and acceptance design](README.md), and [implementation and release checklist](../../PLAN.md)
