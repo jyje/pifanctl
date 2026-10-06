@@ -94,7 +94,7 @@ The solid line is the configured rising curve. Markers are observed Fan status s
 
 ### Stability criteria and interpretation
 
-Call a temperature band stable only after the hottest member stays within a 1°C range for at least 120 seconds under a declared, repeatable workload, telemetry remains fresh, and requested duty has no unexplained increase. Record fan RPM when instrumentation is available, or direct visual rotation. The initial 2026-10-04 trial did not satisfy that criterion. The later alpha.3 run also remains partial after the original criterion was reapplied in Section 10. In the initial trial, the member temperatures varied independently, and the hottest member was outside the node receiving the test load. Its five-minute no-load interval began about seven minutes after the last CPU-load sample, so it is not evidence for the immediate cooling slope or time-to-stability.
+The active maintainer-approved policy is `v1-3c`: the hottest member must remain within target - 1 C through target + 2 C, with at most 3 C total variation, for at least 120 continuous acquisition-clock seconds and eight observations. Requested-duty variation must not exceed 5 percentage points. Every member acquisition age must be at most 25 seconds, worker heartbeat age at most 15 seconds, and advancing source-clock gaps at most 20 seconds. The original `legacy-1c` policy remains available for historical reproduction; Section 16 records its separately approved replacement. Record fan RPM when instrumentation is available, or direct visual rotation. The initial 2026-10-04 trial did not satisfy that criterion. The later alpha.3 run remains partial because it lacks individual member acquisition clocks, regardless of the permitted temperature span; its original verdict is preserved in Section 10. In the initial trial, the member temperatures varied independently, and the hottest member was outside the node receiving the test load. Its five-minute no-load interval began about seven minutes after the last CPU-load sample, so it is not evidence for the immediate cooling slope or time-to-stability.
 
 The live test ended below the 65°C abort guardrail, all temporary load Pods were removed, and no trial configuration was changed. The physical-fan-stop and recovery test has **not** been run. Its safe abort threshold is awaiting confirmation; the hardware default and RPM remain unverified. Post-upgrade normal rotation was subsequently confirmed by the user; see Section 12.
 
@@ -297,7 +297,7 @@ The first GitOps verifier could accept a stale successful sync immediately after
 **Decision:** Not ready for a stable release. The software checks above do not close physical or production acceptance gates.
 
 - Verify the live candidate upgrade and software rollback. Section 14 now records this completed software window; full v0 topology and supported-hardware rollback remain separate gates.
-- Repeat 50 C, 55 C and 60 C thermal acceptance with fresh timestamps for every member and the original continuous stability criteria. The earlier 55 C record still fails that criterion.
+- Complete 55 C and 60 C acceptance using the approved `v1-3c` policy with every member acquisition clock. Section 16 passes the existing 50 C observation under that policy; the earlier 55 C record lacks the required clocks.
 - Measure the exact fan's electrical waveform, polarity, RPM and physical stop/restart behavior; record the fan and supply inventory.
 - Validate applicable process, power, network and sensor failures, Pi 5 hardware and a declared fleet size. Mark untested hardware/topologies unsupported rather than assuming coverage.
 
@@ -335,7 +335,7 @@ Public live-migration evidence is a redacted projection: it includes anonymous m
 
 ## 15. Fixed 250m CPU trial: 50 C observation target
 
-**Verdict: failed thermal stability; collection and cleanup passed.** Trial UTC: 2026-10-06 21:19:10 to 21:24:33. Alpha.6 remained deployed with unchanged fan/curve settings and source-matched GitOps state. A temporary nonprivileged Pod heated one assigned member; a read-only probe identified that member as a Raspberry Pi 5 Model B Rev 1.0. This does not identify or validate Pi 5 actuator hardware.
+**Historical verdict under `legacy-1c`: failed thermal stability; collection and cleanup passed.** Section 16 records the approved 3 C reassessment of these unchanged measurements. Trial UTC: 2026-10-06 21:19:10 to 21:24:33. Alpha.6 remained deployed with unchanged fan/curve settings and source-matched GitOps state. A temporary nonprivileged Pod heated one assigned member; a read-only probe identified that member as a Raspberry Pi 5 Model B Rev 1.0. This does not identify or validate Pi 5 actuator hardware.
 
 | Check | Recorded result |
 | --- | --- |
@@ -350,9 +350,9 @@ The local cutoff uses a direct local read, independently of Prometheus acquisiti
 
 The 50 C target is an acceptance observation band. The existing temperature curve and hysteresis remain the control policy; this trial does not add setpoint regulation. The measured temperature varied across the band and exceeded it. Ending at a lower temperature does not establish a stable plateau or complete return to baseline.
 
-Evidence: [anonymous CSV](thermal-fixed-250m-50c-2026-10-07.csv), [result JSON](thermal-fixed-250m-50c-2026-10-07.json). Seven original archive files were checksum-verified privately. Reproduce collection with `scripts/collect_live_thermal.py`, projection and figures with `scripts/publish_thermal_evidence.py`, and the verdict with `scripts/verify_thermal_acceptance.py --target 50`. Local regression: 396 tests, zero skips; related Python 3.10 suite: 42 passed.
+Evidence: [anonymous CSV](thermal-fixed-250m-50c-2026-10-07.csv), [result JSON](thermal-fixed-250m-50c-2026-10-07.json). Seven original archive files were checksum-verified privately. Reproduce collection with `scripts/collect_live_thermal.py`, projection and figures with `scripts/publish_thermal_evidence.py`, and the original verdict with `scripts/verify_thermal_acceptance.py --target 50 --policy legacy-1c`. Local regression: 396 tests, zero skips; related Python 3.10 suite: 42 passed.
 
-**Release decision remains not ready.** Review this failed low-load response before further target scenarios. The 55 C and 60 C repetitions and all physical/fault/fleet gates remain open.
+**Release decision remains not ready.** The original failure remains in the archive; the approved policy reassessment in Section 16 passes the 50 C observation. The 55 C and 60 C repetitions and all physical/fault/fleet gates remain open.
 
 <!-- pagebreak -->
 
@@ -361,6 +361,35 @@ Evidence: [anonymous CSV](thermal-fixed-250m-50c-2026-10-07.csv), [result JSON](
 ![Fixed 250m CPU thermal observations](thermal-fixed-250m-50c-2026-10-07.png)
 
 Each line is a recorded member temperature. Dashed 50 C and the red band denote the acceptance target, not a predicted temperature. Purple shading spans the first and last sampled load observations, rather than asserting exact Pod start/stop boundaries. The lower panels show requested duty and actual acquisition/heartbeat ages. The existing [configured-curve hypothesis](figures/thermal-control-curve.png) is a separate model; hysteresis can keep duty unchanged while temperature varies.
+
+<!-- pagebreak -->
+
+## 16. Approved 3 C policy and 50 C reassessment
+
+**Active verdict: 50 C thermal observation passed under `v1-3c`.** The maintainer approved this measurement policy after reviewing the existing trial. This is a post-hoc reassessment of the same CSV, not a new experiment. Original 1 C results and figures remain available in Section 15.
+
+The fixed observation bounds are target - 1 C through target + 2 C, inclusive. This permits a 3 C total span: 49-52 C at target 50, 54-57 C at target 55, and 59-62 C at target 60. The window is fixed before evaluation and cannot shift to fit observations. Duration stays 120 continuous source-clock seconds with at least eight observations, duty variation at most 5 percentage points, source ages at most 25 seconds and worker heartbeat at most 15 seconds. Source clocks must advance with no gap over 20 seconds. Hardware cutoffs and deployed control settings are unchanged.
+
+| Reassessment check | Result from unchanged source data |
+| --- | --- |
+| Approved 50 C observation interval | 49-52 C; maximum total span 3 C |
+| Qualifying source-clock interval | 2026-10-06 21:19:55.071883 to 21:22:15.307699 UTC: 140.24 seconds |
+| Measured temperature interval | 49.05-51.8 C, total span 2.75 C |
+| Requested duty | 35.04%, constant across the qualifying interval |
+| Telemetry integrity | Every member acquisition clock retained; zero invalid load observations |
+| Original criterion | Still failed: 0 qualifying seconds at the legacy 1 C span |
+
+The direct local 55 C cutoff and subsequent cooldown remain part of this same trial. The approved observation pass does not establish the exact local peak, electrical PWM, RPM, setpoint regulation or continuous physical rotation. It closes only this 50 C thermal-observation gate for the existing rack and workload. The 55 C and 60 C scenarios, physical/fault/fleet and full rollback gates remain open; stable v1 is still not ready.
+
+Evidence: [approved reassessment](thermal-fixed-250m-50c-2026-10-07-reassessment.json), [unchanged anonymous samples](thermal-fixed-250m-50c-2026-10-07-reassessment.csv), and [original failed result](thermal-fixed-250m-50c-2026-10-07.json). The new CSV is byte-identical to the original CSV; its SHA-256 is recorded in the reassessment JSON. Reproduce with `scripts/verify_thermal_acceptance.py CSV --target 50 --policy v1-3c`, or use `--policy legacy-1c` to reproduce the original failure. `strict_stability_seconds` in the new JSON is a retained legacy diagnostic; the active result uses `stability_seconds` and `thermal_stability_passed`.
+
+<!-- pagebreak -->
+
+### Approved observation band: unchanged measured response
+
+![Three-degree policy reassessment](thermal-fixed-250m-50c-2026-10-07-reassessment.png)
+
+The red band now shows the approved 49-52 C observation interval. Temperatures, acquisition clocks, requested duty and sampled load shading are unchanged. The dashed line is the nominal 50 C observation target; it is not a temperature setpoint supplied to the deployed controller. The policy was approved after this trial and must be fixed before future trials.
 
 ## References
 
