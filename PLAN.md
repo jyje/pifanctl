@@ -96,6 +96,15 @@ handoff, v1 worker startup, direct fan rotation, temperature stabilization,
 failure recovery, electrical PWM/RPM, and rollback acceptance remain open. See
 the [isolated probe record](docs/v1/release-acceptance.md#8-2026-10-06-isolated-alpha3-crd-runtime-probe).
 
+The safe single-writer GitOps handoff is now staged in MicroK8s. Merged cluster
+PR #144 installed the alpha.3 operator with no Fan or CoolingZone instances;
+PR #145 disabled the alpha.2 controller; PR #146 enabled app-scoped pruning so
+the legacy controller DaemonSet and Pod were actually removed. Both Argo apps
+are Synced/Healthy, the four existing agents and v1 operator are Ready, and no
+worker has been created. The production GPIO18 fan's physical rotation after
+controller shutdown is awaiting direct confirmation before adding the v1 Fan
+resource. See the [handoff record](docs/v1/release-acceptance.md#8-2026-10-06-isolated-alpha3-crd-runtime-probe).
+
 ## Completion log
 
 | Stage | Changes and verification | Commit |
@@ -127,6 +136,7 @@ the [isolated probe record](docs/v1/release-acceptance.md#8-2026-10-06-isolated-
 | Release acceptance manual and bounded thermal trial | Filled the live inventory with verified cluster data and marked unobserved hardware facts as not recorded. Ran capped 1, 2, and 3 vCPU loads on `raspi-41` with the shared fan enabled, a 65°C cutoff, and fresh Prometheus monitoring; peak was 55.1°C on `raspi-51`, with a 47.85% Fan status request. The target node peaked at 50.147°C, and neither load attribution nor stabilization was proven. The delayed five-minute no-load observation also did not stabilize. Added raw samples, measured response graph, configured-curve hypothesis, and regenerated PDF. Image `887f6f1-py312` (digest `sha256:525ef9f01f7bd4d5af5ac4d4014d9f0320187628c41cd2eacd028d5fbb896cf5`) remained deployed. Physical rotation confirmation, fan-stop recovery, PWM waveform, Pi 5, fault, rollback, and fleet-load gates remain open. | Pending |
 | Alpha.2 shared-fan response follow-up | Archived the exact live MicroK8s baseline, ran bounded 1 and 2 vCPU loads on hottest member `raspi-51`, stopped at the 60°C stage gate with a 61.15°C sampled overshoot, verified no-load cooldown and temporary-Pod cleanup, and recorded 22 Prometheus observations with an SVG/PNG graph in the updated manual and PDF. Argo CD remained Synced/Healthy; the controller and four agents remained Ready. This is not v1 CRD or physical PWM/RPM acceptance. | `b6b9aed` |
 | Alpha.3 CRD runtime probe | Built a Python 3.12 ARM64 issue image from the PR head, installed the v1 operator chart in an isolated namespace, verified CRD establishment/defaulting/admission and expected missing-node statuses, and confirmed Argo CD Synced/Healthy. An alpha.2 image rejected the API-defaulted alpha.3 hysteresis field, exposing the image/CRD version boundary. Removed the temporary CRs, Application, and namespace; no worker or GPIO was used. The production alpha.2 controller remains the sole GPIO18 writer on `raspi-40`. | [Workflow 37429082468](https://github.com/jyje/pifanctl/actions/runs/37429082468) |
+| Live staged single-writer handoff | Merged cluster PRs #144, #145, and #146. Installed the alpha.3 operator with no CRs, kept four alpha.2 temperature agents, disabled the legacy controller, and enabled pruning after Argo showed the controller DaemonSet was the only extra resource. Argo is Synced/Healthy; the controller DaemonSet and Pod are gone; v1 operator is Ready; no worker exists. The physical fan's rotation after GPIO18 was left high is awaiting direct confirmation. | [PR #144](https://github.com/jyje/cluster/pull/144), [PR #145](https://github.com/jyje/cluster/pull/145), [PR #146](https://github.com/jyje/cluster/pull/146) |
 | Coverage CI follow-up | PR #43 merged into the still-open PR #41 branch. CI passed Python 3.10-3.14 with 259 tests each, the 90% line gate, branch reporting, workflow/version/Helm checks, ARM64 image smoke test, and authenticated Codecov upload. Baseline: 95.75-95.77% line and 88.2129-89.1635% branch coverage. Codecov's main-branch comparisons and the first main badge publication remain unverified until PR #41 reaches the default branch. | `6dc6bfa` |
 
 ### Regressions found and fixed
