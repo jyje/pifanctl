@@ -292,3 +292,8 @@ maintainer. Raw infrastructure snapshots remain private.
   3.10 tests passed. The initial sandbox run could not bind two local HTTP
   servers; the unchanged tests passed with authorized loopback access.
   Failure injection verified Pod cleanup and immediate cooldown after API loss.
+
+- Public thermal projection and reproducible Matplotlib SVG/PNG generation
+  preserve every member acquisition clock and original acceptance criteria.
+  Nine projection/counter validation tests passed. Final local suite: 396
+  passed with zero skips; focused Python 3.10 thermal/evidence suite: 42 passed.
