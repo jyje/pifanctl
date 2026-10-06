@@ -339,3 +339,11 @@ This approval changes the measurement policy, not the deployed control curve.
   is byte-identical to the original; original JSON, SVG and PNG also remain
   unchanged. Section 16 and its figure were visually inspected, along with
   the updated guidance, historical verdict and release-decision pages.
+
+- Added a duration-boundary regression: rounding a 119.999-second interval
+  to 120 seconds must not certify the approved policy. Active acceptance
+  compares the unrounded duration; original legacy verdicts remain unchanged.
+
+- Final duration-boundary verification: 409 complete tests and 55 focused
+  Python 3.10 tests passed without skips. The approved 50 C verdict remains
+  140.24 seconds; only display values are rounded.

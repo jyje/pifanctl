@@ -21,6 +21,7 @@
     "target_band_lower_celsius": 49,
     "target_band_upper_celsius": 52,
     "stability_seconds": 140.24,
+    "stability_seconds_unrounded": 140.2358160018921,
     "minimum_observations": 8,
     "maximum_source_gap_seconds": 20,
     "legacy_target_band_seconds": 50.21,

@@ -68,7 +68,7 @@ def evaluate(rows, target=55.0, duration=120.0, policy='v1-3c'):
             invalid += 1
             samples.append((0, 0, 0, False))
 
-    def longest(spread, low, high):
+    def longest(spread, low, high, rounded=True):
         best = 0.0
         for index, first in enumerate(samples):
             window = []
@@ -87,13 +87,13 @@ def evaluate(rows, target=55.0, duration=120.0, policy='v1-3c'):
                 if len(window) >= 8:
                     best = max(best, at-first[0])
                 previous = at
-        return round(best, 2)
+        return round(best, 2) if rounded else best
 
     legacy_strict = longest(1.0, target-1, target+1)
     legacy_band = longest(2.0, target-1, target+1)
     legacy = policy == 'legacy-1c'
     low, high, span = (target-1, target+1, 1.0) if legacy else (target-1, target+2, 3.0)
-    stability = legacy_strict if legacy else longest(span, low, high)
+    stability = legacy_strict if legacy else longest(span, low, high, rounded=False)
     result = {
         "target_celsius": target,
         "required_duration_seconds": duration,
@@ -109,7 +109,8 @@ def evaluate(rows, target=55.0, duration=120.0, policy='v1-3c'):
     }
     if not legacy:
         result.update(policy=policy, target_band_lower_celsius=low,
-                      target_band_upper_celsius=high, stability_seconds=stability,
+                      target_band_upper_celsius=high, stability_seconds=round(stability, 2),
+                      stability_seconds_unrounded=stability,
                       minimum_observations=8, maximum_source_gap_seconds=20,
                       legacy_target_band_seconds=legacy_band,
                       legacy_strict_stability_seconds=legacy_strict)

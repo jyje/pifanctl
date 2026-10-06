@@ -159,3 +159,17 @@ def test_cli_reproduces_approved_and_original_verdicts(monkeypatch, capsys, poli
     monkeypatch.setattr(sys, 'argv', ['verify', str(path), '--target', '50', '--policy', policy])
     assert main() == expected
     assert json.loads(capsys.readouterr().out)['thermal_stability_passed'] is (expected == 0)
+
+
+
+def test_rounding_cannot_certify_less_than_120_seconds():
+    rows = observations()
+    for i, row in enumerate(rows):
+        iso = datetime.fromtimestamp(1700000000+i*119.999/12, timezone.utc).isoformat()
+        at = datetime.fromisoformat(iso).timestamp()
+        row.update(timestamp_utc=iso, source_observed_at_utc=iso,
+                   member_observed_timestamps_json=json.dumps({'node-a': at, 'node-b': at}))
+    result = evaluate(rows)
+    assert result['stability_seconds'] == 120
+    assert result['stability_seconds_unrounded'] < 120
+    assert not result['thermal_stability_passed']
