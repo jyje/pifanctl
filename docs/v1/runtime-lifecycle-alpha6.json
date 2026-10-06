@@ -1,0 +1,4036 @@
+{
+  "context": "kind-pifanctl-release",
+  "image": "pifanctl-runtime-lab:alpha6",
+  "started_at_utc": "2026-10-06T16:16:09.678261+00:00",
+  "simulated_io": true,
+  "hardware_acceptance": false,
+  "checks": [
+    {
+      "name": "one_fan_regulating",
+      "passed": true,
+      "elapsed_seconds": 2.54
+    },
+    {
+      "name": "cr_status_ready",
+      "passed": true,
+      "elapsed_seconds": 4.24
+    },
+    {
+      "name": "worker_node_uid_no_credentials",
+      "passed": true
+    },
+    {
+      "name": "two_fans_one_worker",
+      "passed": true,
+      "elapsed_seconds": 60.74
+    },
+    {
+      "name": "hot_sensor_full_duty",
+      "passed": true,
+      "elapsed_seconds": 75.57
+    },
+    {
+      "name": "missing_sensor_failsafe",
+      "passed": true,
+      "elapsed_seconds": 89.53
+    },
+    {
+      "name": "sensor_recovery",
+      "passed": true,
+      "elapsed_seconds": 29.28
+    },
+    {
+      "name": "first_fan_finalizer_released",
+      "passed": true,
+      "elapsed_seconds": 10.4
+    },
+    {
+      "name": "remaining_fan_regulates",
+      "passed": true,
+      "elapsed_seconds": 0.38
+    },
+    {
+      "name": "removed_driver_closed",
+      "passed": true
+    },
+    {
+      "name": "zone_finalizer_released",
+      "passed": true,
+      "elapsed_seconds": 74.72
+    },
+    {
+      "name": "unassigned_fan_full_duty",
+      "passed": true,
+      "elapsed_seconds": 0.57
+    },
+    {
+      "name": "last_fan_finalizer_released",
+      "passed": true,
+      "elapsed_seconds": 22.82
+    },
+    {
+      "name": "worker_removed",
+      "passed": true,
+      "elapsed_seconds": 2.09
+    }
+  ],
+  "samples": [
+    {
+      "at_utc": "2026-10-06T16:16:12.375574+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303372.123304,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:17.088664+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303376.1280527,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:17.984393+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303377.1314833,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:20.357944+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303380.136189,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:22.767050+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303382.1401672,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:25.155991+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303384.1490853,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:27.532831+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303387.1578274,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:29.961141+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303389.1650865,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:32.394482+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303392.1694777,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:34.790901+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303394.1772823,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:37.201786+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303396.1840463,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:39.637136+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303399.1919153,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:42.036184+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303401.1964192,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:44.466408+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303404.204487,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:46.873371+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303406.208361,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:49.263295+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303409.21394,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:51.859629+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303411.2230134,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:54.249304+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303414.2259033,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:56.681211+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303416.2276225,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:16:59.055626+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303418.2315607,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:01.459569+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303421.2367084,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:03.898716+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303423.2390342,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:06.309734+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303426.2443142,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:08.702999+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303428.2524538,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:11.126927+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303430.2552943,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:13.531281+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303433.2577784,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:15.901460+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "e57378997dcf32b542a9aa9c0437132e75e33a3076191782e07cbfe2086f764f",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303435.260844,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:18.307353+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303438.28327,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:18.744870+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303438.28327,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:21.136854+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303440.2907245,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:23.525722+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303443.2950187,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:25.919001+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303445.2998126,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:28.338012+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303448.309146,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:30.738297+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303450.3126335,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:33.119219+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303452.3177881,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:36.095199+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303455.332564,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:38.522858+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303458.3502388,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:40.890983+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303460.3565707,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:43.287473+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303462.361608,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:45.693106+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303465.3691301,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:48.051650+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303467.3824089,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:50.441137+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303470.3873894,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:52.856886+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303472.3909035,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:55.328415+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303474.3933709,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:17:57.804275+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303477.3974564,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:00.263534+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303479.4042487,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:02.628322+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303482.4094226,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:05.035922+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303484.4161923,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:07.463738+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303487.423562,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:09.864406+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303489.4280756,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:12.284816+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303491.431222,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:14.671823+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303494.4353569,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:17.062032+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303496.4387155,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:19.501411+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303499.4424076,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:21.943726+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303501.4449465,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:24.332457+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303503.447103,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:26.740088+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303506.453549,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:29.154023+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303508.4606142,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:31.532893+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303511.4674022,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:33.959795+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303513.4705234,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:34.355295+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303513.4705234,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:36.739086+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303516.4738576,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:39.109680+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303518.4772737,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:41.494963+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303520.481299,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:43.883690+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303523.487109,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:46.377012+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303525.498803,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:48.781615+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303528.5045676,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:51.140199+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303530.5069094,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:53.553335+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303533.5115635,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:55.944167+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303535.5193484,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:18:58.351640+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303537.525369,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:00.777515+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303540.5302715,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:03.180979+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303542.5395956,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:05.628211+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303545.5444107,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:08.042458+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303547.5537496,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:10.428999+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303549.5599086,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:12.820569+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303552.5685565,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:15.268539+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303554.5711384,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:17.682324+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303557.5806782,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:20.099331+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303559.5863473,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:22.560730+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303561.5902123,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:24.968798+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303564.5964348,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:27.410053+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303566.604048,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:29.827316+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303569.613889,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:32.268759+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303571.620033,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:34.660408+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303574.6230114,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:37.074252+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303576.6314976,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:39.475444+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303578.6379535,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:41.887225+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303581.6454465,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:44.327418+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303583.650784,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:46.751071+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303586.6566627,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:49.135569+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303588.6675098,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:51.544823+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303590.6727948,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:53.931380+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303593.681501,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:56.329642+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303595.685695,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:19:58.725463+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303598.692173,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:01.145266+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100,
+            "temperatureCelsius": 80.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 80.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 80.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303600.697578,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:03.532517+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303602.6999788,
+        "ready": false,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:03.929687+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303603.7007275,
+        "ready": false,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:06.355134+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303605.7056253,
+        "ready": false,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:08.725779+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303607.7117198,
+        "ready": false,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:11.144144+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303610.7168171,
+        "ready": false,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:13.572363+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303612.721083,
+        "ready": false,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:15.989185+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303615.7239408,
+        "ready": false,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:18.357224+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303617.7296863,
+        "ready": false,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:20.822209+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303620.737923,
+        "ready": false,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:23.210180+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303622.7428398,
+        "ready": false,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:25.609849+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303624.7459822,
+        "ready": false,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:28.063004+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303627.7519238,
+        "ready": false,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:30.480542+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          },
+          "lab-fan-b": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "LocalSensorUnavailable",
+            "zones": {},
+            "nodes": {}
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303629.7562137,
+        "ready": false,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:32.866075+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "00b25c663865645b67903258051a918c7d75579d1ebb9f3e9eaaf3536d9f8626",
+        "fans": {
+          "lab-fan-a": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          },
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [],
+        "heartbeatTime": 1791303632.7639925,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:20:43.872689+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "6963e2276b3cfd9ad05b7e477b157daa87eb0529a170094508964a2e14d56481",
+        "fans": {
+          "lab-fan-b": {
+            "dutyPercent": 47.5,
+            "temperatureCelsius": 55.0,
+            "ready": true,
+            "reason": "",
+            "zones": {
+              "lab-local-zone": 55.0
+            },
+            "nodes": {
+              "pifanctl-release-control-plane": 55.0
+            }
+          }
+        },
+        "releasedFans": [
+          "lab-fan-a"
+        ],
+        "heartbeatTime": 1791303643.7993844,
+        "ready": true,
+        "reason": ""
+      }
+    },
+    {
+      "at_utc": "2026-10-06T16:21:59.291925+00:00",
+      "pod_uid": "f4fa5614-a25d-40ef-9193-908691d266cc",
+      "status": {
+        "nodeName": "pifanctl-release-control-plane",
+        "nodeUID": "3153095d-d537-4eb1-a98b-7b1e3f90046d",
+        "appliedTopologyHash": "85416b02ce677ea607a2b0bf74deaccf990bb55745af7e5962b6f3842d772a33",
+        "fans": {
+          "lab-fan-b": {
+            "dutyPercent": 100.0,
+            "temperatureCelsius": null,
+            "ready": false,
+            "reason": "NoCoolingZone",
+            "zones": {},
+            "nodes": {}
+          }
+        },
+        "releasedFans": [
+          "lab-fan-a"
+        ],
+        "heartbeatTime": 1791303718.987455,
+        "ready": false,
+        "reason": ""
+      }
+    }
+  ],
+  "passed": true,
+  "finished_at_utc": "2026-10-06T16:22:24.468175+00:00"
+}

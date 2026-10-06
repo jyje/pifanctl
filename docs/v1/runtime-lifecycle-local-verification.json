@@ -1,0 +1,33 @@
+{
+  "candidate_app": "1.0.0-alpha.6",
+  "candidate_chart": "0.1.0-alpha.5",
+  "runtime_commit": "0b36f0d",
+  "harness_commit": "87294f6",
+  "python": "3.13.2",
+  "tests_passed": 320,
+  "tests_failed": 0,
+  "tests_skipped": 0,
+  "coverage": {
+    "covered_lines": 1531,
+    "num_statements": 1590,
+    "percent_covered": 94.66981132075472,
+    "percent_covered_display": "94.67",
+    "missing_lines": 59,
+    "excluded_lines": 12,
+    "percent_statements_covered": 96.28930817610063,
+    "percent_statements_covered_display": "96.29",
+    "num_branches": 530,
+    "num_partial_branches": 46,
+    "covered_branches": 476,
+    "missing_branches": 54,
+    "percent_branches_covered": 89.81132075471699,
+    "percent_branches_covered_display": "89.81"
+  },
+  "python_3_10_focused_tests_passed": 24,
+  "candidate_image_id": "sha256:868a2a61dec12dffdd10ac8e40d1672f8185d0e8dc4f24559145a0d5334374ba",
+  "lab_image_id": "sha256:5ab7778741c8f8cf8be02e166b2d454d85129e7c6d371ff278ca9a6e29d36851",
+  "kubernetes_version": "1.37.0",
+  "simulated_io": true,
+  "production_modified": false,
+  "hardware_acceptance": false
+}
