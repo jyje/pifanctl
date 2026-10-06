@@ -181,7 +181,24 @@ An isolated Argo CD Application installed the operator chart from pifanctl commi
 
 The first probe attempt used alpha.2 with the alpha.3 CRD. Kubernetes defaulted the new hysteresis field, which the older alpha.2 topology schema rejected. The alpha.3 Python 3.12 image then reconciled the same probe successfully. This confirms the need to keep the operator image and CRD revision compatible; it does not establish cross-version compatibility.
 
-This is live MicroK8s API and operator-runtime evidence, not the disposable-cluster test, a worker startup test, physical PWM/RPM verification, or temperature stabilization acceptance. The CRDs remain installed cluster-wide after the isolated resources and namespace were removed. The staged GitOps handoff is now active: [PR #144](https://github.com/jyje/cluster/pull/144) installed the alpha.3 operator with no `extraResources`; [PR #145](https://github.com/jyje/cluster/pull/145) disabled the alpha.2 controller; [PR #146](https://github.com/jyje/cluster/pull/146) enabled app-scoped pruning so the old DaemonSet and Pod were removed. At the latest check, Argo CD reports both applications Synced/Healthy, the four alpha.2 agents are Ready, the v1 operator is Ready, and there is no worker. The RPi.GPIO shutdown path requests 100% exit duty and leaves GPIO18 high, but physical rotation after this handoff is awaiting direct confirmation. Add the v1 Fan and CoolingZone only after that observation; then verify worker full-duty startup and physical rotation before applying load. Preserve the archived baseline for rollback.
+This is live MicroK8s API and operator-runtime evidence, not the disposable-cluster test, a worker startup test, physical PWM/RPM verification, or temperature stabilization acceptance. The CRDs remain installed cluster-wide after the isolated resources and namespace were removed. The staged GitOps handoff is now active: [PR #144](https://github.com/jyje/cluster/pull/144) installed the alpha.3 operator with no `extraResources`; [PR #145](https://github.com/jyje/cluster/pull/145) disabled the alpha.2 controller; [PR #146](https://github.com/jyje/cluster/pull/146) enabled app-scoped pruning so the old DaemonSet and Pod were removed. The live rack topology was subsequently added through [PR #147](https://github.com/jyje/cluster/pull/147). See the next section for worker and telemetry evidence. Preserve the archived baseline for rollback.
+
+## 9. 2026-10-06 alpha.3 shared rack worker
+
+The GitOps change in [cluster PR #147](https://github.com/jyje/cluster/pull/147), merged as `53fdb9f86cc4b85974e4e410121f2f3dd2bfc810`, declares `r4spi-rack-fan` on `raspi-40` using RPi.GPIO BCM GPIO18 at 1000 Hz. CoolingZone `r4spi-rack` groups `raspi-40`, `raspi-41`, `raspi-50`, and `raspi-51`, reads `pifanctl_temperature_celsius` from the in-cluster Prometheus service, and keeps the existing 50-75 C curve, 5 C hysteresis, 5-second refresh, and 100% failsafe and exit duties.
+
+| Check | Observed result |
+| --- | --- |
+| GitOps | Argo CD `pifanctl-v1-staging` Synced and Healthy after PR #147 |
+| Fan and CoolingZone admission | Both resources created; zone resolved all four nodes and one fan |
+| Worker placement and readiness | One worker Pod on `raspi-40`, Ready, zero restarts |
+| Fan status | Ready=True, reason `Regulating`; requested duty started at 100% and entered closed-loop control |
+| Zone telemetry | Fresh Prometheus samples from all four nodes; zone Ready=True |
+| Unforced observation | At 2026-10-06 11:11:44 UTC, temperatures were `raspi-40` 41.381 C, `raspi-41` 41.381 C, `raspi-50` 44.65 C, and `raspi-51` 50.7 C. The worker reported a 50.7 C zone maximum and 45.96% requested duty. |
+
+The unforced observation confirms that the alpha.3 worker reconciles the real Fan and CoolingZone, collects rack-wide node temperatures, and changes its requested duty as the measured zone temperature changes. It is not a controlled load test or a stable target-temperature hold. The brief 65 C control reading during startup was followed by lower readings as the worker entered its control loop; it was not a staged thermal stimulus. No CPU load, fan-stop, fault injection, or target-curve modification was performed in this run.
+
+The requested duty is a software command, not a tachometer or airflow measurement. Direct physical fan rotation confirmation remains outstanding. Do not mark physical PWM/RPM verification or temperature-stabilization acceptance complete until the fan has been visually checked and a bounded test records its response under controlled load. Keep the archived v0 configuration available for rollback.
 
 Do not label `1.0.0` stable until every applicable release gate has evidence for the exact release candidate. Hardware or topologies not tested must be listed as unsupported. Preserve the v0 rollback archive until the release decision is recorded.
 
