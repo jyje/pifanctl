@@ -213,4 +213,4 @@ def test_coverage_actions_remain_outside_the_arm_runner():
     assert codecov_job["permissions"] == {"contents": "read"}
     codecov_step = codecov_job["steps"][-1]
     assert codecov_step["with"]["token"] == "${{ secrets.CODECOV_TOKEN }}"
-    assert codecov_step["uses"] == "codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac"
+    assert codecov_step["uses"] == "codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5"
