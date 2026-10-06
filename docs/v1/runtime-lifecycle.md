@@ -61,7 +61,7 @@ The 24 focused tests also passed on Python 3.10. Statement coverage was
 under the filesystem/network sandbox and passed when rerun with socket access.
 Helm lint, version checks, changeset validation and diff checks passed.
 [Local verification](runtime-lifecycle-local-verification.json) records image
-IDs and coverage totals. Remote PR CI is tracked separately before merge.
+IDs and coverage totals. PR #57 CI [37495486653](https://github.com/jyje/pifanctl/actions/runs/37495486653) passed Python 3.10-3.14, coverage/Codecov, Helm/workflow/version checks and the ARC ARM64 image check. PR #57 merged at `74e9694`. Main CI [37495865042](https://github.com/jyje/pifanctl/actions/runs/37495865042), alpha.6 image publication [37495865690](https://github.com/jyje/pifanctl/actions/runs/37495865690), chart publication [37495865097](https://github.com/jyje/pifanctl/actions/runs/37495865097) and main coverage badge publication passed.
 
 MicroK8s was not changed. Its operator, worker, four agents and topology CRs
 remained Ready. Argo CD ordering, Kubernetes minimum-version coverage, live

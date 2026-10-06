@@ -1,0 +1,23 @@
+{
+  "app_version": "1.0.0-alpha.6",
+  "python": "3.12.15",
+  "tls_verified": true,
+  "node_count": 4,
+  "fan_count": 1,
+  "zone_count": 1,
+  "planner_issues": false,
+  "hardware_imported": false,
+  "passed": true,
+  "scope": "Read-only alpha API and planner preflight, not active candidate runtime or hardware acceptance",
+  "source_api_version": "pifanctl.jyje.online/v1alpha1",
+  "source_commit": "cbc895826e92693a24c845b0175ca76ad39f7627",
+  "image": "ghcr.io/jyje/pifanctl-issue@sha256:774e8355d08ba18bcca660c4045d7dfc8f3ed25e77661c305f97c97ea387f49f",
+  "workflow_run": 37496692572,
+  "started_at_utc": "2026-10-06T16:37:49Z",
+  "finished_at_utc": "2026-10-06T16:37:55Z",
+  "exit_code": 0,
+  "nonprivileged": true,
+  "host_volumes": false,
+  "pod_deleted_after_archive": true,
+  "active_cooling_configuration_changed": false
+}

@@ -1,0 +1,107 @@
+{
+  "checks": [
+    {
+      "details": "apiextensions.k8s.io/v1 status",
+      "name": "fans_established",
+      "passed": true
+    },
+    {
+      "details": "apiextensions.k8s.io/v1 status",
+      "name": "coolingzones_established",
+      "passed": true
+    },
+    {
+      "details": "API defaulted temperatureHysteresis to 5",
+      "name": "fan_curve_defaulting",
+      "passed": true
+    },
+    {
+      "details": "MissingWorkerNode",
+      "name": "fan_missing_node",
+      "passed": true
+    },
+    {
+      "details": "EmptySelection",
+      "name": "zone_empty_selection",
+      "passed": true
+    },
+    {
+      "details": "One available operator replica",
+      "name": "operator_available",
+      "passed": true
+    },
+    {
+      "details": "Missing-node fixtures must not create a worker",
+      "name": "no_hardware_worker",
+      "passed": true
+    },
+    {
+      "details": "The Fan \"rack-fan-01\" is invalid: \n* spec.control.curve: Invalid value: \"object\": temperatureLow must be below temperatureHigh\n* spec.control.curve: Invalid value: \"object\": temperatureHysteresis must be below the curve width",
+      "name": "curve_order_rejected_v1",
+      "passed": true
+    },
+    {
+      "details": "The Fan \"rack-fan-01\" is invalid: \n* spec.control.curve: Invalid value: \"object\": temperatureLow must be below temperatureHigh\n* spec.control.curve: Invalid value: \"object\": temperatureHysteresis must be below the curve width",
+      "name": "curve_order_rejected_v1alpha1",
+      "passed": true
+    },
+    {
+      "details": "The Fan \"rack-fan-01\" is invalid: \n* spec.hardware.rpigpio.frequencyHz: Invalid value: 0: spec.hardware.rpigpio.frequencyHz in body should be greater than or equal to 1\n* spec.hardware: Invalid value: \"object\": hardware is immutable; use a controlled fan replacement",
+      "name": "zero_frequency_rejected_v1",
+      "passed": true
+    },
+    {
+      "details": "The Fan \"rack-fan-01\" is invalid: \n* spec.hardware.rpigpio.frequencyHz: Invalid value: 0: spec.hardware.rpigpio.frequencyHz in body should be greater than or equal to 1\n* spec.hardware: Invalid value: \"object\": hardware is immutable; use a controlled fan replacement",
+      "name": "zero_frequency_rejected_v1alpha1",
+      "passed": true
+    },
+    {
+      "details": "The Fan \"rack-fan-01\" is invalid: spec.nodeName: Invalid value: \"string\": nodeName is immutable",
+      "name": "immutable_node_rejected_v1",
+      "passed": true
+    },
+    {
+      "details": "The Fan \"rack-fan-01\" is invalid: spec.nodeName: Invalid value: \"string\": nodeName is immutable",
+      "name": "immutable_node_rejected_v1alpha1",
+      "passed": true
+    },
+    {
+      "details": "The Fan \"rack-fan-01\" is invalid: spec.hardware: Invalid value: \"object\": hardware is immutable; use a controlled fan replacement",
+      "name": "immutable_hardware_rejected_v1",
+      "passed": true
+    },
+    {
+      "details": "The Fan \"rack-fan-01\" is invalid: spec.hardware: Invalid value: \"object\": hardware is immutable; use a controlled fan replacement",
+      "name": "immutable_hardware_rejected_v1alpha1",
+      "passed": true
+    },
+    {
+      "details": "Operator attached the release finalizer to a missing-node probe",
+      "name": "fan_finalizer_added",
+      "passed": true
+    },
+    {
+      "details": "Operator attached the release finalizer to a missing-node probe",
+      "name": "coolingzone_finalizer_added",
+      "passed": true
+    },
+    {
+      "details": "coolingzone.pifanctl.jyje.online \"delete-zone-a2a75525\" deleted",
+      "name": "coolingzone_finalizer_cleanup",
+      "passed": true
+    },
+    {
+      "details": "fan.pifanctl.jyje.online \"delete-fan-a2a75525\" deleted",
+      "name": "fan_finalizer_cleanup",
+      "passed": true
+    }
+  ],
+  "context": "kind-pifanctl-release",
+  "kubernetes_versions": [
+    "v1.30.0"
+  ],
+  "operator_image": "pifanctl-runtime-lab:alpha6",
+  "passed": true,
+  "recorded_at_utc": "2026-10-06T16:30:51.366474+00:00",
+  "scope": "Real API admission/defaulting and missing-node reconciliation/lifecycle; no active worker, GPIO, Argo ordering, migration, or electrical acceptance"
+}
