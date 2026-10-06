@@ -4,9 +4,11 @@ from pathlib import Path
 
 import yaml
 import pytest
+from typer.testing import CliRunner
 
 from pifanctl import __version__
 from pifanctl.topology.model import SCHEMAS
+from pifanctl.topology.operator import app as operator_app
 from pifanctl.topology.operator import worker_deployment
 
 
@@ -30,21 +32,35 @@ def test_default_operator_chart():
     assert c['readinessProbe']['httpGet']['path'] == '/readyz'
     assert len([o for o in objects if o['kind'] == 'CustomResourceDefinition']) == 2
     assert any(o['kind'] == 'NetworkPolicy' for o in objects)
+    assert not any(o.get('kind') in {'Fan', 'CoolingZone'} for o in objects)
     role = next(o for o in objects if o['kind'] == 'Role' and o['metadata']['name'] == 'test-operator')
     assert not any('configmaps/finalizers' in r['resources'] for r in role['rules'])
 
 
-def test_configmap_reuse_no_cr_write_permissions():
-    objects = render('--set', 'input.mode=configMap,input.configMapName=topology,agent.mode=reuse')
-    assert not any(o['kind'] == 'DaemonSet' for o in objects)
-    role = next(o for o in objects if o['kind'] == 'ClusterRole')
-    assert role['rules'] == [{'apiGroups': [''], 'resources': ['nodes'], 'verbs': ['get', 'list', 'watch']}]
-    role = next(o for o in objects if o['kind'] == 'Role' and o['metadata']['name'] == 'test-operator')
-    assert not any('secrets' in r['resources'] for r in role['rules'])
-    assert next(r for r in role['rules'] if 'configmaps/finalizers' in r['resources']) == {
-        'apiGroups': [''], 'resources': ['configmaps/finalizers'],
-        'resourceNames': ['topology'], 'verbs': ['update'],
-    }
+def test_extra_resources_render_fan_and_zone_custom_resources():
+    values = Path('tests/fixtures/operator-extra-resources.yaml')
+    objects = render('-f', str(values))
+    fan = next(o for o in objects if o.get('kind') == 'Fan')
+    zone = next(o for o in objects if o.get('kind') == 'CoolingZone')
+    assert fan['metadata']['name'] == 'rack-fan-01'
+    assert zone['metadata']['name'] == 'rack-a'
+    assert zone['spec']['fanRefs'] == ['rack-fan-01']
+    crd_index = max(i for i, o in enumerate(objects) if o['kind'] == 'CustomResourceDefinition')
+    assert crd_index < min(i for i, o in enumerate(objects) if o.get('kind') in {'Fan', 'CoolingZone'})
+
+
+def test_extra_resources_require_kubernetes_resource_envelopes():
+    result = subprocess.run(
+        ['helm', 'template', 'test', str(CHART), '--set-json', 'extraResources=[{"kind":"Fan"}]'],
+        capture_output=True, text=True,
+    )
+    assert result.returncode != 0
+
+
+def test_operator_cli_does_not_offer_configmap_topology_mode():
+    result = CliRunner().invoke(operator_app, ['--help'])
+    assert result.exit_code == 0
+    assert '--configmap' not in result.output
 
 
 def test_agent_monitor_and_security():
@@ -55,7 +71,7 @@ def test_agent_monitor_and_security():
     assert all(m['readOnly'] for m in pod['containers'][0]['volumeMounts'])
 
 
-@pytest.mark.parametrize('values', ['operatorId=Bad', 'replicas=0', 'input.mode=wrong', 'input.mode=configMap', 'agent.mode=wrong'])
+@pytest.mark.parametrize('values', ['operatorId=Bad', 'replicas=0', 'input.mode=configMap', 'agent.mode=wrong'])
 def test_invalid_chart(values):
     r = subprocess.run(['helm', 'template', 't', str(CHART), '--set', values], capture_output=True, text=True)
     assert r.returncode != 0
@@ -107,8 +123,6 @@ def test_cluster_event_rbac_is_limited_to_default():
     assert role['rules'] == [{'apiGroups': [''], 'resources': ['events'], 'verbs': ['create']}]
     binding = next(o for o in objects if o['kind'] == 'RoleBinding' and o['metadata'].get('namespace') == 'default')
     assert binding['subjects'][0]['namespace'] == 'system'
-    objects = render('--set', 'input.mode=configMap,input.configMapName=topology')
-    assert not any(o['kind'] == 'Role' and o['metadata'].get('namespace') == 'default' for o in objects)
 
 
 @pytest.mark.parametrize('agent_mode', ['managed', 'reuse'])

@@ -3,10 +3,11 @@ import json
 import time
 
 import pytest
+from typer.testing import CliRunner
 
 from pifanctl.topology.kube import APIError, resource
 from pifanctl.topology.model import TopologyError, bundle
-from pifanctl.topology.operator import Lease, Operator, OWNER, FINALIZER, worker_name
+from pifanctl.topology.operator import Lease, Operator, OWNER, FINALIZER, app as operator_app, worker_name
 from test_topology import fan, zone, node
 
 
@@ -68,6 +69,27 @@ def test_lease():
     assert b.acquire(131)
     assert not a.acquire(132)
     assert b.acquire(140)
+
+
+def test_operator_command_builds_crd_only_operator(monkeypatch):
+    import pifanctl.topology.cli as topology_cli
+    import pifanctl.topology.operator as operator_module
+
+    kube = object()
+    created = []
+    monkeypatch.setattr(topology_cli, 'api', lambda ctx: kube)
+    monkeypatch.setattr(operator_module, 'run_operator', created.append)
+    result = CliRunner().invoke(operator_app, [
+        '--namespace', 'pifanctl-system', '--operator-id', 'rack-controller',
+        '--image', 'ghcr.io/jyje/pifanctl:test',
+    ])
+    assert result.exit_code == 0, result.output
+    assert len(created) == 1
+    assert created[0].kube is kube
+    assert created[0].namespace == 'pifanctl-system'
+    assert created[0].id == 'rack-controller'
+    assert created[0].input_configmap is None
+    assert created[0].image == 'ghcr.io/jyje/pifanctl:test'
 
 
 def test_reconcile_placement_and_ownership(setup):

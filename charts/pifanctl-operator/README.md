@@ -1,8 +1,10 @@
-# pifanctl operator chart (alpha)
+# pifanctl operator chart
 
-This chart deploys the v1 operator and optional temperature agents. Workers are
-created by the operator for physical actuator Nodes. The alpha image must be
-built and published before installation; a PR does not create a registry image.
+This is the single supported pifanctl chart for v1. It installs the CRDs,
+operator, temperature agents, and the managed workers created for physical
+actuator Nodes. Declare the cluster's `Fan` and `CoolingZone` custom resources
+in `extraResources`; the chart submits them alongside the runtime. Standalone
+fan control and ConfigMap topology input are outside the v1 contract.
 
 See [English runtime instructions](../../docs/v1/runtime.md),
 [Korean](../../docs/v1/runtime-ko.md) and the [implementation checklist](../../PLAN.md).
@@ -10,6 +12,7 @@ See [English runtime instructions](../../docs/v1/runtime.md),
 ```sh
 helm lint charts/pifanctl-operator
 helm template pifanctl charts/pifanctl-operator -n pifanctl-system
+# Add Fan and CoolingZone instances through valuesObject.extraResources in GitOps.
 # Only after choosing a disposable cluster and making the alpha image available:
 helm upgrade --install pifanctl charts/pifanctl-operator \
   -n pifanctl-system --create-namespace
@@ -19,12 +22,52 @@ helm upgrade --install pifanctl charts/pifanctl-operator \
 | --- | --- |
 | `operatorId` | Short, unique identity; another operator cannot adopt its CRs |
 | `replicas` | 1 by default; only the active Lease holder is Ready |
-| `input.mode` | `crd` or `configMap` |
-| `input.configMapName` | Existing input ConfigMap in the release namespace |
 | `agent.mode` | `managed` or `reuse`; reused agents must export read timestamps |
-| `image.tag` | Defaults to pinned `v1.0.0-alpha.2`; never `latest` |
+| `image.tag` | Defaults to pinned `v1.0.0-alpha.3`; never `latest` |
+| `extraResources` | Kubernetes resources submitted with the release; use `Fan` and `CoolingZone` CRs for the cooling topology |
 | `networkPolicy.monitoringNamespaceSelector` | Namespaces allowed to read worker metrics/status |
 | `serviceMonitor.enabled` | Create worker and managed-agent ServiceMonitors if Prometheus Operator is installed |
+
+Example values for a shared rack fan:
+
+```yaml
+extraResources:
+  - apiVersion: pifanctl.jyje.online/v1alpha1
+    kind: Fan
+    metadata:
+      name: rack-fan-01
+    spec:
+      nodeName: raspi-40
+      hardware:
+        rpigpio: {pin: 18, frequencyHz: 1000}
+      control:
+        curve:
+          temperatureLow: 50
+          temperatureHigh: 70
+          dutyIdle: 0
+          dutyStart: 30
+          dutyMax: 100
+          dutyDownStep: 5
+        refreshIntervalSeconds: 5
+        failsafeDuty: 100
+        exitDuty: 100
+  - apiVersion: pifanctl.jyje.online/v1alpha1
+    kind: CoolingZone
+    metadata:
+      name: rack-a
+    spec:
+      fanRefs: [rack-fan-01]
+      telemetry:
+        source: prometheus
+        prometheusURL: http://prometheus-operated.monitoring.svc:9090
+        maxSampleAgeSeconds: 30
+      nodeSelector:
+        matchLabels:
+          pifanctl.jyje.online/rack: a
+```
+
+For Argo CD, place this array in the operator Application's Helm values. Keep the
+CR instances in GitOps and update them through the Application source.
 
 CRDs in `crds/` are installed by Helm, but Helm does not upgrade or delete them.
 
@@ -33,10 +76,9 @@ a surge rollout. The worker keeps its last plan during operator replacement and
 requests failsafe duty if the heartbeat expires. Multi-replica readiness and
 availability during operator upgrades remain alpha follow-ups.
 
-Review and apply schema upgrades explicitly. ConfigMap mode can use
-`--skip-crds`; its operator RBAC only needs Node cluster reads. Namespace-scoped
-permissions create workloads/config, publish Events and update the Lease. CR
-mode additionally patches topology metadata/status, never user specs. Cluster scoped
+Review and apply schema upgrades explicitly. Namespace-scoped permissions create
+workloads/config, publish Events and update the Lease. The operator patches CR
+metadata/status, never user specs. Cluster scoped
 CR Events are written in `default` using an additional Role granting only Event
 creation there. Event publication failure is logged and retried without blocking
 heartbeat renewal. There is

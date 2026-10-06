@@ -1,8 +1,7 @@
 name: release-chart
 
-# Publishes the chart as an OCI artifact when charts/pifanctl/Chart.yaml gets a
-# version that has not been published yet:
-#   helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl --version <version>
+# Publishes the single supported v1 operator chart as an OCI artifact:
+#   helm install pifanctl oci://ghcr.io/jyje/charts/pifanctl-operator --version <version>
 
 on:
   workflow_dispatch:
@@ -10,7 +9,6 @@ on:
     branches:
       - main
     paths:
-      - charts/pifanctl/**
       - charts/pifanctl-operator/**
       - .github/workflows/release-chart.yaml
 
@@ -23,11 +21,8 @@ permissions:
 
 jobs:
   release:
-    strategy:
-      matrix:
-        chart: [pifanctl, pifanctl-operator]
     env:
-      CHART_NAME: ${{ matrix.chart }}
+      CHART_NAME: pifanctl-operator
     runs-on: ubuntu-26.04
     permissions:
       contents: write
@@ -37,11 +32,10 @@ jobs:
         with:
           fetch-depth: 0
       - uses: azure/setup-helm@v5
-      - name: Wait for the image the chart points at
-        # A new application version changes the chart's default image tag. The
-        # image is built by build-image-main, which can still be running.
+      - name: Wait for the image version pinned by the chart
+        # appVersion is an independently maintained default image pointer.
         run: |
-          version="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' sources/pifanctl/__init__.py)"
+          version="$(helm show chart "charts/${CHART_NAME}" | sed -n 's/^appVersion: //p' | tr -d '"')"
           image="ghcr.io/${GITHUB_REPOSITORY}:v${version}"
           for attempt in $(seq 1 40); do
             if docker buildx imagetools inspect "${image}" >/dev/null 2>&1; then

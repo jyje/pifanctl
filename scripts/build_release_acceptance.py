@@ -268,7 +268,8 @@ def build_pdf():
         if image_match:
             image_path = (DOC.parent / image_match.group(1)).resolve()
             img = Image(str(image_path))
-            img._restrictSize(available_w, 122 * mm)
+            max_height = 90 * mm if image_path.name == "thermal-live-2026-10-06.png" else 122 * mm
+            img._restrictSize(available_w, max_height)
             story.extend([Spacer(1, 3 * mm), img, Spacer(1, 3 * mm)])
             i += 1
             continue
@@ -350,7 +351,7 @@ def build_pdf():
         canvas.drawString(17 * mm, page_h - 6.7 * mm, "PIFANCTL / V1 RELEASE ACCEPTANCE")
         canvas.setFillColor(colors.HexColor(MUTED))
         canvas.setFont("Helvetica", 7.5)
-        canvas.drawString(17 * mm, 8 * mm, "FIELD MANUAL  |  2026-10-04  |  MEASURED TRIAL EVIDENCE")
+        canvas.drawString(17 * mm, 8 * mm, "FIELD MANUAL  |  UPDATED 2026-10-06  |  MEASURED TRIAL EVIDENCE")
         canvas.drawRightString(page_w - 17 * mm, 8 * mm, str(document.page))
         canvas.restoreState()
 

@@ -3,10 +3,11 @@ Fails a pull request that changes what ships without bumping its version.
 
     python scripts/check_version_bump.py <base-ref>
 
-The application is `sources/main.py` and `sources/pifanctl/`. The chart is
-`charts/pifanctl/` (its `ci/` value sets are test fixtures and do not count).
-A new application version changes the chart's `appVersion`, so it also needs a
-new chart version.
+The application is `sources/main.py` and `sources/pifanctl/`. Each chart has an
+independent version in its own `Chart.yaml`; its `ci/` value sets are fixtures.
+Changing application code does not require a chart version change. Updating a
+chart's pinned appVersion or other chart content requires that chart's version
+to change.
 """
 import re
 from pathlib import Path
@@ -14,15 +15,20 @@ import subprocess
 import sys
 
 APP_FILE = "sources/pifanctl/__init__.py"
-CHART_FILE = "charts/pifanctl/Chart.yaml"
+CHARTS_DIR = Path("charts")
 
 
 def touches_application(path: str) -> bool:
     return path == "sources/main.py" or path.startswith("sources/pifanctl/")
 
 
-def touches_chart(path: str) -> bool:
-    return path.startswith("charts/pifanctl/") and not path.startswith("charts/pifanctl/ci/")
+def changed_chart_files(changed: list[str]) -> list[Path]:
+    touched = []
+    for chart_file in CHARTS_DIR.glob("*/Chart.yaml"):
+        prefix = str(chart_file.parent) + "/"
+        if any(path.startswith(prefix) and "/ci/" not in path for path in changed):
+            touched.append(chart_file)
+    return touched
 
 
 def app_version(text: str) -> str | None:
@@ -36,18 +42,21 @@ def chart_version(text: str) -> str | None:
 
 
 def check(changed: list[str], old_app: str | None, new_app: str | None,
-          old_chart: str | None, new_chart: str | None) -> list[str]:
+          old_charts: dict[str, str | None],
+          new_charts: dict[str, str | None]) -> list[str]:
     errors = []
     if any(touches_application(p) for p in changed) and old_app == new_app:
         errors.append(
             f"The application changed but __version__ is still {new_app} in {APP_FILE}. "
-            "Bump __version__ and the chart's appVersion together."
+            "Bump __version__ in the application package."
         )
-    if any(touches_chart(p) for p in changed) and old_chart == new_chart:
-        errors.append(
-            f"The chart changed but its version is still {new_chart} in {CHART_FILE}. "
-            "Bump `version`; a new application version also changes `appVersion`."
-        )
+    for chart_file in changed_chart_files(changed):
+        path = str(chart_file)
+        if old_charts.get(path) == new_charts.get(path):
+            errors.append(
+                f"The chart changed but its version is still {new_charts.get(path)} "
+                f"in {path}. Bump that chart's `version`."
+            )
     return errors
 
 
@@ -59,28 +68,25 @@ def main(base: str) -> int:
     changed = git("diff", "--name-only", f"{base}...HEAD").split()
     try:
         old_app = app_version(git("show", f"{base}:{APP_FILE}"))
-        old_chart = chart_version(git("show", f"{base}:{CHART_FILE}"))
     except subprocess.CalledProcessError:
-        old_app = old_chart = None  # the file did not exist on the base branch
+        old_app = None
     with open(APP_FILE) as f:
         new_app = app_version(f.read())
-    with open(CHART_FILE) as f:
-        new_chart = chart_version(f.read())
+    old_charts = {}
+    new_charts = {}
+    for file in CHARTS_DIR.glob('*/Chart.yaml'):
+        path = str(file)
+        try:
+            old_charts[path] = chart_version(git("show", f"{base}:{path}"))
+        except subprocess.CalledProcessError:
+            old_charts[path] = None
+        new_charts[path] = chart_version(file.read_text())
 
-    errors = check(changed, old_app, new_app, old_chart, new_chart)
-    for file in Path('charts').glob('*/Chart.yaml'):
-        if str(file) == CHART_FILE: continue
-        prefix = str(file.parent) + '/'
-        if not any(p.startswith(prefix) and '/ci/' not in p for p in changed): continue
-        try: old = chart_version(git('show', f'{base}:{file}'))
-        except subprocess.CalledProcessError: old = None
-        version = chart_version(file.read_text())
-        if old == version:
-            errors.append(f'The chart changed but its version is still {version} in {file}.')
+    errors = check(changed, old_app, new_app, old_charts, new_charts)
     for error in errors:
         print(f"::error::{error}")
     if not errors:
-        print(f"Version check passed (application {new_app}, chart {new_chart}).")
+        print(f"Version check passed (application {new_app}; chart versions are independent).")
     return 1 if errors else 0
 
 

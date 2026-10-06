@@ -4,10 +4,10 @@
   "required": [
     "operatorId",
     "replicas",
-    "input",
     "agent"
   ],
   "properties": {
+    "input": {"not": {}},
     "operatorId": {
       "type": "string",
       "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
@@ -17,24 +17,6 @@
       "type": "integer",
       "minimum": 1,
       "maximum": 5
-    },
-    "input": {
-      "type": "object",
-      "properties": {
-        "mode": {
-          "enum": [
-            "crd",
-            "configMap"
-          ]
-        },
-        "configMapName": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "mode",
-        "configMapName"
-      ]
     },
     "agent": {
       "type": "object",
@@ -55,6 +37,24 @@
         "mode",
         "interval"
       ]
+    },
+    "extraResources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["apiVersion", "kind", "metadata"],
+        "properties": {
+          "apiVersion": {"type": "string", "minLength": 1},
+          "kind": {"type": "string", "minLength": 1},
+          "metadata": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      }
     }
   }
 }

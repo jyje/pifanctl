@@ -447,6 +447,6 @@ def run_operator(operator, stop=None, port=9104):
 
 @app.command('run')
 def command(ctx: typer.Context, namespace: str = 'pifanctl', operator_id: str = 'pifanctl',
-            configmap: str = '', image: str = ''):
+            image: str = ''):
     from pifanctl.topology.cli import api
-    run_operator(Operator(api(ctx), namespace, operator_id, configmap or None, image or None))
+    run_operator(Operator(api(ctx), namespace, operator_id, image=image or None))

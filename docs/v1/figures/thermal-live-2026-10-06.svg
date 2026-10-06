@@ -1,0 +1,180 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+<rect width='100%' height='100%' fill='white'/>
+<text x="80.0" y="54.0" text-anchor="start" font-family="Arial,sans-serif" font-size="27" font-weight="700" fill="#19264d">MicroK8s live temperature and fan-command response</text>
+<text x="80.0" y="83.0" text-anchor="start" font-family="Arial,sans-serif" font-size="15" font-weight="400" fill="#566276">2026-10-06 | Deployed alpha.2 shared fan | Requested duty is not measured RPM or voltage</text>
+<rect x="110.0" y="116" width="47.8" height="11" fill="#d8dee9" opacity="0.78"/>
+<text x="133.9" y="109.0" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#566276">Baseline</text>
+<rect x="208.5" y="116" width="227.9" height="11" fill="#3478b9" opacity="0.78"/>
+<text x="322.5" y="109.0" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#566276">1 vCPU load</text>
+<rect x="537.7" y="116" width="42.2" height="11" fill="#e87544" opacity="0.78"/>
+<text x="558.8" y="109.0" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#566276">2 vCPU load, stopped at 60°C gate</text>
+<rect x="720.7" y="116" width="509.3" height="11" fill="#218b82" opacity="0.78"/>
+<text x="975.3" y="109.0" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#566276">No-load cooldown</text>
+<line x1="110" y1="665.4" x2="1230" y2="665.4" stroke="#d8dee9"/>
+<text x="95.0" y="670.4" text-anchor="end" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">40°C</text>
+<line x1="110" y1="566.2" x2="1230" y2="566.2" stroke="#d8dee9"/>
+<text x="95.0" y="571.2" text-anchor="end" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">45°C</text>
+<line x1="110" y1="467.1" x2="1230" y2="467.1" stroke="#d8dee9"/>
+<text x="95.0" y="472.1" text-anchor="end" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">50°C</text>
+<line x1="110" y1="368.0" x2="1230" y2="368.0" stroke="#d8dee9"/>
+<text x="95.0" y="373.0" text-anchor="end" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">55°C</text>
+<line x1="110" y1="268.9" x2="1230" y2="268.9" stroke="#d8dee9"/>
+<text x="95.0" y="273.9" text-anchor="end" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">60°C</text>
+<line x1="110" y1="169.8" x2="1230" y2="169.8" stroke="#d8dee9"/>
+<text x="95.0" y="174.8" text-anchor="end" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">65°C</text>
+<text x="1248.0" y="710.0" text-anchor="start" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">0%</text>
+<text x="1248.0" y="599.0" text-anchor="start" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">20%</text>
+<text x="1248.0" y="488.0" text-anchor="start" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">40%</text>
+<text x="1248.0" y="377.0" text-anchor="start" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">60%</text>
+<text x="1248.0" y="266.0" text-anchor="start" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">80%</text>
+<text x="1248.0" y="155.0" text-anchor="start" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">100%</text>
+<line x1="110" y1="150" x2="110" y2="705" stroke="#19264d" stroke-width="2"/>
+<line x1="110" y1="705" x2="1230" y2="705" stroke="#19264d" stroke-width="2"/>
+<line x1="1230" y1="150" x2="1230" y2="705" stroke="#19264d" stroke-width="2"/>
+<text x="28.0" y="427.5" transform="rotate(-90 28 427.5)" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" font-weight="600" fill="#19264d">Node temperature</text>
+<text x="1310.0" y="427.5" transform="rotate(-90 1310 427.5)" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" font-weight="600" fill="#19264d">Requested fan duty</text>
+<line x1="110.0" y1="150" x2="110.0" y2="705" stroke="#edf0f5"/>
+<text x="110.0" y="729.0" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#566276">+0 min</text>
+<line x1="278.8" y1="150" x2="278.8" y2="705" stroke="#edf0f5"/>
+<text x="278.8" y="729.0" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#566276">+1 min</text>
+<line x1="447.7" y1="150" x2="447.7" y2="705" stroke="#edf0f5"/>
+<text x="447.7" y="729.0" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#566276">+2 min</text>
+<line x1="616.5" y1="150" x2="616.5" y2="705" stroke="#edf0f5"/>
+<text x="616.5" y="729.0" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#566276">+3 min</text>
+<line x1="785.4" y1="150" x2="785.4" y2="705" stroke="#edf0f5"/>
+<text x="785.4" y="729.0" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#566276">+4 min</text>
+<line x1="954.2" y1="150" x2="954.2" y2="705" stroke="#edf0f5"/>
+<text x="954.2" y="729.0" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#566276">+5 min</text>
+<line x1="1123.1" y1="150" x2="1123.1" y2="705" stroke="#edf0f5"/>
+<text x="1123.1" y="729.0" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#566276">+6 min</text>
+<line x1="110" y1="268.9" x2="1230" y2="268.9" stroke="#e87544" stroke-width="2" stroke-dasharray="8 6"/>
+<text x="1222.0" y="261.9" text-anchor="end" font-family="Arial,sans-serif" font-size="12" font-weight="600" fill="#e87544">60°C stage gate</text>
+<line x1="110" y1="169.8" x2="1230" y2="169.8" stroke="#ed3158" stroke-width="2" stroke-dasharray="8 6"/>
+<text x="1222.0" y="162.8" text-anchor="end" font-family="Arial,sans-serif" font-size="12" font-weight="600" fill="#ed3158">65°C hard abort</text>
+<polyline points="110.0,657.3 157.8,657.3 208.5,647.6 250.7,666.9 301.4,618.7 349.2,657.3 391.4,686.2 436.4,638.0 537.7,695.9 579.9,686.2 720.7,705.6 765.7,686.2 816.3,657.3 858.5,676.6 903.6,686.2 948.6,657.3 993.6,666.9 1038.6,666.9 1083.7,647.6 1131.5,676.6 1185.0,638.0 1230.0,609.0" fill="none" stroke="#3478b9" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="110.0" cy="657.3" r="2.8" fill="#3478b9"/>
+<circle cx="157.8" cy="657.3" r="2.8" fill="#3478b9"/>
+<circle cx="208.5" cy="647.6" r="2.8" fill="#3478b9"/>
+<circle cx="250.7" cy="666.9" r="2.8" fill="#3478b9"/>
+<circle cx="301.4" cy="618.7" r="2.8" fill="#3478b9"/>
+<circle cx="349.2" cy="657.3" r="2.8" fill="#3478b9"/>
+<circle cx="391.4" cy="686.2" r="2.8" fill="#3478b9"/>
+<circle cx="436.4" cy="638.0" r="2.8" fill="#3478b9"/>
+<circle cx="537.7" cy="695.9" r="2.8" fill="#3478b9"/>
+<circle cx="579.9" cy="686.2" r="2.8" fill="#3478b9"/>
+<circle cx="720.7" cy="705.6" r="2.8" fill="#3478b9"/>
+<circle cx="765.7" cy="686.2" r="2.8" fill="#3478b9"/>
+<circle cx="816.3" cy="657.3" r="2.8" fill="#3478b9"/>
+<circle cx="858.5" cy="676.6" r="2.8" fill="#3478b9"/>
+<circle cx="903.6" cy="686.2" r="2.8" fill="#3478b9"/>
+<circle cx="948.6" cy="657.3" r="2.8" fill="#3478b9"/>
+<circle cx="993.6" cy="666.9" r="2.8" fill="#3478b9"/>
+<circle cx="1038.6" cy="666.9" r="2.8" fill="#3478b9"/>
+<circle cx="1083.7" cy="647.6" r="2.8" fill="#3478b9"/>
+<circle cx="1131.5" cy="676.6" r="2.8" fill="#3478b9"/>
+<circle cx="1185.0" cy="638.0" r="2.8" fill="#3478b9"/>
+<circle cx="1230.0" cy="609.0" r="2.8" fill="#3478b9"/>
+<polyline points="110.0,647.6 157.8,647.6 208.5,647.6 250.7,647.6 301.4,657.3 349.2,647.6 391.4,657.3 436.4,647.6 537.7,666.9 579.9,686.2 720.7,676.6 765.7,676.6 816.3,676.6 858.5,666.9 903.6,676.6 948.6,686.2 993.6,666.9 1038.6,657.3 1083.7,676.6 1131.5,666.9 1185.0,666.9 1230.0,657.3" fill="none" stroke="#218b82" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="110.0" cy="647.6" r="2.8" fill="#218b82"/>
+<circle cx="157.8" cy="647.6" r="2.8" fill="#218b82"/>
+<circle cx="208.5" cy="647.6" r="2.8" fill="#218b82"/>
+<circle cx="250.7" cy="647.6" r="2.8" fill="#218b82"/>
+<circle cx="301.4" cy="657.3" r="2.8" fill="#218b82"/>
+<circle cx="349.2" cy="647.6" r="2.8" fill="#218b82"/>
+<circle cx="391.4" cy="657.3" r="2.8" fill="#218b82"/>
+<circle cx="436.4" cy="647.6" r="2.8" fill="#218b82"/>
+<circle cx="537.7" cy="666.9" r="2.8" fill="#218b82"/>
+<circle cx="579.9" cy="686.2" r="2.8" fill="#218b82"/>
+<circle cx="720.7" cy="676.6" r="2.8" fill="#218b82"/>
+<circle cx="765.7" cy="676.6" r="2.8" fill="#218b82"/>
+<circle cx="816.3" cy="676.6" r="2.8" fill="#218b82"/>
+<circle cx="858.5" cy="666.9" r="2.8" fill="#218b82"/>
+<circle cx="903.6" cy="676.6" r="2.8" fill="#218b82"/>
+<circle cx="948.6" cy="686.2" r="2.8" fill="#218b82"/>
+<circle cx="993.6" cy="666.9" r="2.8" fill="#218b82"/>
+<circle cx="1038.6" cy="657.3" r="2.8" fill="#218b82"/>
+<circle cx="1083.7" cy="676.6" r="2.8" fill="#218b82"/>
+<circle cx="1131.5" cy="666.9" r="2.8" fill="#218b82"/>
+<circle cx="1185.0" cy="666.9" r="2.8" fill="#218b82"/>
+<circle cx="1230.0" cy="657.3" r="2.8" fill="#218b82"/>
+<polyline points="110.0,616.8 157.8,638.6 208.5,638.6 250.7,627.7 301.4,649.5 349.2,627.7 391.4,638.6 436.4,627.7 537.7,595.0 579.9,562.3 720.7,562.3 765.7,562.3 816.3,605.9 858.5,605.9 903.6,638.6 948.6,595.0 993.6,638.6 1038.6,616.8 1083.7,638.6 1131.5,605.9 1185.0,616.8 1230.0,638.6" fill="none" stroke="#e87544" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="110.0" cy="616.8" r="2.8" fill="#e87544"/>
+<circle cx="157.8" cy="638.6" r="2.8" fill="#e87544"/>
+<circle cx="208.5" cy="638.6" r="2.8" fill="#e87544"/>
+<circle cx="250.7" cy="627.7" r="2.8" fill="#e87544"/>
+<circle cx="301.4" cy="649.5" r="2.8" fill="#e87544"/>
+<circle cx="349.2" cy="627.7" r="2.8" fill="#e87544"/>
+<circle cx="391.4" cy="638.6" r="2.8" fill="#e87544"/>
+<circle cx="436.4" cy="627.7" r="2.8" fill="#e87544"/>
+<circle cx="537.7" cy="595.0" r="2.8" fill="#e87544"/>
+<circle cx="579.9" cy="562.3" r="2.8" fill="#e87544"/>
+<circle cx="720.7" cy="562.3" r="2.8" fill="#e87544"/>
+<circle cx="765.7" cy="562.3" r="2.8" fill="#e87544"/>
+<circle cx="816.3" cy="605.9" r="2.8" fill="#e87544"/>
+<circle cx="858.5" cy="605.9" r="2.8" fill="#e87544"/>
+<circle cx="903.6" cy="638.6" r="2.8" fill="#e87544"/>
+<circle cx="948.6" cy="595.0" r="2.8" fill="#e87544"/>
+<circle cx="993.6" cy="638.6" r="2.8" fill="#e87544"/>
+<circle cx="1038.6" cy="616.8" r="2.8" fill="#e87544"/>
+<circle cx="1083.7" cy="638.6" r="2.8" fill="#e87544"/>
+<circle cx="1131.5" cy="605.9" r="2.8" fill="#e87544"/>
+<circle cx="1185.0" cy="616.8" r="2.8" fill="#e87544"/>
+<circle cx="1230.0" cy="638.6" r="2.8" fill="#e87544"/>
+<polyline points="110.0,507.8 157.8,518.7 208.5,398.8 250.7,322.4 301.4,333.3 349.2,322.4 391.4,289.7 436.4,387.9 537.7,289.7 579.9,246.1 720.7,475.1 765.7,507.8 816.3,529.6 858.5,507.8 903.6,529.6 948.6,507.8 993.6,529.6 1038.6,464.2 1083.7,507.8 1131.5,486.0 1185.0,529.6 1230.0,529.6" fill="none" stroke="#7f63ad" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="110.0" cy="507.8" r="2.8" fill="#7f63ad"/>
+<circle cx="157.8" cy="518.7" r="2.8" fill="#7f63ad"/>
+<circle cx="208.5" cy="398.8" r="2.8" fill="#7f63ad"/>
+<circle cx="250.7" cy="322.4" r="2.8" fill="#7f63ad"/>
+<circle cx="301.4" cy="333.3" r="2.8" fill="#7f63ad"/>
+<circle cx="349.2" cy="322.4" r="2.8" fill="#7f63ad"/>
+<circle cx="391.4" cy="289.7" r="2.8" fill="#7f63ad"/>
+<circle cx="436.4" cy="387.9" r="2.8" fill="#7f63ad"/>
+<circle cx="537.7" cy="289.7" r="2.8" fill="#7f63ad"/>
+<circle cx="579.9" cy="246.1" r="2.8" fill="#7f63ad"/>
+<circle cx="720.7" cy="475.1" r="2.8" fill="#7f63ad"/>
+<circle cx="765.7" cy="507.8" r="2.8" fill="#7f63ad"/>
+<circle cx="816.3" cy="529.6" r="2.8" fill="#7f63ad"/>
+<circle cx="858.5" cy="507.8" r="2.8" fill="#7f63ad"/>
+<circle cx="903.6" cy="529.6" r="2.8" fill="#7f63ad"/>
+<circle cx="948.6" cy="507.8" r="2.8" fill="#7f63ad"/>
+<circle cx="993.6" cy="529.6" r="2.8" fill="#7f63ad"/>
+<circle cx="1038.6" cy="464.2" r="2.8" fill="#7f63ad"/>
+<circle cx="1083.7" cy="507.8" r="2.8" fill="#7f63ad"/>
+<circle cx="1131.5" cy="486.0" r="2.8" fill="#7f63ad"/>
+<circle cx="1185.0" cy="529.6" r="2.8" fill="#7f63ad"/>
+<circle cx="1230.0" cy="529.6" r="2.8" fill="#7f63ad"/>
+<polyline points="110.0,510.5 157.8,510.5 208.5,510.5 250.7,484.9 301.4,425.1 349.2,425.1 391.4,382.3 436.4,382.3 537.7,475.6 579.9,399.4 720.7,448.5 765.7,467.0 816.3,492.7 858.5,509.8 903.6,509.8 948.6,509.8 993.6,509.8 1038.6,509.8 1083.7,509.8 1131.5,509.8 1185.0,509.8 1230.0,509.8" fill="none" stroke="#ed3158" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="110.0" cy="510.5" r="3.2" fill="#ed3158"/>
+<circle cx="157.8" cy="510.5" r="3.2" fill="#ed3158"/>
+<circle cx="208.5" cy="510.5" r="3.2" fill="#ed3158"/>
+<circle cx="250.7" cy="484.9" r="3.2" fill="#ed3158"/>
+<circle cx="301.4" cy="425.1" r="3.2" fill="#ed3158"/>
+<circle cx="349.2" cy="425.1" r="3.2" fill="#ed3158"/>
+<circle cx="391.4" cy="382.3" r="3.2" fill="#ed3158"/>
+<circle cx="436.4" cy="382.3" r="3.2" fill="#ed3158"/>
+<circle cx="537.7" cy="475.6" r="3.2" fill="#ed3158"/>
+<circle cx="579.9" cy="399.4" r="3.2" fill="#ed3158"/>
+<circle cx="720.7" cy="448.5" r="3.2" fill="#ed3158"/>
+<circle cx="765.7" cy="467.0" r="3.2" fill="#ed3158"/>
+<circle cx="816.3" cy="492.7" r="3.2" fill="#ed3158"/>
+<circle cx="858.5" cy="509.8" r="3.2" fill="#ed3158"/>
+<circle cx="903.6" cy="509.8" r="3.2" fill="#ed3158"/>
+<circle cx="948.6" cy="509.8" r="3.2" fill="#ed3158"/>
+<circle cx="993.6" cy="509.8" r="3.2" fill="#ed3158"/>
+<circle cx="1038.6" cy="509.8" r="3.2" fill="#ed3158"/>
+<circle cx="1083.7" cy="509.8" r="3.2" fill="#ed3158"/>
+<circle cx="1131.5" cy="509.8" r="3.2" fill="#ed3158"/>
+<circle cx="1185.0" cy="509.8" r="3.2" fill="#ed3158"/>
+<circle cx="1230.0" cy="509.8" r="3.2" fill="#ed3158"/>
+<line x1="170" y1="786" x2="202" y2="786" stroke="#3478b9" stroke-width="4"/>
+<text x="212.0" y="791.0" text-anchor="start" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">raspi-40</text>
+<line x1="390" y1="786" x2="422" y2="786" stroke="#218b82" stroke-width="4"/>
+<text x="432.0" y="791.0" text-anchor="start" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">raspi-41</text>
+<line x1="610" y1="786" x2="642" y2="786" stroke="#e87544" stroke-width="4"/>
+<text x="652.0" y="791.0" text-anchor="start" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">raspi-50</text>
+<line x1="830" y1="786" x2="862" y2="786" stroke="#7f63ad" stroke-width="4"/>
+<text x="872.0" y="791.0" text-anchor="start" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">raspi-51</text>
+<line x1="1050" y1="786" x2="1082" y2="786" stroke="#ed3158" stroke-width="4"/>
+<text x="1092.0" y="791.0" text-anchor="start" font-family="Arial,sans-serif" font-size="13" font-weight="400" fill="#566276">Requested duty</text>
+<text x="720.0" y="842.0" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" font-weight="400" fill="#19264d">Peak sample: 61.15°C on raspi-51; load stopped at the 60°C gate. No fan-stop test was run.</text>
+</svg>

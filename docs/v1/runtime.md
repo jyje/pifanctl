@@ -10,14 +10,14 @@ checks and remaining release gates. [Korean](runtime-ko.md).
 
 Use the [scenario figures](../../README.md#cooling-systems-manual-scenario-figures)
 and [examples](../../design/v1/examples): two shared rack fans, per-board fans,
-several fans on one Node, or standalone. One `Fan` is one actuator. One
+or several fans on one Node. One `Fan` is one actuator. One
 `CoolingZone` selects cooled Nodes by labels or names and references its fans.
 Shared fans use the union of all assigned zones plus their own local sensor.
 There are no separate per-node member/worker CRDs.
 
 ```sh
-PYTHONPATH=sources python sources/main.py topology validate design/v1/examples/standalone.yaml
-PYTHONPATH=sources python sources/main.py topology plan design/v1/examples/standalone.yaml
+PYTHONPATH=sources python sources/main.py topology validate design/v1/examples/two-racks.yaml
+PYTHONPATH=sources python sources/main.py topology plan design/v1/examples/two-racks.yaml
 # Selectors need live Node identity; this only reads the API:
 pifanctl --context lab topology plan design/v1/examples/two-racks.yaml --live
 ```
@@ -36,34 +36,13 @@ Review the rack inventory and replace the zone or explicitly change membership
 to acknowledge the new identity. Live label edits can remove an existing Node
 from membership intentionally. These guards survive operator restart in plans.
 
-## 02: run a local worker
+## 02: operator-managed workers
 
-Install from the alpha source with its pinned requirements. The real worker
-must run on its actuator host. `NODE_NAME` can map that host's actual Kubernetes
-name; it must never be set to operate somebody else's hardware from a laptop.
-
-```sh
-# Run only on the actuator host after reviewing actual wiring and old writers:
-sudo pifanctl worker run --file topology.yaml --node pi-01
-# Safe development mode on a host with a test thermal directory:
-pifanctl worker run --file topology.yaml --node pi-01 --mock \
-  --thermal-path ./test-thermal --lock-dir ./test-locks --port 9103
-```
-
-Explicit nodeNames work offline. Selectors require `--live` and kubeconfig;
-the file loader re-resolves Nodes on a file change. Operator mode re-resolves
-labels continuously. Local YAML is polled and hot reloaded as a complete document;
-use an atomic file replacement. A bad reload retains the old plan and forces
-its fans to 100%. Hardware changes require a stopped/restarted worker after
-claim release. A local worker does not require an operator heartbeat.
-
-One host-wide `flock` at `/var/lock/pifanctl/worker.lock` covers all hardware
-drivers, local CLI and Pods using the shared hostPath. This intentionally rejects
-separate processes even on different pins. One process can own several fans.
-The new legacy `start` command also locks; old v0 binaries do not. Stop them
-before any migration. The sysfs driver leaves kernel PWM enabled on close;
-RPi.GPIO stops its software thread and holds the pin HIGH. Verify actual
-electrical full-speed behavior for your wiring before relying on this.
+The v1 operator creates and owns workers on the Nodes selected by each `Fan`.
+Users do not run an independent local PWM controller. This keeps the CRD state,
+worker plan, and hardware writer under one Kubernetes reconciliation path.
+`worker run --mock` remains useful for isolated software development, but local
+hardware control is outside the v1 product contract.
 
 ### Electrical fail-open requirements
 
@@ -109,28 +88,28 @@ metrics make remote zones unhealthy and request full duty.
 
 Helm installs CRDs but does not upgrade them. Review and apply
 `charts/pifanctl-operator/crds/` explicitly for future schema upgrades. Use
-`design/v1/helm` to render topology CRs/ConfigMaps; it does not deploy runtimes.
+`charts/pifanctl-operator` to install the runtime and render instances through
+`extraResources`. Keep these values in the GitOps Application. The design chart
+is not a supported v1 installation path.
 
-## 04: ConfigMap mode and kubectl CLI
+## 04: CR instances and kubectl CLI
 
 ```sh
-# Input ConfigMap and operator must share a namespace.
-kubectl --context lab -n pifanctl-system apply -f design/v1/examples/configmap.yaml
-helm upgrade --install pifanctl charts/pifanctl-operator -n pifanctl-system \
-  --set input.mode=configMap --set input.configMapName=pifanctl-topology
 pifanctl --kubeconfig ./lab.config --context lab fan list
 pifanctl --context lab zone describe rack-a
 pifanctl --context lab fan watch
 kubectl pifanctl --context lab fan list
 ```
 
-`install.sh` installs `kubectl-pifanctl`, which delegates to the same CLI.
-Fan/zone commands address CR mode. ConfigMap mode leaves the input List in memory
-and writes status to `pifanctl-status-<sha256(input-name)[:16]>` in the same
-namespace. It does not create CRs. CR-mode `topology apply` uses server-side
-apply, `fieldManager=pifanctl-cli`, `force=false`; `--dry-run` sends `dryRun=All`.
-Apply is not transactional across several resources. For Helm/GitOps, edit the
-authoritative source rather than forcing managed-field ownership.
+Declare the cluster's `Fan` and `CoolingZone` objects in the operator chart's
+`extraResources` values. The chart installs their CRDs and submits the instance
+resources. For Argo CD, put the array in the operator Application's Helm values
+and let GitOps own changes. `install.sh` installs `kubectl-pifanctl`, which
+delegates to the same kubeconfig-aware inspection CLI. CLI `topology apply` uses
+server-side apply with `fieldManager=pifanctl-cli`, `force=false`; `--dry-run`
+sends `dryRun=All`. Apply is not transactional across several resources. For
+Helm/GitOps, edit the authoritative source instead of forcing managed-field
+ownership.
 
 ### Curve and temperature hysteresis
 
@@ -211,13 +190,11 @@ Scope absent-series alerts to the intended installation or fan inventory.
 
 ## 06: retire and migrate
 
-Remove zones/Fans or the input ConfigMap while the operator remains running.
+Remove zones/Fans while the operator remains running.
 Use `kubectl delete ... --cascade=background` (the default). Foreground garbage
 collection can remove owned workers before the release acknowledgement and
 leave the application's finalizer pending; it is not a supported retirement path
-in this alpha. ConfigMap mode grants `update` on the input ConfigMap's finalizers
-for [owner-reference admission](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#ownerreferencespermissionenforcement).
-It publishes replacement plans and waits for matching worker acknowledgements.
+in this alpha. It publishes replacement plans and waits for matching worker acknowledgements.
 A fan with no zone stays at 100%. Removing a Fan drives full duty, closes its
 driver, and acknowledges a plan without that fan. For the last fan, the worker
 Deployment is deleted and Pods must disappear before finalization. Empty-plan

@@ -6,11 +6,9 @@ rules:
   - apiGroups: [""]
     resources: [nodes]
     verbs: [get, list, watch]
-  {{- if eq .Values.input.mode "crd" }}
   - apiGroups: [pifanctl.jyje.online]
     resources: [fans, coolingzones, fans/status, coolingzones/status, fans/finalizers, coolingzones/finalizers]
     verbs: [get, list, watch, patch, update]
-  {{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -24,7 +22,6 @@ subjects:
   - kind: ServiceAccount
     name: {{ include "pifanctl.operatorName" . }}
     namespace: {{ .Release.Namespace }}
-{{- if eq .Values.input.mode "crd" }}
 ---
 # Core Events for cluster scoped CRs belong in default, not the installation
 # namespace. Grant only create on Events there, without cluster-wide Event access.
@@ -51,7 +48,6 @@ subjects:
   - kind: ServiceAccount
     name: {{ include "pifanctl.operatorName" . }}
     namespace: {{ .Release.Namespace }}
-{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -67,13 +63,6 @@ rules:
   - apiGroups: [""]
     resources: [configmaps]
     verbs: [get, list, create, patch, delete]
-  {{- if eq .Values.input.mode "configMap" }}
-  # Required by OwnerReferencesPermissionEnforcement for blockOwnerDeletion.
-  - apiGroups: [""]
-    resources: [configmaps/finalizers]
-    resourceNames: [{{ .Values.input.configMapName | quote }}]
-    verbs: [update]
-  {{- end }}
   - apiGroups: [""]
     resources: [events]
     verbs: [create]

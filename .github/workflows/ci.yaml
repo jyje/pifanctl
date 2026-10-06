@@ -176,7 +176,8 @@ jobs:
       - name: Lint with every set of values
         run: |
           helm lint charts/pifanctl-operator
-          helm lint charts/pifanctl-operator --set input.mode=configMap,input.configMapName=topology,agent.mode=reuse
+          helm lint charts/pifanctl-operator --set agent.mode=reuse
+          helm lint charts/pifanctl-operator -f tests/fixtures/operator-extra-resources.yaml
           helm lint design/v1/helm -f design/v1/examples/helm-values.yaml
           helm lint charts/pifanctl
           for values in charts/pifanctl/ci/*.yaml; do
@@ -184,11 +185,9 @@ jobs:
           done
       - name: Validate rendered manifests against Kubernetes and CRD schemas
         run: |
-          for mode in crd configMap; do
-            helm template ci charts/pifanctl-operator -n pifanctl --set input.mode="$mode",input.configMapName=topology \
-              | docker run -i --rm ghcr.io/yannh/kubeconform:v0.8.0 -strict -summary \
-                  -kubernetes-version 1.33.0 -schema-location default
-          done
+          helm template ci charts/pifanctl-operator -n pifanctl \
+            | docker run -i --rm ghcr.io/yannh/kubeconform:v0.8.0 -strict -summary \
+                -kubernetes-version 1.33.0 -schema-location default
           for values in charts/pifanctl/ci/*.yaml; do
             echo "::group::$values"
             helm template ci charts/pifanctl -n pifanctl -f "$values" \

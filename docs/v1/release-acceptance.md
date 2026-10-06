@@ -1,11 +1,12 @@
 # pifanctl v1 Release Acceptance Field Manual
 
-**Status:** Trial observations recorded on 2026-10-04
+**Status:** Trial observations recorded on 2026-10-04 and live follow-ups on 2026-10-06
 **Release target:** `1.0.0`
-**Current implementation:** `1.0.0-alpha.2`
+- **Current production app:** `1.0.0-alpha.2`
+- **v1 candidate under review:** `1.0.0-alpha.3`
 **Decision:** Not ready for a stable release. Hardware-specific acceptance remains open.
 
-This manual records the current MicroK8s trial, the bounded temperature-response test, the measured evidence, and the remaining release checks. Cluster-reported temperatures and requested duty are not electrical or RPM measurements. Values unavailable from Kubernetes are explicitly marked **Not recorded** instead of being guessed.
+This manual records the MicroK8s trials, bounded temperature-response tests, measured evidence, and remaining release checks. The production pifanctl application remains on the alpha.2 shared-fan controller. The isolated alpha.3 probe below validates CRD admission and operator reconciliation without creating a worker or accessing GPIO. Neither run establishes electrical or RPM measurements. Values unavailable from Kubernetes are explicitly marked **Not recorded** instead of being guessed.
 
 ## 1. Current trial configuration
 
@@ -138,14 +139,70 @@ Capture the archived v0 configuration and checksum. Inventory every writer of ea
 | Cooldown | Five-minute no-load observation, started about seven minutes after the final load sample | Not stable; immediate cooldown transient was not captured | [Raw samples](thermal-load-observations.csv) |
 | Electrical waveform, RPM, and physical fan-off recovery | No instruments or completed post-upgrade observation recorded | Not run | Physical acceptance evidence required |
 | Pi 5 hardware, fault injection, rollback, fleet scale | No live trial records | Not run | Procedures in Sections 5 and 3 |
+| 2026-10-06 live shared-fan follow-up | alpha.2 chart and image; bounded member CPU load | Response observed; 61.15°C sample crossed the 60°C stage gate, so load was stopped; no stable hold claimed | [Follow-up samples](thermal-load-observations-2026-10-06.csv) and Section 7 |
+| 2026-10-06 isolated alpha.3 CRD runtime probe | alpha.3 operator chart and Python 3.12 ARM64 issue image in a temporary namespace; probe CRs targeted nonexistent Nodes | CRD defaulting/admission, operator reconciliation, expected missing-node status, and Argo health passed; no worker or GPIO access | [Workflow run 37429082468](https://github.com/jyje/pifanctl/actions/runs/37429082468) and Section 8 |
+
+## 7. 2026-10-06 live shared-fan follow-up
+
+This bounded follow-up exercised the currently deployed `ghcr.io/jyje/pifanctl:v1.0.0-alpha.2` controller from chart `0.2.0-alpha.2` on the four-node `microk8s` cluster. The Argo CD application was Synced and Healthy before the run. The shared fan controller stayed Ready on `raspi-40`; four agents continued publishing temperatures. A checksum-verified snapshot of the current GitOps application, chart, DaemonSets, Pods, monitoring objects, and node inventory was captured before applying load. No Helm values, ConfigMaps, CRDs, PWM settings, or production workloads were changed.
+
+Two unprivileged Pods were pinned to the hottest member, `raspi-51`, and used the deployed image with CPU and memory limits. The 1 vCPU stage ran for 85 seconds. A 2 vCPU stage was started, then deleted as soon as a 15-second Prometheus poll observed the 60°C stage gate. The load harness also stopped on stale or missing telemetry, an unavailable controller, or a 65°C hard abort guardrail. Because the threshold is evaluated at polling intervals and thermal sensors report with delay, the sampled value reached 61.15°C before the Pod was removed. The 65°C abort limit was not reached.
+
+| Observation | Result |
+| --- | --- |
+| Baseline hottest member | `raspi-51`, 47.95°C; requested duty 35.04% |
+| 1 vCPU stage | Peak 58.95°C; requested duty reached 58.14%; Pod exited after 85 seconds |
+| 2 vCPU stage | Sampled peak 61.15°C; requested duty 55.06%; stopped at the 60°C stage gate and Pod removed |
+| No-load follow-up | 12 samples over 3 minutes; `raspi-51` was 46.85°C in the final sample, with requested duty 35.18% |
+| Monitoring and controller | Four node series remained fresh; maximum observed sample age was under 4 seconds; controller stayed Ready |
+| Cleanup | Both temporary load Pods were absent after the run; GitOps and production configuration were unchanged |
+
+These observations show the shared controller's requested duty rising while the hottest member warmed and falling during cooldown. They do not establish a stable target-temperature hold, prove that injected CPU load alone caused every temperature change, or measure electrical PWM, fan RPM, or airflow. The exact board model for `raspi-51` remains unrecorded. No fan-stop, fault-injection, reboot, or power-loss test was run. Fan rotation was not directly observed during this remote follow-up.
+
+Raw timestamped samples, including the aborted-stage observation and cooldown, are in [thermal-load-observations-2026-10-06.csv](thermal-load-observations-2026-10-06.csv). The plot separates each node's temperature from the requested fan duty and marks both the 60°C stage gate and 65°C hard abort limit.
+
+![Measured 2026-10-06 MicroK8s temperature and requested fan-duty response](figures/thermal-live-2026-10-06.png)
+
+The live experiment is a response check for the deployed alpha.2 shared-fan topology only. It does not validate the v1 CRD operator, Pi 5 PWM, fail-safe behavior after hardware or process faults, electrical signal polarity, or physical cooling capacity.
+
+## 8. 2026-10-06 isolated alpha.3 CRD runtime probe
+
+An isolated Argo CD Application installed the operator chart from pifanctl commit `69a829f2bb17977b692954c905129498d63abcf7` into namespace `pifanctl-v1-runtime-test`. The chart established the cluster-scoped `Fan` and `CoolingZone` CRDs, and Kubernetes admitted both probe resources. API defaulting added `temperatureHysteresis: 5` to the Fan. The probe used the commit-specific ARM64 Python 3.12 image `ghcr.io/jyje/pifanctl-issue:69a829f-py312`, built and smoke-tested by [workflow run 37429082468](https://github.com/jyje/pifanctl/actions/runs/37429082468). The deployed image digest was `sha256:1bbee7f514a3547ac9c0b1413f159f077f4ed90821ff2d39080119f3cd528115`.
+
+| Check | Observed result |
+| --- | --- |
+| CRD installation and admission | Both CRDs established; Fan and CoolingZone creation succeeded |
+| Operator image and API connection | One operator Pod Ready, zero restarts, no recurring reconciliation errors |
+| Argo CD | Synced and Healthy |
+| Missing-node conditions | Fan reported `MissingWorkerNode`; CoolingZone reported `MissingNode`, as expected |
+| Worker and GPIO | No worker Pod was created; no GPIO-capable workload ran |
+| Cleanup | Argo pruned both probe resources; the probe Application and namespace were deleted |
+| Production pifanctl after staged handoff | Alpha.2 agent DaemonSet remains 4/4; its controller DaemonSet was pruned. The alpha.3 staging operator is 1/1 Ready; no Fan resource or worker exists |
+
+The first probe attempt used alpha.2 with the alpha.3 CRD. Kubernetes defaulted the new hysteresis field, which the older alpha.2 topology schema rejected. The alpha.3 Python 3.12 image then reconciled the same probe successfully. This confirms the need to keep the operator image and CRD revision compatible; it does not establish cross-version compatibility.
+
+This is live MicroK8s API and operator-runtime evidence, not the disposable-cluster test, a worker startup test, physical PWM/RPM verification, or temperature stabilization acceptance. The CRDs remain installed cluster-wide after the isolated resources and namespace were removed. The staged GitOps handoff is now active: [PR #144](https://github.com/jyje/cluster/pull/144) installed the alpha.3 operator with no `extraResources`; [PR #145](https://github.com/jyje/cluster/pull/145) disabled the alpha.2 controller; [PR #146](https://github.com/jyje/cluster/pull/146) enabled app-scoped pruning so the old DaemonSet and Pod were removed. The live rack topology was subsequently added through [PR #147](https://github.com/jyje/cluster/pull/147). See the next section for worker and telemetry evidence. Preserve the archived baseline for rollback.
+
+## 9. 2026-10-06 alpha.3 shared rack worker
+
+The GitOps change in [cluster PR #147](https://github.com/jyje/cluster/pull/147), merged as `53fdb9f86cc4b85974e4e410121f2f3dd2bfc810`, declares `r4spi-rack-fan` on `raspi-40` using RPi.GPIO BCM GPIO18 at 1000 Hz. CoolingZone `r4spi-rack` groups `raspi-40`, `raspi-41`, `raspi-50`, and `raspi-51`, reads `pifanctl_temperature_celsius` from the in-cluster Prometheus service, and keeps the existing 50-75 C curve, 5 C hysteresis, 5-second refresh, and 100% failsafe and exit duties.
+
+| Check | Observed result |
+| --- | --- |
+| GitOps | Argo CD `pifanctl-v1-staging` Synced and Healthy after PR #147 |
+| Fan and CoolingZone admission | Both resources created; zone resolved all four nodes and one fan |
+| Worker placement and readiness | One worker Pod on `raspi-40`, Ready, zero restarts |
+| Fan status | Ready=True, reason `Regulating`; requested duty started at 100% and entered closed-loop control |
+| Zone telemetry | Fresh Prometheus samples from all four nodes; zone Ready=True |
+| Unforced observation | At 2026-10-06 11:11:44 UTC, temperatures were `raspi-40` 41.381 C, `raspi-41` 41.381 C, `raspi-50` 44.65 C, and `raspi-51` 50.7 C. The worker reported a 50.7 C zone maximum and 45.96% requested duty. |
+
+The unforced observation confirms that the alpha.3 worker reconciles the real Fan and CoolingZone, collects rack-wide node temperatures, and changes its requested duty as the measured zone temperature changes. It is not a controlled load test or a stable target-temperature hold. The brief 65 C control reading during startup was followed by lower readings as the worker entered its control loop; it was not a staged thermal stimulus. No CPU load, fan-stop, fault injection, or target-curve modification was performed in this run.
+
+The requested duty is a software command, not a tachometer or airflow measurement. Direct physical fan rotation confirmation remains outstanding. Do not mark physical PWM/RPM verification or temperature-stabilization acceptance complete until the fan has been visually checked and a bounded test records its response under controlled load. Keep the archived v0 configuration available for rollback.
 
 Do not label `1.0.0` stable until every applicable release gate has evidence for the exact release candidate. Hardware or topologies not tested must be listed as unsupported. Preserve the v0 rollback archive until the release decision is recorded.
 
 ## References
 
-- [Runtime manual](runtime.md)
-- [v1 architecture and acceptance design](README.md)
-- [Implementation and release checklist](../../PLAN.md)
-- [Raspberry Pi frequency and thermal management](https://www.raspberrypi.com/documentation/hardware/rf/)
-- [RPi.GPIO project](https://sourceforge.net/projects/raspberry-gpio-python/)
-- [Linux kernel PWM interface](https://docs.kernel.org/driver-api/pwm.html)
+- [Runtime manual](runtime.md), [v1 architecture and acceptance design](README.md), and [implementation and release checklist](../../PLAN.md)
+- [Raspberry Pi frequency and thermal management](https://www.raspberrypi.com/documentation/hardware/rf/), [RPi.GPIO project](https://sourceforge.net/projects/raspberry-gpio-python/), and [Linux kernel PWM interface](https://docs.kernel.org/driver-api/pwm.html)
