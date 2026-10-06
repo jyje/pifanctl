@@ -1,0 +1,53 @@
+{
+  "passed": false,
+  "started_at_utc": "2026-10-06T20:20:25.559565+00:00",
+  "finished_at_utc": "2026-10-06T20:20:28.547097+00:00",
+  "visibility": "public_redacted_summary",
+  "full_originals_excluded": true,
+  "mode": "promote",
+  "checks": [
+    {
+      "name": "dual_api_installed",
+      "passed": true
+    }
+  ],
+  "samples": [
+    {
+      "stage": "baseline",
+      "observed_at_utc": "2026-10-06T20:20:26.084400+00:00",
+      "worker_identity_unchanged": true,
+      "resource_identity_unchanged": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "ready": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "requested_duty_percent": 39.8,
+      "memberCount": 4.0,
+      "temperatureCelsius": 48.5,
+      "temperatureObservedAt": "2026-10-06T20:20:08.110356+00:00",
+      "definitions": {}
+    },
+    {
+      "stage": "dual_api_installed",
+      "observed_at_utc": "2026-10-06T20:20:27.311805+00:00",
+      "worker_identity_unchanged": true,
+      "resource_identity_unchanged": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "ready": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "requested_duty_percent": 39.8,
+      "memberCount": 4.0,
+      "temperatureCelsius": 48.5,
+      "temperatureObservedAt": "2026-10-06T20:20:08.110356+00:00",
+      "definitions": {}
+    }
+  ],
+  "failure_category": "strict_snapshot_freshness_limit"
+}

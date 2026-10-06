@@ -1,0 +1,178 @@
+{
+  "passed": true,
+  "started_at_utc": "2026-10-06T20:34:04.743542+00:00",
+  "finished_at_utc": "2026-10-06T20:34:09.438952+00:00",
+  "visibility": "public_redacted_summary",
+  "full_originals_excluded": true,
+  "mode": "promote",
+  "checks": [
+    {
+      "name": "dual_api_installed",
+      "passed": true
+    },
+    {
+      "name": "complete_v1_rewrite",
+      "passed": true
+    },
+    {
+      "name": "worker_uid_identity_readiness_preserved",
+      "passed": true
+    }
+  ],
+  "samples": [
+    {
+      "stage": "baseline",
+      "observed_at_utc": "2026-10-06T20:34:05.233879+00:00",
+      "fresh_snapshot_wait_seconds": 0.3947230000048876,
+      "worker_identity_unchanged": true,
+      "resource_identity_unchanged": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "ready": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "requested_duty_percent": 39.66000000000001,
+      "memberCount": 4.0,
+      "temperatureCelsius": 53.45,
+      "temperatureObservedAt": "2026-10-06T20:33:55.247065+00:00",
+      "definitions": {
+        "fans": {
+          "identity_unchanged": true,
+          "storage": [
+            "v1alpha1"
+          ],
+          "stored_versions": [
+            "v1alpha1"
+          ]
+        },
+        "coolingzones": {
+          "identity_unchanged": true,
+          "storage": [
+            "v1alpha1"
+          ],
+          "stored_versions": [
+            "v1alpha1"
+          ]
+        }
+      }
+    },
+    {
+      "stage": "dual_api_installed",
+      "observed_at_utc": "2026-10-06T20:34:07.460937+00:00",
+      "fresh_snapshot_wait_seconds": 1.5189346670522355,
+      "worker_identity_unchanged": true,
+      "resource_identity_unchanged": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "ready": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "requested_duty_percent": 39.66000000000001,
+      "memberCount": 4.0,
+      "temperatureCelsius": 53.45,
+      "temperatureObservedAt": "2026-10-06T20:33:55.247065+00:00",
+      "definitions": {
+        "fans": {
+          "identity_unchanged": true,
+          "storage": [
+            "v1"
+          ],
+          "stored_versions": [
+            "v1alpha1",
+            "v1"
+          ]
+        },
+        "coolingzones": {
+          "identity_unchanged": true,
+          "storage": [
+            "v1"
+          ],
+          "stored_versions": [
+            "v1alpha1",
+            "v1"
+          ]
+        }
+      }
+    },
+    {
+      "stage": "v1_storage_rewritten",
+      "observed_at_utc": "2026-10-06T20:34:08.948978+00:00",
+      "fresh_snapshot_wait_seconds": 0.43193445896031335,
+      "worker_identity_unchanged": true,
+      "resource_identity_unchanged": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "ready": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "requested_duty_percent": 39.66000000000001,
+      "memberCount": 4.0,
+      "temperatureCelsius": 53.45,
+      "temperatureObservedAt": "2026-10-06T20:33:55.247065+00:00",
+      "definitions": {
+        "fans": {
+          "identity_unchanged": true,
+          "storage": [
+            "v1"
+          ],
+          "stored_versions": [
+            "v1"
+          ]
+        },
+        "coolingzones": {
+          "identity_unchanged": true,
+          "storage": [
+            "v1"
+          ],
+          "stored_versions": [
+            "v1"
+          ]
+        }
+      }
+    },
+    {
+      "stage": "final",
+      "observed_at_utc": "2026-10-06T20:34:09.438897+00:00",
+      "fresh_snapshot_wait_seconds": 0.4019487500190735,
+      "worker_identity_unchanged": true,
+      "resource_identity_unchanged": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "ready": {
+        "Fan": true,
+        "CoolingZone": true
+      },
+      "requested_duty_percent": 39.66000000000001,
+      "memberCount": 4.0,
+      "temperatureCelsius": 53.45,
+      "temperatureObservedAt": "2026-10-06T20:33:55.247065+00:00",
+      "definitions": {
+        "fans": {
+          "identity_unchanged": true,
+          "storage": [
+            "v1"
+          ],
+          "stored_versions": [
+            "v1"
+          ]
+        },
+        "coolingzones": {
+          "identity_unchanged": true,
+          "storage": [
+            "v1"
+          ],
+          "stored_versions": [
+            "v1"
+          ]
+        }
+      }
+    }
+  ]
+}

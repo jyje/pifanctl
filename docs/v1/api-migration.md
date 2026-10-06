@@ -2,7 +2,7 @@
 
 The candidate API serves `pifanctl.jyje.online/v1` and `v1alpha1`. `v1` is the storage version. Both versions have identical schemas, defaults, CEL validations, status subresources and printer columns. Kubernetes `None` conversion changes only the API version. The CLI accepts alpha YAML and emits canonical v1 resources; existing identities, hardware placement and worker plans are preserved.
 
-API stability does not certify hardware or make the alpha application a stable release. The live MicroK8s deployment still uses its earlier alpha CRDs and alpha.3 runtime until the candidate image and deployment are verified. The app candidate is alpha.5 and the operator chart is 0.1.0-alpha.4.
+API stability does not certify hardware or make the alpha application a stable release. The current candidate is app alpha.6 and operator chart 0.1.0-alpha.6. Live MicroK8s now uses both served APIs, v1 storage and the verified alpha.6 Python 3.12 compatibility runtime. The [live migration record](live-migration.md) covers storage promotion, full reverse restoration, archived alpha.3 image rollback and final candidate/automation recovery. This does not close hardware or thermal acceptance.
 
 ## Operator upgrade order
 
