@@ -1,0 +1,33 @@
+{
+  "evidence_type": "user_visual_confirmation",
+  "user_confirmation": "Fan blades continuously rotating normally",
+  "visual_rotation_passed": true,
+  "earlier_question_snapshot": {
+    "requested_duty_percent": 38.12,
+    "hottest_celsius": 49.6
+  },
+  "follow_up": {
+    "observation_clock_utc": "2026-10-06T15:29Z",
+    "clock_precision": "minute",
+    "requested_duty_percent": 38.12,
+    "hottest_celsius": 49.05,
+    "hottest_node": "raspi-51",
+    "member_temperatures_celsius": {
+      "raspi-40": 44.79,
+      "raspi-41": 40.407,
+      "raspi-50": 43.0,
+      "raspi-51": 49.05
+    },
+    "operator_ready": true,
+    "worker_ready": true,
+    "operator_restarts": 0,
+    "worker_restarts": 0,
+    "fan_ready": true,
+    "cooling_zone_ready": true
+  },
+  "rpm_measured": false,
+  "electrical_pwm_measured": false,
+  "fan_stop_restart_tested": false,
+  "thermal_stability_passed": false,
+  "configuration_changed": false
+}
