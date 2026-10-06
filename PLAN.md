@@ -63,9 +63,12 @@ targets, RPM, electrical measurements, and failure acceptance remain open.
 - [x] Verify disposable-cluster Argo CD ordering, active worker reconciliation, and finalizer/deletion lifecycle for active hardware claims: seventeen checks passed through real Argo CD 3.5.2 and Kubernetes 1.30.0 with explicitly simulated GPIO/thermal I/O. This verifies declared runtime claims and staged background pruning, not physical hardware behavior. See `docs/v1/gitops-lifecycle.md`.
   - [x] Verify active worker software lifecycle using explicitly simulated GPIO/thermal I/O: fourteen real Kubernetes checks passed, including two fans per worker, Node UID/credential isolation, sensor loss/recovery and cooperative Fan/CoolingZone deletion. See `docs/v1/runtime-lifecycle.md`. Hardware behavior remains open; Argo ordering is now verified separately above.
 - [x] Promote the candidate CRD API to `v1`, retaining served `v1alpha1` with identical schemas. Verified complete resource rewrites, UID/spec/finalizer/status preservation and reverse storage rollback in kind; nineteen real dual-version admission/lifecycle checks passed. See `docs/v1/api-migration.md` and its evidence reports.
-- [ ] Verify the candidate operator/worker image with the stable API, production migration/rollback, minimum Kubernetes version, and live GitOps instance conversion before stable release. The current MicroK8s installation remains alpha.3.
+- [ ] Verify the candidate operator/worker image with the stable API, production migration/rollback, minimum Kubernetes version, and live GitOps instance conversion before stable release. MicroK8s storage promotion/reverse rollback and alpha.6 runtime/image rollback have passed; final candidate restoration is pending.
   - [x] Verify declared Kubernetes 1.30 minimum software compatibility: nineteen real API checks and fourteen active runtime checks passed on 1.30.0 with explicit simulated I/O. See `docs/v1/minimum-kubernetes.md`.
   - [x] Verify the alpha.6 Python 3.12 compatibility image can read the live alpha API and build a valid four-node topology plan with TLS verification enabled and no GPIO import. This read-only preflight does not pass live runtime/migration acceptance.
+  - [x] Exercise live storage promotion and reverse rollback, preserving CRD/resource UIDs and the active worker. Complete v1 re-promotion passed with explicit declaration/history verification.
+  - [x] Verify actual alpha.6 runtime for 121.6 seconds and archived alpha.3 image rollback for 62.6 seconds with direct worker and per-member source clocks. These are runtime holds, not thermal stability tests.
+  - [ ] Restore candidate image and automatic self-heal, then verify another source-aware healthy hold. Cluster PR #150 is pending.
 - [ ] Complete the hardware, failure, migration/rollback, and fleet-scale acceptance gates below.
 - [ ] Release app `1.0.0` and operator chart `1.0.0` after all applicable gates pass; keep later app/chart versions independent.
 
@@ -181,7 +184,7 @@ and [55°C stability record](docs/v1/release-acceptance.md#10-2026-10-06-alpha3-
 
 | Minimum Kubernetes compatibility and live read-only preflight | Kubernetes 1.30.0 passed nineteen v1/alpha API checks and fourteen active runtime checks with simulated I/O. The alpha.6 Python 3.12 compatibility image read four live Nodes and the existing Fan/CoolingZone with TLS verification enabled and produced a plan without issues. Nonprivileged preflight Pod was archived and deleted; active cooling unchanged. Live upgrade/migration/rollback and hardware acceptance remain open. CI `37497748578`, including all Python versions, ARC and Codecov project/patch, passed before merge. | [PR #58](https://github.com/jyje/pifanctl/pull/58), merge `59e995c` |
 
-| Argo CD staged lifecycle and shared CRD retention | Seventeen strict source-aware checks passed on Argo CD 3.5.2/Kubernetes 1.30.0 with explicit simulated I/O. Verified absent-CRD initial installation, two active fans, ownership transfer without worker replacement, cooperative pruning, worker removal before operator deletion and retained CRD UIDs. Chart 0.1.0-alpha.6 adds CRD prune/delete protection; app remains alpha.6. 330 tests passed, statement 96.29%, branch 89.81%. The initial stale-status trial is audited and excluded from acceptance. Live MicroK8s remains alpha.3. | `932745c`, `c13044e` |
+| Argo CD staged lifecycle and shared CRD retention | Seventeen strict source-aware checks passed on Argo CD 3.5.2/Kubernetes 1.30.0 with explicit simulated I/O. Verified absent-CRD initial installation, two active fans, ownership transfer without worker replacement, cooperative pruning, worker removal before operator deletion and retained CRD UIDs. Chart 0.1.0-alpha.6 adds CRD prune/delete protection; app remains alpha.6. 330 tests passed, statement 96.29%, branch 89.81%. The initial stale-status trial is audited and excluded from acceptance. Live MicroK8s remained alpha.3 during this isolated phase. CI `37502333871` passed all Python/Codecov/ARC checks; main CI `37524631559` and chart publication `37524631324` passed. | [PR #59](https://github.com/jyje/pifanctl/pull/59), merge `e04f73b` |
 
 ### Regressions found and fixed
 
@@ -230,3 +233,24 @@ operator safety still need the separate v1 release acceptance work above.
 - [PR #43 CI run 37189547667](https://github.com/jyje/pifanctl/actions/runs/37189547667): all five Python versions passed 259 tests; `Coverage quality`, version, workflow, Helm, ARM64 image and Codecov jobs passed. The canonical report upload was accepted with the repository token. Codecov posted its integration welcome comment. PR #43 merged into PR #41 at `6dc6bfa`.
 - Main CI run [37191841522](https://github.com/jyje/pifanctl/actions/runs/37191841522) passed tests, reports and Codecov statuses on merge commit `eb77c0c`, but badge publication failed because the orphan-branch initialization attempted to remove files from an empty index. PR #44 replaced the separate branch with `assets/coverage/` updates on `main`.
 - Main CI run [37193265541](https://github.com/jyje/pifanctl/actions/runs/37193265541) passed all required jobs, including Codecov and badge publishing. Commit `38f16a0` publishes badges measured from `99f5027`: 95.7527% line coverage and 88.2129% branch coverage. Codecov `project` and `patch` statuses succeeded on the main merge commit.
+
+### Live migration verification tooling
+
+- Added explicit manual-sync and archived-storage guards, complete inventory
+  rewrites, checksum/UID-checked reverse restoration and fresh-snapshot waits.
+- Added read-only runtime holds with source-matched Argo success, exact image
+  digest, single-worker/credential/host-lock checks and direct worker heartbeat.
+  Each member's original Prometheus sample time is checked rather than the
+  instant query evaluation timestamp.
+- 358 full Python 3.13.2 tests passed without skips; statement coverage 96.29%,
+  branch coverage 89.81%. Related Python 3.10 checks: 34 passed.
+- Initial stale preflights made no mutations. A later successful storage rewrite
+  failed its immediate 20-second published-heartbeat check by 0.385 seconds.
+  That report stays failed. CR status publication is throttled to 30 seconds;
+  subsequent storage verification waits for a fresh snapshot without loosening
+  its age limit, and runtime verification uses direct heartbeat/source clocks.
+- Runtime proxy observation initially failed because kubectl's request-timeout
+  query reached the worker's exact `/status` route. The read-only observer now
+  bounds its subprocess without adding that proxy query. Failed reports remain
+  excluded. Candidate and archived-image holds then passed.
+- Final return-to-candidate and hardware/thermal/fleet gates remain pending.
