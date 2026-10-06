@@ -1,0 +1,319 @@
+{
+  "spec": {
+    "destination": {
+      "namespace": "pifanctl-release",
+      "server": "https://kubernetes.default.svc"
+    },
+    "project": "default",
+    "source": {
+      "helm": {
+        "releaseName": "pifanctl-release",
+        "valuesObject": {
+          "agent": {
+            "mode": "reuse"
+          },
+          "extraResources": [
+            {
+              "apiVersion": "pifanctl.jyje.online/v1",
+              "kind": "Fan",
+              "metadata": {
+                "name": "gitops-fan-b"
+              },
+              "spec": {
+                "control": {
+                  "curve": {
+                    "dutyDownStep": 100,
+                    "dutyIdle": 0,
+                    "dutyMax": 100,
+                    "dutyStart": 30,
+                    "temperatureHigh": 70,
+                    "temperatureHysteresis": 0,
+                    "temperatureLow": 50
+                  },
+                  "exitDuty": 100,
+                  "failsafeDuty": 100,
+                  "refreshIntervalSeconds": 1
+                },
+                "hardware": {
+                  "rpigpio": {
+                    "frequencyHz": 1000,
+                    "pin": 19
+                  }
+                },
+                "nodeName": "pifanctl-release-control-plane"
+              }
+            },
+            {
+              "apiVersion": "pifanctl.jyje.online/v1",
+              "kind": "CoolingZone",
+              "metadata": {
+                "name": "gitops-zone"
+              },
+              "spec": {
+                "fanRefs": [
+                  "gitops-fan-b"
+                ],
+                "nodeNames": [
+                  "pifanctl-release-control-plane"
+                ],
+                "telemetry": {
+                  "source": "local"
+                }
+              }
+            }
+          ],
+          "image": {
+            "pullPolicy": "Never",
+            "repository": "pifanctl-runtime-lab",
+            "tag": "alpha6"
+          },
+          "networkPolicy": {
+            "enabled": false
+          }
+        }
+      },
+      "path": "charts/pifanctl-operator",
+      "repoURL": "https://github.com/jyje/pifanctl",
+      "targetRevision": "932745c7cda663330197c1c68c4125bef030ed60"
+    },
+    "syncPolicy": {
+      "automated": {
+        "prune": true,
+        "selfHeal": true
+      },
+      "syncOptions": [
+        "CreateNamespace=true",
+        "ServerSideApply=true",
+        "PrunePropagationPolicy=background",
+        "PruneLast=true"
+      ]
+    }
+  },
+  "status": {
+    "sync": {
+      "comparedTo": {
+        "destination": {
+          "namespace": "pifanctl-release",
+          "server": "https://kubernetes.default.svc"
+        },
+        "source": {
+          "helm": {
+            "releaseName": "pifanctl-release",
+            "valuesObject": {
+              "agent": {
+                "mode": "reuse"
+              },
+              "extraResources": [
+                {
+                  "apiVersion": "pifanctl.jyje.online/v1",
+                  "kind": "Fan",
+                  "metadata": {
+                    "name": "gitops-fan-a"
+                  },
+                  "spec": {
+                    "control": {
+                      "curve": {
+                        "dutyDownStep": 100,
+                        "dutyIdle": 0,
+                        "dutyMax": 100,
+                        "dutyStart": 30,
+                        "temperatureHigh": 70,
+                        "temperatureHysteresis": 0,
+                        "temperatureLow": 50
+                      },
+                      "exitDuty": 100,
+                      "failsafeDuty": 100,
+                      "refreshIntervalSeconds": 1
+                    },
+                    "hardware": {
+                      "rpigpio": {
+                        "frequencyHz": 1000,
+                        "pin": 18
+                      }
+                    },
+                    "nodeName": "pifanctl-release-control-plane"
+                  }
+                },
+                {
+                  "apiVersion": "pifanctl.jyje.online/v1",
+                  "kind": "Fan",
+                  "metadata": {
+                    "name": "gitops-fan-b"
+                  },
+                  "spec": {
+                    "control": {
+                      "curve": {
+                        "dutyDownStep": 100,
+                        "dutyIdle": 0,
+                        "dutyMax": 100,
+                        "dutyStart": 30,
+                        "temperatureHigh": 70,
+                        "temperatureHysteresis": 0,
+                        "temperatureLow": 50
+                      },
+                      "exitDuty": 100,
+                      "failsafeDuty": 100,
+                      "refreshIntervalSeconds": 1
+                    },
+                    "hardware": {
+                      "rpigpio": {
+                        "frequencyHz": 1000,
+                        "pin": 19
+                      }
+                    },
+                    "nodeName": "pifanctl-release-control-plane"
+                  }
+                },
+                {
+                  "apiVersion": "pifanctl.jyje.online/v1",
+                  "kind": "CoolingZone",
+                  "metadata": {
+                    "name": "gitops-zone"
+                  },
+                  "spec": {
+                    "fanRefs": [
+                      "gitops-fan-a",
+                      "gitops-fan-b"
+                    ],
+                    "nodeNames": [
+                      "pifanctl-release-control-plane"
+                    ],
+                    "telemetry": {
+                      "source": "local"
+                    }
+                  }
+                }
+              ],
+              "image": {
+                "pullPolicy": "Never",
+                "repository": "pifanctl-runtime-lab",
+                "tag": "alpha6"
+              },
+              "networkPolicy": {
+                "enabled": false
+              }
+            }
+          },
+          "path": "charts/pifanctl-operator",
+          "repoURL": "https://github.com/jyje/pifanctl",
+          "targetRevision": "932745c7cda663330197c1c68c4125bef030ed60"
+        }
+      },
+      "revision": "932745c7cda663330197c1c68c4125bef030ed60",
+      "status": "Synced"
+    },
+    "health": {
+      "lastTransitionTime": "2026-10-06T16:57:54Z",
+      "status": "Healthy"
+    },
+    "operationState": {
+      "phase": "Succeeded",
+      "finishedAt": "2026-10-06T16:58:03Z",
+      "syncResult": {
+        "source": {
+          "helm": {
+            "releaseName": "pifanctl-release",
+            "valuesObject": {
+              "agent": {
+                "mode": "reuse"
+              },
+              "extraResources": [
+                {
+                  "apiVersion": "pifanctl.jyje.online/v1",
+                  "kind": "Fan",
+                  "metadata": {
+                    "name": "gitops-fan-a"
+                  },
+                  "spec": {
+                    "control": {
+                      "curve": {
+                        "dutyDownStep": 100,
+                        "dutyIdle": 0,
+                        "dutyMax": 100,
+                        "dutyStart": 30,
+                        "temperatureHigh": 70,
+                        "temperatureHysteresis": 0,
+                        "temperatureLow": 50
+                      },
+                      "exitDuty": 100,
+                      "failsafeDuty": 100,
+                      "refreshIntervalSeconds": 1
+                    },
+                    "hardware": {
+                      "rpigpio": {
+                        "frequencyHz": 1000,
+                        "pin": 18
+                      }
+                    },
+                    "nodeName": "pifanctl-release-control-plane"
+                  }
+                },
+                {
+                  "apiVersion": "pifanctl.jyje.online/v1",
+                  "kind": "Fan",
+                  "metadata": {
+                    "name": "gitops-fan-b"
+                  },
+                  "spec": {
+                    "control": {
+                      "curve": {
+                        "dutyDownStep": 100,
+                        "dutyIdle": 0,
+                        "dutyMax": 100,
+                        "dutyStart": 30,
+                        "temperatureHigh": 70,
+                        "temperatureHysteresis": 0,
+                        "temperatureLow": 50
+                      },
+                      "exitDuty": 100,
+                      "failsafeDuty": 100,
+                      "refreshIntervalSeconds": 1
+                    },
+                    "hardware": {
+                      "rpigpio": {
+                        "frequencyHz": 1000,
+                        "pin": 19
+                      }
+                    },
+                    "nodeName": "pifanctl-release-control-plane"
+                  }
+                },
+                {
+                  "apiVersion": "pifanctl.jyje.online/v1",
+                  "kind": "CoolingZone",
+                  "metadata": {
+                    "name": "gitops-zone"
+                  },
+                  "spec": {
+                    "fanRefs": [
+                      "gitops-fan-a",
+                      "gitops-fan-b"
+                    ],
+                    "nodeNames": [
+                      "pifanctl-release-control-plane"
+                    ],
+                    "telemetry": {
+                      "source": "local"
+                    }
+                  }
+                }
+              ],
+              "image": {
+                "pullPolicy": "Never",
+                "repository": "pifanctl-runtime-lab",
+                "tag": "alpha6"
+              },
+              "networkPolicy": {
+                "enabled": false
+              }
+            }
+          },
+          "path": "charts/pifanctl-operator",
+          "repoURL": "https://github.com/jyje/pifanctl",
+          "targetRevision": "932745c7cda663330197c1c68c4125bef030ed60"
+        },
+        "revision": "932745c7cda663330197c1c68c4125bef030ed60"
+      }
+    }
+  }
+}

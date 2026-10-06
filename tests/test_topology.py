@@ -129,6 +129,8 @@ def test_examples():
         text = path.read_text()
         doc = yaml.safe_load(text)
         if doc.get('kind') == 'ConfigMap': text = doc['data']['topology.yaml']
+        if doc.get('kind') == 'Application':
+            text = yaml.safe_dump_all(doc['spec']['source']['helm']['valuesObject']['extraResources'])
         items = parse(text)
         assert items
         if all('nodeSelector' not in o['spec'] for o in items): assert plan(items)['hash']
