@@ -1,8 +1,8 @@
 {
-  "commit_sha": "0ad658f6c7d27f84d1c9b6a07f337c56b2b8f7f3",
+  "commit_sha": "265f2dafa1148cfba76b527bdbd835e27e2bfba8",
   "coverage_version": "7.16.2",
   "event_name": "push",
-  "measured_at": "2026-10-06T21:19:33.176648+00:00",
+  "measured_at": "2026-10-06T21:29:44.361585+00:00",
   "metrics": {
     "branch_percent": 88.6792,
     "covered_branches": 470,
@@ -14,5 +14,5 @@
   "python_version": "3.14",
   "schema_version": 1,
   "workflow_run_attempt": "1",
-  "workflow_run_id": "37533007374"
+  "workflow_run_id": "37534229361"
 }
