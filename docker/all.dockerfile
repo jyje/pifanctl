@@ -29,8 +29,8 @@ COPY ./sources/ /workspace
 WORKDIR /workspace
 
 # Runs unprivileged by default, which is enough for `agent` and `status`.
-# Driving GPIO or /sys/class/pwm needs more: the Helm chart's controller runs
-# as root with the access it needs, and `docker run --privileged` does the same.
+# Operator-managed workers get the hardware access declared by the operator
+# chart. Users manage Fan/CoolingZone CRs instead of starting local controllers.
 RUN useradd --system --uid 10001 --no-create-home pifanctl
 USER 10001
 

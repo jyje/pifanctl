@@ -232,7 +232,4 @@ jobs:
           docker run --rm pifanctl:ci python main.py worker --help
           docker run --rm pifanctl:ci python main.py operator --help
           test "$(docker run --rm pifanctl:ci id -u)" != "0"
-          if docker run --rm pifanctl:ci python main.py start --driver rpigpio; then
-            echo "the real GPIO driver must fail when there is no GPIO" >&2
-            exit 1
-          fi
+          docker run --rm pifanctl:ci python -m pifanctl.hardware_smoke

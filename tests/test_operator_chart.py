@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -6,7 +7,6 @@ import yaml
 import pytest
 from typer.testing import CliRunner
 
-from pifanctl import __version__
 from pifanctl.topology.model import SCHEMAS
 from pifanctl.topology.operator import app as operator_app
 from pifanctl.topology.operator import worker_deployment
@@ -28,7 +28,8 @@ def test_default_operator_chart():
     assert d['spec']['strategy'] == {'type': 'Recreate'}
     assert pod['securityContext']['runAsNonRoot']
     assert 'volumes' not in pod
-    assert c['image'] == f'ghcr.io/jyje/pifanctl:v{__version__}'
+    chart = yaml.safe_load((CHART / 'Chart.yaml').read_text())
+    assert c['image'] == f"ghcr.io/jyje/pifanctl:v{chart['appVersion']}"
     assert c['readinessProbe']['httpGet']['path'] == '/readyz'
     assert len([o for o in objects if o['kind'] == 'CustomResourceDefinition']) == 2
     assert any(o['kind'] == 'NetworkPolicy' for o in objects)
@@ -144,3 +145,14 @@ def test_worker_metrics_remain_visible_when_unready(agent_mode):
 
 def test_worker_scrape_is_opt_in():
     assert not any(o['kind'] == 'ServiceMonitor' for o in render())
+
+
+def test_primary_readmes_install_only_operator_chart():
+    for path in (Path("README.md"), Path("README-ko.md")):
+        text = path.read_text()
+        assert "helm upgrade --install pifanctl charts/pifanctl-operator" in text
+        assert "python main.py start" not in text
+        assert "pifanctl start --" not in text
+        assert "oci://ghcr.io/jyje/charts/pifanctl --" not in text
+        assert "extraResources" in text and "CoolingZone" in text
+        assert len(re.findall(r"!\[.*?\]\(docs/v1/figures/", text)) == 8

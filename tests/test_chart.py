@@ -166,6 +166,6 @@ def test_the_raw_manifest_and_the_install_command_follow_the_release():
     chart = yaml.safe_load((CHART / "Chart.yaml").read_text())
     manifest = (CHART.parent.parent / "k8s" / "manifests" / "deployments.yaml").read_text()
     assert f"ghcr.io/jyje/pifanctl:v{chart['appVersion']}" in manifest
-    for readme in ("README.md", "README-ko.md"):
+    for readme in ("docs/legacy/v0-usage.md", "docs/legacy/v0-usage-ko.md"):
         text = (CHART.parent.parent / readme).read_text()
         assert f"--version {chart['version']}" in text, f"{readme} installs a different chart version"

@@ -1,7 +1,7 @@
 # v1 alpha runtime manual
 
 **Implemented alpha, not a stable hardware release.** Application
-`1.0.0-alpha.2` includes the portable schema/planner, freshness metric, guarded
+`1.0.0-alpha.4` includes the portable schema/planner, freshness metric, guarded
 worker, official Kubernetes client, operator, CLI and operator chart. Mock tests
 do not establish real PWM behavior. [PLAN.md](../../PLAN.md) records the staged
 checks and remaining release gates. [Korean](runtime-ko.md).
@@ -41,7 +41,9 @@ from membership intentionally. These guards survive operator restart in plans.
 The v1 operator creates and owns workers on the Nodes selected by each `Fan`.
 Users do not run an independent local PWM controller. This keeps the CRD state,
 worker plan, and hardware writer under one Kubernetes reconciliation path.
-`worker run --mock` remains useful for isolated software development, but local
+`start` is not a v1 command. `worker run --file` requires `--mock`; hardware
+workers require `--plan-file`, `--heartbeat-file`, and `--uid` supplied by the
+operator. `worker run --mock` remains useful for isolated software development, but local
 hardware control is outside the v1 product contract.
 
 ### Electrical fail-open requirements
