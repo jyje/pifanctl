@@ -30,3 +30,8 @@ def test_fixture_bounds_and_failsafe_predicate():
     assert not expired({'ready': True, 'fans': value['fans']}, ['a'])
     value['fans']['a']['dutyPercent'] = 99
     assert not expired(value, ['a'])
+
+
+def test_api_counter_filters_group_and_ignores_comments_and_other_metrics():
+    from measure_lab_resources import api_totals
+    assert api_totals('# apiserver_request_total help\napiserver_request_total{group="pifanctl.jyje.online",verb="GET"} 12\napiserver_request_total{group="",verb="GET"} 9\nother{group="pifanctl.jyje.online"} 88\n') == 12
