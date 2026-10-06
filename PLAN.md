@@ -331,8 +331,12 @@ This approval changes the measurement policy, not the deployed control curve.
 - [x] Update active acceptance guidance, PLAN, report and figures. Preserve
   historical decisions and missing-data limitations for earlier trials.
 - [x] Regenerate and visually inspect the 17-page PDF using the PDF skill.
-- [ ] Run complete/local compatibility tests, commit each concern, create a PR,
-  verify remote CI, merge and synchronize the clean main checkout.
+- [x] Run complete/local compatibility tests, commit each concern and create
+  [PR #62](https://github.com/jyje/pifanctl/pull/62).
+- [x] Verify source-policy CI `37545369879` on `915c87c`: Python 3.10-3.14,
+  chart/version/workflow checks, ARC ARM64 image and Codecov project/patch all
+  passed. The final cover-only rerun and merge state are tracked in PR #62;
+  clean-main synchronization is verified in the final handoff report.
 
 - Policy verification: 408 full tests and 54 focused Python 3.10 tests passed.
   New and original verdicts are separately reproducible. The reassessment CSV
