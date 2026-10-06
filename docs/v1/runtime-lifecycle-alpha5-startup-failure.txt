@@ -1,0 +1,96 @@
+Name:             pifanctl-worker-7e9419290162a3ee-5dff96dd94-vw69t
+Namespace:        pifanctl-release
+Priority:         0
+Service Account:  default
+Node:             pifanctl-release-control-plane/192.168.97.3
+Start Time:       Wed, 07 Oct 2026 01:07:03 +0900
+Labels:           app.kubernetes.io/component=worker
+                  pifanctl.jyje.online/node=pifanctl-worker-7e9419290162a3ee
+                  pifanctl.jyje.online/operator=pifanctl
+                  pod-template-hash=5dff96dd94
+Annotations:      <none>
+Status:           Pending
+IP:               10.244.0.7
+IPs:
+  IP:           10.244.0.7
+Controlled By:  ReplicaSet/pifanctl-worker-7e9419290162a3ee-5dff96dd94
+Containers:
+  worker:
+    Container ID:
+    Image:         pifanctl-runtime-lab:alpha5
+    Image ID:
+    Port:          9103/TCP (status)
+    Host Port:     0/TCP (status)
+    Command:
+      python
+      main.py
+      worker
+      run
+      --node
+      pifanctl-release-control-plane
+      --uid
+      3153095d-d537-4eb1-a98b-7b1e3f90046d
+      --plan-file
+      /etc/pifanctl/plan.json
+      --heartbeat-file
+      /etc/pifanctl/heartbeat.json
+    State:          Waiting
+      Reason:       CreateContainerError
+    Ready:          False
+    Restart Count:  0
+    Limits:
+      memory:  256Mi
+    Requests:
+      cpu:      20m
+      memory:   64Mi
+    Liveness:   http-get http://:status/healthz delay=10s timeout=1s period=10s successThreshold=1 failureThreshold=3
+    Readiness:  http-get http://:status/readyz delay=0s timeout=1s period=10s successThreshold=1 failureThreshold=3
+    Environment:
+      NODE_NAME:   (v1:spec.nodeName)
+    Mounts:
+      /dev from dev (rw)
+      /etc/pifanctl from config (ro)
+      /sys from sys (rw)
+      /var/lock/pifanctl from locks (rw)
+Conditions:
+  Type                        Status
+  PodReadyToStartContainers   True
+  Initialized                 True
+  Ready                       False
+  ContainersReady             False
+  PodScheduled                True
+Volumes:
+  config:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      pifanctl-worker-7e9419290162a3ee-plan
+    Optional:  false
+  sys:
+    Type:          HostPath (bare host directory volume)
+    Path:          /sys
+    HostPathType:  Directory
+  dev:
+    Type:          HostPath (bare host directory volume)
+    Path:          /dev
+    HostPathType:  Directory
+  locks:
+    Type:          HostPath (bare host directory volume)
+    Path:          /var/lock/pifanctl
+    HostPathType:  DirectoryOrCreate
+QoS Class:         Burstable
+Node-Selectors:    <none>
+Tolerations:       op=Exists
+Events:
+  Type     Reason     Age                   From               Message
+  ----     ------     ----                  ----               -------
+  Normal   Scheduled  6m17s                 default-scheduler  Successfully assigned pifanctl-release/pifanctl-worker-7e9419290162a3ee-5dff96dd94-vw69t to pifanctl-release-control-plane
+  Warning  Failed     6m16s                 kubelet            spec.containers{worker}: Error: failed to generate container "c55b349ed45c93fdd4f01009df2dd9df6eaf061d76099be83ebbb8f38928a07a" spec: failed to apply OCI options: failed to mkdir "/var/lock/pifanctl": mkdir /var/lock: file exists
+  Warning  Failed     6m15s                 kubelet            spec.containers{worker}: Error: failed to generate container "52aab62cdc866f2499f13f993b7813cd67a4d33436e5dca28d7a6aab46e71647" spec: failed to apply OCI options: failed to mkdir "/var/lock/pifanctl": mkdir /var/lock: file exists
+  Warning  Failed     6m1s                  kubelet            spec.containers{worker}: Error: failed to generate container "09514db80300769e6f3f5cae36d4ebc3d3f4f9986e156d906d37cd7e93edbf0e" spec: failed to apply OCI options: failed to mkdir "/var/lock/pifanctl": mkdir /var/lock: file exists
+  Warning  Failed     5m49s                 kubelet            spec.containers{worker}: Error: failed to generate container "11085da32d452a3f69a6078924080b8dac568cb836f1f5615a3f1febf18cdaeb" spec: failed to apply OCI options: failed to mkdir "/var/lock/pifanctl": mkdir /var/lock: file exists
+  Warning  Failed     5m37s                 kubelet            spec.containers{worker}: Error: failed to generate container "3b592ec4ab447459f8dba370d78ce2208508411018d4c6dd30a227425dc0e265" spec: failed to apply OCI options: failed to mkdir "/var/lock/pifanctl": mkdir /var/lock: file exists
+  Warning  Failed     5m22s                 kubelet            spec.containers{worker}: Error: failed to generate container "3aab7f92339ccc5c10f4c2e99939f779b02ddd16f5cf2d55aa65d1b3da8f4279" spec: failed to apply OCI options: failed to mkdir "/var/lock/pifanctl": mkdir /var/lock: file exists
+  Warning  Failed     5m9s                  kubelet            spec.containers{worker}: Error: failed to generate container "5d6c8d1cf249327bcbe6bcc4fb579c6720cdfd509a1f0d13d3b4e0f9e9ed68e1" spec: failed to apply OCI options: failed to mkdir "/var/lock/pifanctl": mkdir /var/lock: file exists
+  Warning  Failed     4m56s                 kubelet            spec.containers{worker}: Error: failed to generate container "11957b21fdede5e4009a9b79a6afbad4c07561047dfa50d6eb548cbf325662c7" spec: failed to apply OCI options: failed to mkdir "/var/lock/pifanctl": mkdir /var/lock: file exists
+  Warning  Failed     4m45s                 kubelet            spec.containers{worker}: Error: failed to generate container "8ab30d492bba46b398d8ae5e9bfe25f1db932bc457c567e783c274cd1580c452" spec: failed to apply OCI options: failed to mkdir "/var/lock/pifanctl": mkdir /var/lock: file exists
+  Normal   Pulled     64s (x26 over 6m16s)  kubelet            spec.containers{worker}: Container image "pifanctl-runtime-lab:alpha5" already present on machine and can be accessed by the pod
+  Warning  Failed     64s (x17 over 4m33s)  kubelet            spec.containers{worker}: (combined from similar events): Error: failed to generate container "b17ea503ad19ec5ad97b7972325c6cd3a690bfe7057933a5b8d41328d9e6b6cd" spec: failed to apply OCI options: failed to mkdir "/var/lock/pifanctl": mkdir /var/lock: file exists

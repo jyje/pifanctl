@@ -68,6 +68,8 @@ def worker_name(node):
 
 
 def worker_deployment(namespace, operator_id, node, uid, hostname, config, image, owner):
+    # Keep the host lock shared with legacy writers. Use a direct container
+    # path instead of relying on the image's /var/lock symlink.
     worker = worker_name(node)
     labels = {OWNER: operator_id, 'pifanctl.jyje.online/node': worker,
               'app.kubernetes.io/component': 'worker'}
@@ -84,7 +86,8 @@ def worker_deployment(namespace, operator_id, node, uid, hostname, config, image
                 'tolerations': [{'operator': 'Exists'}],
                 'containers': [{'name': 'worker', 'image': image, 'imagePullPolicy': 'IfNotPresent',
                     'command': ['python', 'main.py', 'worker', 'run', '--node', node, '--uid', uid,
-                                '--plan-file', '/etc/pifanctl/plan.json', '--heartbeat-file', '/etc/pifanctl/heartbeat.json'],
+                                '--plan-file', '/etc/pifanctl/plan.json', '--heartbeat-file', '/etc/pifanctl/heartbeat.json',
+                                '--lock-dir', '/run/lock/pifanctl'],
                     'env': [{'name': 'NODE_NAME', 'valueFrom': {'fieldRef': {'fieldPath': 'spec.nodeName'}}}],
                     'ports': [{'name': 'status', 'containerPort': 9103}],
                     'livenessProbe': {'httpGet': {'path': '/healthz', 'port': 'status'}, 'initialDelaySeconds': 10},
@@ -93,7 +96,7 @@ def worker_deployment(namespace, operator_id, node, uid, hostname, config, image
                     'securityContext': {'runAsUser': 0, 'privileged': True, 'readOnlyRootFilesystem': True},
                     'volumeMounts': [{'name': 'config', 'mountPath': '/etc/pifanctl', 'readOnly': True},
                         {'name': 'sys', 'mountPath': '/sys'}, {'name': 'dev', 'mountPath': '/dev'},
-                        {'name': 'locks', 'mountPath': '/var/lock/pifanctl'}]}],
+                        {'name': 'locks', 'mountPath': '/run/lock/pifanctl'}]}],
                 'volumes': [{'name': 'config', 'configMap': {'name': config}},
                     {'name': 'sys', 'hostPath': {'path': '/sys', 'type': 'Directory'}},
                     {'name': 'dev', 'hostPath': {'path': '/dev', 'type': 'Directory'}},

@@ -166,3 +166,15 @@ def test_stable_and_alpha_crd_versions_have_identical_contracts():
         assert [(v['name'], v['served'], v['storage']) for v in versions] == [('v1', True, True), ('v1alpha1', True, False)]
         assert crd['spec']['conversion'] == {'strategy': 'None'}
         assert {k: v for k, v in versions[0].items() if k not in {'name', 'storage'}} == {k: v for k, v in versions[1].items() if k not in {'name', 'storage'}}
+
+
+def test_worker_mounts_lock_at_direct_path_and_preserves_host_lock():
+    owner = {'apiVersion': 'pifanctl.jyje.online/v1', 'kind': 'Fan', 'name': 'a', 'uid': 'uid'}
+    d = worker_deployment('ns', 'operator', 'pi-a', 'node-uid', 'pi-a', 'config', 'image', owner)
+    pod = d['spec']['template']['spec']
+    container = pod['containers'][0]
+    lock = next(m for m in container['volumeMounts'] if m['name'] == 'locks')
+    assert lock['mountPath'] == '/run/lock/pifanctl'
+    assert container['command'][-2:] == ['--lock-dir', '/run/lock/pifanctl']
+    volume = next(v for v in pod['volumes'] if v['name'] == 'locks')
+    assert volume['hostPath'] == {'path': '/var/lock/pifanctl', 'type': 'DirectoryOrCreate'}
