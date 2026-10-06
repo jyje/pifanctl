@@ -5,7 +5,7 @@
 **구현된 alpha (`1.0.0-alpha.3`)이며 정식 v1 출시는 아닙니다.**
 공통 planner, freshness metric, worker, operator, CLI와 차트를 구현했습니다.
 현재 명령과 제한은 [런타임 매뉴얼](runtime-ko.md), 검증과 하드웨어 출시 게이트는
-[PLAN.md](../../PLAN.md)를 확인하세요. 첫 CRD API는 `v1alpha1`입니다.
+[PLAN.md](../../PLAN.md)를 확인하세요. 후보는 `v1`과 `v1alpha1` 호환 API를 제공합니다. [API 전환 절차](api-migration.md)를 확인하세요.
 
 후속 구현 로드맵: [이슈 #39](https://github.com/jyje/pifanctl/issues/39).
 

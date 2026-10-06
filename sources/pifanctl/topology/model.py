@@ -9,7 +9,8 @@ from urllib.parse import urlsplit
 import yaml
 from jsonschema import Draft7Validator
 
-API = 'pifanctl.jyje.online/v1alpha1'
+API = 'pifanctl.jyje.online/v1'
+SUPPORTED_APIS = (API, 'pifanctl.jyje.online/v1alpha1')
 GROUP, VERSION = API.split('/')
 MAX_BYTES = 900_000
 SCHEMAS = json.loads(Path(__file__).with_name('schemas.json').read_text())
@@ -113,8 +114,8 @@ def normalize(items):
     _plain(items)
     result, seen = [], set()
     for raw in items:
-        if not isinstance(raw, dict) or raw.get('apiVersion') != API or raw.get('kind') not in SCHEMAS:
-            raise TopologyError(f'only {API} Fan and CoolingZone resources are supported')
+        if not isinstance(raw, dict) or raw.get('apiVersion') not in SUPPORTED_APIS or raw.get('kind') not in SCHEMAS:
+            raise TopologyError("only " + " or ".join(SUPPORTED_APIS) + " Fan and CoolingZone resources are supported")
         kind = raw['kind']
         metadata = raw.get('metadata', {})
         name = metadata.get('name') if isinstance(metadata, dict) else None
@@ -167,7 +168,7 @@ def normalize(items):
                     raise TopologyError('invalid prometheusURL') from error
                 if url.scheme not in ('http', 'https') or not url.hostname or url.username or url.password or url.fragment:
                     raise TopologyError('prometheusURL needs an HTTP(S) endpoint without credentials or fragment')
-        result.append({**raw, 'metadata': copy.deepcopy(metadata), 'spec': spec})
+        result.append({**raw, 'apiVersion': API, 'metadata': copy.deepcopy(metadata), 'spec': spec})
     return sorted(result, key=lambda o: (o['kind'], o['metadata']['name']))
 
 

@@ -6,7 +6,7 @@
 The shared planner, freshness metric, worker, operator, CLI and chart are implemented.
 See the [runtime manual](runtime.md) for current commands and limitations, and
 [PLAN.md](../../PLAN.md) for verification and remaining hardware release gates.
-The first CRD API remains `v1alpha1`.
+The candidate serves `v1` with `v1alpha1` compatibility. See the [API migration procedure](api-migration.md).
 
 Implementation roadmap: [issue #39](https://github.com/jyje/pifanctl/issues/39).
 

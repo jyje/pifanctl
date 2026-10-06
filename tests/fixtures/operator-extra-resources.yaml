@@ -1,5 +1,5 @@
 extraResources:
-  - apiVersion: pifanctl.jyje.online/v1alpha1
+  - apiVersion: pifanctl.jyje.online/v1
     kind: Fan
     metadata:
       name: rack-fan-01
@@ -20,7 +20,7 @@ extraResources:
         refreshIntervalSeconds: 5
         failsafeDuty: 100
         exitDuty: 100
-  - apiVersion: pifanctl.jyje.online/v1alpha1
+  - apiVersion: pifanctl.jyje.online/v1
     kind: CoolingZone
     metadata:
       name: rack-a

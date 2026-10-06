@@ -1,7 +1,7 @@
 # v1 alpha 런타임 매뉴얼
 
 **구현된 alpha이며, 실물 검증을 마친 정식 버전은 아닙니다.**
-`1.0.0-alpha.4`에는 공통 스키마/planner, 센서 freshness metric, worker,
+`1.0.0-alpha.5`에는 공통 스키마/planner, 센서 freshness metric, worker,
 공식 Kubernetes client, operator, CLI와 operator Helm chart가 포함됩니다.
 mock 테스트는 실물 PWM을 보증하지 않습니다. 단계별 검증과 출시 게이트는
 [PLAN.md](../../PLAN.md)에 기록합니다. [English](runtime.md).
@@ -201,3 +201,7 @@ CI는 계속 Python 3.10-3.14 전체를 검사합니다.
 ## CLI 지원 경계
 
 `start`는 v1 명령이 아닙니다. `worker run --file`은 `--mock`이 필수입니다. 실제 하드웨어 worker는 operator가 제공한 `--plan-file`, `--heartbeat-file`, `--uid`를 사용합니다. 로컬 YAML로 실제 팬을 독립 제어하지 않습니다.
+
+## CRD API 버전
+
+후보는 `v1`과 `v1alpha1` 호환 API를 제공합니다. 기존 설치를 업그레이드하기 전에 [저장 버전 전환과 롤백 절차](api-migration.md)를 확인하세요.

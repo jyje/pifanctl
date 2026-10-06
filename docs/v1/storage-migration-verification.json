@@ -1,0 +1,52 @@
+{
+  "context": "kind-pifanctl-release",
+  "started_at_utc": "2026-10-06T15:49:19.818891+00:00",
+  "passed": true,
+  "checks": [
+    {
+      "name": "dual_version_identity_status",
+      "passed": true,
+      "details": "Both API endpoints preserve every archived resource identity, spec and status"
+    },
+    {
+      "name": "v1_storage_rewrite",
+      "passed": true,
+      "details": {
+        "resources": [
+          [
+            "fans",
+            "rack-fan-01"
+          ],
+          [
+            "coolingzones",
+            "rack-a"
+          ]
+        ],
+        "storedVersions": "v1"
+      }
+    },
+    {
+      "name": "stored_version_verified",
+      "passed": true,
+      "details": "All storedVersions fields contain only v1 after complete successful rewrites"
+    },
+    {
+      "name": "alpha_storage_rollback",
+      "passed": true,
+      "details": {
+        "resources": [
+          [
+            "fans",
+            "rack-fan-01"
+          ],
+          [
+            "coolingzones",
+            "rack-a"
+          ]
+        ],
+        "restored_crd_specs": true
+      }
+    }
+  ],
+  "finished_at_utc": "2026-10-06T15:49:21.953238+00:00"
+}

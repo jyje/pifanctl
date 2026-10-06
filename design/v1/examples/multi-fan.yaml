@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: List
 items:
-- apiVersion: pifanctl.jyje.online/v1alpha1
+- apiVersion: pifanctl.jyje.online/v1
   kind: Fan
   metadata:
     name: front
@@ -23,7 +23,7 @@ items:
       refreshIntervalSeconds: 5
       failsafeDuty: 100
       exitDuty: 100
-- apiVersion: pifanctl.jyje.online/v1alpha1
+- apiVersion: pifanctl.jyje.online/v1
   kind: Fan
   metadata:
     name: rear
@@ -44,7 +44,7 @@ items:
       refreshIntervalSeconds: 5
       failsafeDuty: 100
       exitDuty: 100
-- apiVersion: pifanctl.jyje.online/v1alpha1
+- apiVersion: pifanctl.jyje.online/v1
   kind: CoolingZone
   metadata:
     name: rack-a
