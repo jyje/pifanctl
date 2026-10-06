@@ -59,12 +59,15 @@ def main():
     operator = get('deployment', DEPLOY, '-n', NS)
     image = operator['spec']['template']['spec']['containers'][0]['image']
     if not image.startswith('pifanctl-runtime-lab:'): raise SystemExit('Operator must use an explicitly marked runtime-lab image')
-    node = get('nodes')['items'][0]['metadata']['name']
+    nodes = get('nodes')['items']
+    node = nodes[0]['metadata']['name']
     for kind, name in [('fan', n) for n in FANS] + [('coolingzone', ZONE)]:
         if cmd('get', kind, name, check=False).returncode == 0:
             raise SystemExit('Lab resource already exists; inspect it instead of restarting a trial')
     checks, samples, log_parts = [], [], []
     report = {'context': context, 'image': image, 'started_at_utc': datetime.now(timezone.utc).isoformat(),
+              'kubernetes_versions': sorted({n['status']['nodeInfo']['kubeletVersion'] for n in nodes}),
+              'node_name': node, 'node_uid': nodes[0]['metadata']['uid'],
               'simulated_io': True, 'hardware_acceptance': False, 'checks': checks, 'samples': samples, 'passed': False}
     worker_name = None
     def worker():
@@ -105,6 +108,7 @@ def main():
         apply(fan(node, FANS[0], 18)); apply(zone)
         wait('one_fan_regulating', lambda: regulating(snapshot(), [FANS[0]], 47.5))
         first_pod = worker(); worker_name = first_pod['metadata']['name']
+        report['worker_image_id'] = first_pod['status']['containerStatuses'][0]['imageID']
         wait('cr_status_ready', lambda: ready(get('fan', FANS[0])) and ready(get('coolingzone', ZONE)))
         assert first_pod['spec']['nodeName'] == node
         assert first_pod['spec']['automountServiceAccountToken'] is False
