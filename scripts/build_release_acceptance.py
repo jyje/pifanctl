@@ -298,7 +298,7 @@ def build_55c_stability_figure(data):
     parts.append(svg_text(625, 760, "Requested fan duty", "legend", "start"))
     parts.append(f'<rect x="900" y="746" width="22" height="16" fill="#e6f4f1"/>')
     parts.append(svg_text(932, 760, "54–56°C acceptance band", "legend", "start"))
-    result = evaluate(data)
+    result = evaluate(data, policy="legacy-1c")
     parts.append(svg_text(720, 805,
                           f'Target band: {result["target_band_seconds"]:g}s; 1°C maximum span: {result["strict_stability_seconds"]:g}s; required: 120s. Acceptance remains open.',
                           "small"))

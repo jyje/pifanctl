@@ -4,10 +4,11 @@ import argparse
 import csv
 from datetime import datetime
 import json
+import hashlib
 import math
 from pathlib import Path
 
-from verify_thermal_acceptance import evaluate
+from verify_thermal_acceptance import POLICIES, evaluate
 
 
 def project(rows):
@@ -39,7 +40,7 @@ def project(rows):
     return public
 
 
-def figure(rows, target, output):
+def figure(rows, target, output, policy="v1-3c"):
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -48,7 +49,7 @@ def figure(rows, target, output):
                              gridspec_kw={'height_ratios': [2, 1, 1]})
     for node in sorted(json.loads(rows[0]['member_temperatures_json'])):
         axes[0].plot(x, [json.loads(r['member_temperatures_json'])[node] for r in rows], label=node, linewidth=1.5)
-    axes[0].axhspan(target-1, target+1, color='#ed3158', alpha=0.08, label='Target observation band')
+    axes[0].axhspan(target-1, target+(1 if policy=='legacy-1c' else 2), color='#ed3158', alpha=0.08, label='Target observation band')
     axes[0].axhline(target, color='#ed3158', linestyle='--', linewidth=0.8)
     axes[0].set_ylabel('CPU temperature (C)')
     axes[0].legend(ncol=3, fontsize=8, loc='lower right')
@@ -89,10 +90,30 @@ def execution(log):
             'average_consumed_vcpu': cpu / elapsed}
 
 
+def reassessment(path, rows, target):
+    original = json.loads(path.read_text())
+    with path.with_suffix('.csv').open(newline='') as stream:
+        prior = project(list(csv.DictReader(stream)))
+    if prior != rows or original['target_celsius'] != target:
+        raise ValueError('Reassessment must use the identical original measurements and target')
+    expected = evaluate(rows, target, policy='legacy-1c')
+    if original['acceptance'] != expected:
+        raise ValueError('Original legacy verdict is not reproducible')
+    return {'kind': 'post_hoc_policy_reassessment', 'original_evidence_file': path.name,
+            'original_policy': 'legacy-1c', 'approved_policy': 'v1-3c',
+            'original_thermal_stability_passed': expected['thermal_stability_passed'],
+            'original_strict_stability_seconds': expected['strict_stability_seconds'],
+            'source_csv_sha256': hashlib.sha256(path.with_suffix('.csv').read_bytes()).hexdigest(),
+            'original_measurements_unchanged': True,
+            'approval_basis': 'Maintainer approved target - 1 C through target + 2 C after reviewing this trial.'}
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--archive', type=Path, required=True)
     p.add_argument('--output-prefix', type=Path, required=True)
+    p.add_argument('--policy', choices=POLICIES, default='v1-3c')
+    p.add_argument('--reassessment-of', type=Path)
     args = p.parse_args()
     paths = [args.output_prefix.with_suffix(s) for s in ('.csv', '.json', '.svg', '.png')]
     if any(path.exists() for path in paths):
@@ -100,16 +121,22 @@ def main():
     with (args.archive/'samples.csv').open(newline='') as stream:
         public = project(list(csv.DictReader(stream)))
     raw = json.loads((args.archive/'report.json').read_text())
-    acceptance = evaluate(public, raw['target_celsius'])
+    acceptance = evaluate(public, raw['target_celsius'], policy=args.policy)
+    if args.policy == 'v1-3c' and raw['acceptance']['maximum_temperature_span_celsius'] == 1 and not args.reassessment_of:
+        raise SystemExit('Legacy trial requires an explicit --reassessment-of original report')
+    if args.reassessment_of and args.policy != 'v1-3c':
+        raise SystemExit('Reassessment requires the approved v1-3c policy')
     report = {'visibility': 'public_anonymous_measurements', 'full_originals_excluded': True,
               'target_celsius': raw['target_celsius'], 'cpu_millicores': raw['cpu_millicores'],
               'collector_passed': raw['collector_passed'], 'cleanup_verified': raw['cleanup_verified'],
               'cooldown_recorded': raw.get('cooldown_recorded', False), 'acceptance': acceptance,
               'load_stop_reason': raw['load_stop_reason'] if raw['load_stop_reason'] in
               ('maximum_load_duration', 'local_guard_or_deadline', 'remote_temperature_cutoff',
-               'strict_stability_observed', 'not_started') else 'collector_failure',
+               'strict_stability_observed', 'approved_stability_observed', 'not_started') else 'collector_failure',
               'started_at_utc': datetime.fromisoformat(raw['started_at_utc']).isoformat(),
               'finished_at_utc': datetime.fromisoformat(raw['finished_at_utc']).isoformat()}
+    if args.reassessment_of:
+        report['reassessment'] = reassessment(args.reassessment_of, public, raw['target_celsius'])
     log = args.archive/'load.log'
     if log.exists() and log.read_text().strip():
         report['load_execution'] = execution(log.read_text())
@@ -123,7 +150,7 @@ def main():
         writer.writeheader()
         writer.writerows(public)
     paths[1].write_text(json.dumps(report, indent=2)+'\n')
-    figure(public, raw['target_celsius'], args.output_prefix)
+    figure(public, raw['target_celsius'], args.output_prefix, args.policy)
     print(json.dumps(report, indent=2))
 
 

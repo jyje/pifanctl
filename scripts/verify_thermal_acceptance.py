@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Evaluate recorded thermal stability without relaxing release criteria."""
+"""Evaluate recorded thermal stability under explicit, versioned policies."""
 
 import argparse
 import csv
@@ -17,8 +17,13 @@ def timestamp(value):
     return parsed.timestamp()
 
 
-def evaluate(rows, target=55.0, duration=120.0):
-    """Require a 1 C total range, fresh sources, and bounded duty variation."""
+POLICIES = ('v1-3c', 'legacy-1c')
+
+
+def evaluate(rows, target=55.0, duration=120.0, policy='v1-3c'):
+    """Apply approved bounds while preserving the original legacy verdict."""
+    if policy not in POLICIES:
+        raise ValueError('Unknown thermal acceptance policy')
     if not math.isfinite(target) or not math.isfinite(duration) or duration <= 0:
         raise ValueError("Target and positive duration must be finite")
     samples = []
@@ -63,14 +68,14 @@ def evaluate(rows, target=55.0, duration=120.0):
             invalid += 1
             samples.append((0, 0, 0, False))
 
-    def longest(spread):
+    def longest(spread, low, high):
         best = 0.0
         for index, first in enumerate(samples):
             window = []
             previous = None
             for sample in samples[index:]:
                 at, temp, duty, healthy = sample
-                if not healthy or not target-1 <= temp <= target+1:
+                if not healthy or not low <= temp <= high:
                     break
                 if previous is not None and not 0 < at-previous <= 20:
                     break
@@ -84,20 +89,31 @@ def evaluate(rows, target=55.0, duration=120.0):
                 previous = at
         return round(best, 2)
 
-    strict = longest(1.0)
-    return {
+    legacy_strict = longest(1.0, target-1, target+1)
+    legacy_band = longest(2.0, target-1, target+1)
+    legacy = policy == 'legacy-1c'
+    low, high, span = (target-1, target+1, 1.0) if legacy else (target-1, target+2, 3.0)
+    stability = legacy_strict if legacy else longest(span, low, high)
+    result = {
         "target_celsius": target,
         "required_duration_seconds": duration,
-        "maximum_temperature_span_celsius": 1.0,
+        "maximum_temperature_span_celsius": span,
         "maximum_duty_span_percentage_points": 5.0,
         "load_observations": len(samples),
         "invalid_observations": invalid,
-        "target_band_seconds": longest(2.0),
-        "strict_stability_seconds": strict,
+        "target_band_seconds": legacy_band if legacy else longest(3.0, low, high),
+        "strict_stability_seconds": legacy_strict,
         "member_source_identity_recorded": source_identity and bool(samples),
-        "thermal_stability_passed": strict >= duration and invalid == 0 and
+        "thermal_stability_passed": stability >= duration and invalid == 0 and
                                     source_identity and bool(samples),
     }
+    if not legacy:
+        result.update(policy=policy, target_band_lower_celsius=low,
+                      target_band_upper_celsius=high, stability_seconds=stability,
+                      minimum_observations=8, maximum_source_gap_seconds=20,
+                      legacy_target_band_seconds=legacy_band,
+                      legacy_strict_stability_seconds=legacy_strict)
+    return result
 
 
 def main():
@@ -105,9 +121,10 @@ def main():
     parser.add_argument("csv", type=Path)
     parser.add_argument("--target", type=float, default=55.0)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--policy", choices=POLICIES, default="v1-3c")
     args = parser.parse_args()
     with args.csv.open(newline="") as stream:
-        result = evaluate(list(csv.DictReader(stream)), args.target)
+        result = evaluate(list(csv.DictReader(stream)), args.target, policy=args.policy)
     encoded = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:
         args.output.write_text(encoded)

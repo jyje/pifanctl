@@ -204,7 +204,7 @@ def main():
                 report['load_stop_reason'] = 'local_guard_or_deadline'
                 break
             if evaluate(rows, args.target)['thermal_stability_passed']:
-                report['load_stop_reason'] = 'strict_stability_observed'
+                report['load_stop_reason'] = 'approved_stability_observed'
                 break
             time.sleep(5)
         (args.archive / 'load-pod-final.json').write_text(json.dumps(get('pod', name, '-n', namespace), indent=2)+'\n')
