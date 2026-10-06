@@ -1,0 +1,32 @@
+{
+  "passed": false,
+  "accepted_for_release": false,
+  "initial_verifier_reported_passed": true,
+  "reason": "The original Synced/Healthy/Succeeded check did not compare status source to the changed Application spec. Replaced by source-aware checks and a fresh complete trial.",
+  "trial_started_at_utc": "2026-10-06T16:57:48.152296+00:00",
+  "trial_finished_at_utc": "2026-10-06T17:00:49.638678+00:00",
+  "observed_stale_stages": [
+    {
+      "stage": "first_fan_prune",
+      "reported_sync": "Synced",
+      "reported_health": "Healthy",
+      "reported_operation": "Succeeded",
+      "desired_resource_count": 2,
+      "compared_resource_count": 3,
+      "source_matches_comparison": false,
+      "source_matches_operation_result": false
+    },
+    {
+      "stage": "all_instances_prune",
+      "reported_sync": "Synced",
+      "reported_health": "Healthy",
+      "reported_operation": "Succeeded",
+      "desired_resource_count": 0,
+      "compared_resource_count": 2,
+      "source_matches_comparison": false,
+      "source_matches_operation_result": false
+    }
+  ],
+  "regression_fixture": "tests/fixtures/argocd-stale-success.json",
+  "accepted_trial": "gitops-lifecycle-verification.json"
+}

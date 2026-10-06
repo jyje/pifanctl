@@ -1,0 +1,55 @@
+# Replace node names and verify physical wiring before deployment.
+# Retire extraResources and wait for release before deleting this Application.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pifanctl
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/background
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/jyje/pifanctl
+    targetRevision: operator-chart-v0.1.0-alpha.6
+    path: charts/pifanctl-operator
+    helm:
+      releaseName: pifanctl
+      valuesObject:
+        extraResources:
+          - apiVersion: pifanctl.jyje.online/v1
+            kind: Fan
+            metadata:
+              name: rack-fan-01
+            spec:
+              nodeName: pi-01
+              hardware:
+                rpigpio:
+                  pin: 18
+                  frequencyHz: 1000
+              control:
+                failsafeDuty: 100
+                exitDuty: 100
+          - apiVersion: pifanctl.jyje.online/v1
+            kind: CoolingZone
+            metadata:
+              name: rack-a
+            spec:
+              fanRefs: [rack-fan-01]
+              nodeNames: [pi-01, pi-02, pi-03, pi-04]
+              telemetry:
+                source: prometheus
+                prometheusURL: http://prometheus-operated.monitoring.svc:9090
+                maxSampleAgeSeconds: 30
+  destination:
+    namespace: pifanctl
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - PrunePropagationPolicy=background
+      - PruneLast=true

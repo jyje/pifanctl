@@ -193,6 +193,13 @@ Scope absent-series alerts to the intended installation or fan inventory.
 ## 06: retire and migrate
 
 Remove zones/Fans while the operator remains running.
+For Argo CD, remove them from the desired `extraResources` configuration rather
+than issuing a direct delete that self-heal could recreate. Use
+`PrunePropagationPolicy=background` and `PruneLast=true`, and follow the
+[staged Application example](../../design/v1/examples/argocd.yaml). Set
+`extraResources: []` and wait for all installation CRs and workers to retire
+before removing the operator Application. Include any CRs created by CLI in
+this inventory. Shared CRDs are retained during automatic prune/deletion.
 Use `kubectl delete ... --cascade=background` (the default). Foreground garbage
 collection can remove owned workers before the release acknowledgement and
 leave the application's finalizer pending; it is not a supported retirement path

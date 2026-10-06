@@ -2,6 +2,6 @@ apiVersion: v2
 name: pifanctl-operator
 description: Declarative Raspberry Pi fan topology and node-bound PWM workers
 type: application
-version: 0.1.0-alpha.5
+version: 0.1.0-alpha.6
 appVersion: "1.0.0-alpha.6"
 home: https://github.com/jyje/pifanctl

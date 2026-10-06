@@ -3,7 +3,7 @@
 **Status:** Live v1 alpha runtime and thermal observations recorded through 2026-10-07
 **Release target:** `1.0.0`
 - **Active deployment:** alpha.3 operator and worker; alpha.2 temperature agents
-- **v1 candidate under review:** `1.0.0-alpha.3`
+- **v1 candidate under review:** app `1.0.0-alpha.6`, operator chart `0.1.0-alpha.6`
 **Decision:** Not ready for a stable release. Hardware-specific acceptance remains open.
 
 This manual records MicroK8s trials, bounded temperature-response tests, measured evidence, and remaining release checks. The v1 alpha.3 CRD operator, worker, Fan, and CoolingZone are active for the shared rack. The 55°C test below recorded a target-band response. Re-evaluation against the original 1°C total-range requirement leaves thermal stability acceptance open. A user visually confirmed normal fan rotation; RPM and electrical PWM measurements remain unavailable. Values unavailable from Kubernetes or direct measurements are explicitly marked **Not recorded** instead of being guessed.
@@ -243,7 +243,7 @@ Helm 4.3.0's readiness watcher timed out when waiting for these deliberately unh
 
 The local [regression report](release-local-verification-2026-10-07.json) records 303 passing tests, zero skips, 95.87% statement coverage and 89.10% branch coverage on Python 3.13.2. Matplotlib is pinned in development requirements so rendering verification runs in the Python CI matrix rather than being skipped.
 
-This result covers real API admission/defaulting and missing-node reconciliation. Disposable-cluster Argo CD ordering, finalizer lifecycle for active hardware claims, stable API migration, active worker deployment, fleet scale, electrical behavior, and physical fault recovery remain open.
+This result covers real API admission/defaulting and missing-node reconciliation. The later software verification in Section 13 covers disposable-cluster Argo CD ordering, active simulated-worker finalizers, stable API migration and active worker deployment. Fleet scale, electrical behavior, live migration and physical fault recovery remain open.
 
 ## 12. Direct visual rotation confirmation
 
@@ -262,6 +262,45 @@ A read-only follow-up on the cluster clock at approximately 2026-10-06 15:29 UTC
 | Test changes | None; no GPIO, topology, workload, or fan-power changes |
 
 This is qualitative human observation of normal rotation at the confirmation point. It does not provide RPM, electrical PWM measurements, continuous observation during the earlier load run, or fan-stop/restart acceptance. The temperature-stability and remaining hardware gates stay open. The machine-readable [observation record](physical-rotation-confirmation.json) preserves this distinction. The timestamp above is the actual host/cluster observation clock; it is not inferred from the session's calendar date.
+
+<!-- pagebreak -->
+
+## 13. Software acceptance progress and remaining release gates
+
+The current software candidate is app `1.0.0-alpha.6` with operator chart `0.1.0-alpha.6`. The live shared-rack operator and worker remain alpha.3; the tests below did not upgrade MicroK8s or change physical fan commands. Disposable runtime trials use explicit GPIO and temperature simulations, while Kubernetes and Argo CD are real services.
+
+| Verification | Recorded result | Evidence |
+| --- | --- | --- |
+| Stable API and storage | 19 real API checks and 4 migration/rollback checks on Kubernetes 1.37.0 | [Stable API report](stable-api-verification.json), [storage report](storage-migration-verification.json) |
+| Active worker lifecycle | 14 checks on Kubernetes 1.37.0: two fans per worker, Node UID, credential isolation, stale/missing sensors, recovery and cooperative deletion | [Runtime report](runtime-lifecycle-alpha6.json), [procedure](runtime-lifecycle.md) |
+| Minimum Kubernetes | 19 API and 14 simulated-runtime checks on Kubernetes 1.30.0 | [API report](minimum-kubernetes-api.json), [runtime report](minimum-kubernetes-runtime.json) |
+| Live API compatibility preflight | Alpha.6 Python 3.12 image read four Nodes, Fan and CoolingZone and built a valid topology with TLS verification enabled; read-only Pod had no host volumes or GPIO imports | [Compatibility record](minimum-kubernetes.md) |
+| Argo CD lifecycle | 17 checks on Argo CD 3.5.2 and Kubernetes 1.30.0: initial CRD/instance admission, first-fan prune, complete instance retirement, operator removal and shared CRD retention | [GitOps report](gitops-lifecycle-verification.json), [procedure](gitops-lifecycle.md) |
+| Local regression suite | 330 passed, zero skips on Python 3.13.2; 96.29% statement and 89.81% branch coverage. Related Python 3.10 checks: 77 passed | [Local report](gitops-local-verification.json) |
+
+### GitOps retirement sequence
+
+1. Install the pinned operator chart and instance CRs together through `extraResources`. Verify the current desired source, both resolved sync revisions, Synced/Healthy status and explicit CR readiness.
+2. Remove a retired Fan and its zone reference from desired values. Background pruning releases that simulated driver while the other fan continues in the same worker Pod.
+3. Remove every desired instance first, including any CLI-created CRs in the inventory. Keep the operator available until instance finalizers complete and the worker Pod disappears.
+4. Remove the operator Application only after instance retirement. Both shared CRDs remain Established with unchanged UIDs because they carry `Prune=false,Delete=false`.
+
+The measured single-fan and full-instance prune syncs took 64.82 and 78.73 seconds respectively. They include ConfigMap projection and reconciliation, and are not physical failsafe latency guarantees. Foreground retirement and deletion of an Application with active instances are outside this verified staged procedure. An unreachable worker must leave retirement pending; finalizers were never forced.
+
+The first GitOps verifier could accept a stale successful sync immediately after desired values changed. Its initial report is excluded from acceptance. The [audit](gitops-stale-status-audit.json) and regression fixture preserve this failure. The corrected verifier requires both compared and operation sources, plus resolved revisions, to match the current Application source. A fresh complete trial passed all 17 checks.
+
+<!-- pagebreak -->
+
+### Release decision
+
+**Decision:** Not ready for a stable release. The software checks above do not close physical or production acceptance gates.
+
+- Archive and exercise the actual MicroK8s candidate upgrade and rollback with a single PWM writer.
+- Repeat 50 C, 55 C and 60 C thermal acceptance with fresh timestamps for every member and the original continuous stability criteria. The earlier 55 C record still fails that criterion.
+- Measure the exact fan's electrical waveform, polarity, RPM and physical stop/restart behavior; record the fan and supply inventory.
+- Validate applicable process, power, network and sensor failures, Pi 5 hardware and a declared fleet size. Mark untested hardware/topologies unsupported rather than assuming coverage.
+
+The direct normal-rotation observation in Section 12 remains valid for its confirmation point. New candidate hardware behavior requires new evidence. Remote PR CI, merge and publication are tracked independently in [PLAN.md](../../PLAN.md).
 
 ## References
 
