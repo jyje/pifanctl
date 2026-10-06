@@ -174,6 +174,8 @@ and [55°C stability record](docs/v1/release-acceptance.md#10-2026-10-06-alpha3-
 
 ### Regressions found and fixed
 
+- Initial stable API CI run `37491458686` caught quote reuse in an f-string that Python 3.10/3.11 could not parse. Replaced it with portable string concatenation. Real 3.10.20 and 3.11.13 parsers compiled all 30 application/script files; the full local 315-test suite passed again. Updated-head CI remains required before merge.
+
 - Python 3.10 could not resolve a Typer Context with a None default. Required Context injection fixed the commands; 214 tests passed with 92.53% coverage at that stage.
 - Main expanded CI to Python 3.10-3.14 during development. Preserve all five versions and the existing 90% coverage gate, with a regression test.
 - Kubernetes client 36 call_api requires response_types_map. Real client/fake HTTP testing exposed the argument issue hidden by the fake adapter.

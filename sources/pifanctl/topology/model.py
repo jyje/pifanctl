@@ -115,7 +115,7 @@ def normalize(items):
     result, seen = [], set()
     for raw in items:
         if not isinstance(raw, dict) or raw.get('apiVersion') not in SUPPORTED_APIS or raw.get('kind') not in SCHEMAS:
-            raise TopologyError(f'only {' or '.join(SUPPORTED_APIS)} Fan and CoolingZone resources are supported')
+            raise TopologyError("only " + " or ".join(SUPPORTED_APIS) + " Fan and CoolingZone resources are supported")
         kind = raw['kind']
         metadata = raw.get('metadata', {})
         name = metadata.get('name') if isinstance(metadata, dict) else None

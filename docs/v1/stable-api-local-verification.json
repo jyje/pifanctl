@@ -1,5 +1,5 @@
 {
-  "recorded_at_utc": "2026-10-06T15:53:26.712883+00:00",
+  "recorded_at_utc": "2026-10-06T15:57:56.757294+00:00",
   "python": "3.14.7",
   "app_version": "1.0.0-alpha.5",
   "chart_version": "0.1.0-alpha.4",
@@ -12,9 +12,17 @@
   "statement_coverage_percent": 96.28930817610063,
   "branch_coverage_percent": 89.81132075471699,
   "combined_coverage_percent": 94.66981132075472,
-  "application_tree_sha256": "ee257287582813bf4227ab0a0e7fae5aa670697d2ef688e1cc60bbd29c5c57b4",
+  "application_tree_sha256": "109cde23ac8abebddc808eefc0c77abbf2d0a2de1db9a506b68a45826838930d",
   "test_tree_sha256": "fc44fc79e26f375f877cde240ed590421044cb86ca9e9bf39dbbe2b3862eb3f2",
   "passed": true,
-  "provenance": "Working tree based on main 949bd3a. Sorted relative paths plus NUL plus bytes plus NUL hashed. The final dual-version API dry-run harness was run separately on the real kind API.",
-  "live_microk8s_changed": false
+  "provenance": "Final local regression after the initial CI run caught a Python 3.10/3.11 f-string syntax error. Working tree based on d828aa6. Hashes cover sorted relative paths plus NUL plus bytes plus NUL; the live dual-version API harness was verified separately.",
+  "live_microk8s_changed": false,
+  "syntax_checks": {
+    "python_versions": [
+      "3.10.20",
+      "3.11.13"
+    ],
+    "files_per_version": 30,
+    "passed": true
+  }
 }
