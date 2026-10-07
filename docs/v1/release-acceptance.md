@@ -4,7 +4,7 @@
 **Release target:** `1.0.0`
 - **Active deployment:** alpha.6 Python 3.12 compatibility operator and worker; alpha.2 temperature agents
 - **v1 candidate under review:** app `1.0.0-alpha.6`, operator chart `0.1.0-alpha.6`
-**Decision:** Not ready for a stable release. Hardware-specific acceptance remains open.
+**Decision:** Current practical verification is complete by maintainer approval on 2026-10-07. Proceed with release preparation for the observed deployment scope; unmeasured hardware and broader scenarios are deferred, not passed. Section 23 supersedes earlier release-blocking decisions.
 
 This manual records MicroK8s trials, bounded temperature-response tests, measured evidence, and remaining release checks. The alpha.6 CRD operator and worker now regulate the shared rack with v1 storage and served alpha compatibility after verified migration and image rollback. Earlier alpha.3 observations remain historical evidence. The maintainer-approved `v1-3c` policy uses target - 1 C through target + 2 C. The unchanged 50 C trial passes for 140.24 seconds under this policy; its original 1 C failure remains archived. Fresh 55 C trials include complete member clocks but fail the 120-second hold. The 60 C bounded trial remains below its target observation band. Sections 17-22 record these new trials, scale/fault evidence and final verification; Section 16 preserves the policy approval and reassessment. A user visually confirmed normal fan rotation; RPM and electrical PWM measurements remain unavailable. Values unavailable from Kubernetes or direct measurements are explicitly marked **Not recorded** instead of being guessed.
 
@@ -705,3 +705,38 @@ compatibility checks and the CI/PR lifecycle separately from release readiness.
 
 - [Runtime manual](runtime.md), [v1 architecture and acceptance design](README.md), and [implementation and release checklist](../../PLAN.md)
 - [Raspberry Pi frequency and thermal management](https://www.raspberrypi.com/documentation/hardware/rf/), [RPi.GPIO project](https://sourceforge.net/projects/raspberry-gpio-python/), and [Linux kernel PWM interface](https://docs.kernel.org/driver-api/pwm.html)
+
+
+<!-- pagebreak -->
+
+## 23. Maintainer-approved practical verification closeout (2026-10-07)
+
+The maintainer approved ending this campaign at the realistically verifiable scope and supplementing the remaining measurements later. This decision supersedes the earlier requirement to block release preparation on every planned experiment. It does not change any recorded test verdict, cutoff, data or thermal acceptance policy. Stable versions and publication remain separate release actions.
+
+### Tested Raspberry Pi models and roles
+
+| Hardware | Observed role and verification boundary |
+| --- | --- |
+| Raspberry Pi 4 Model B Rev 1.5 | Production shared-fan actuator, GPIO18 via RPi.GPIO. Operator/worker reconciliation and commanded duty observed. Electrical PWM and RPM were not measured. |
+| Raspberry Pi 5 Model B Rev 1.0 | Temperature-reporting cooling member and CPU-load target in the mixed Pi 4/Pi 5 rack. Thermal response and cooldown observed. Pi 5 sysfs fan actuation was not exercised. |
+
+The real deployment contains one shared fan and four cooling members. The model probes identify the actuator and the loaded member; they do not establish the model/revision of every other member. The simulated 16-fan/64-zone campaign does not represent a physical fleet of that size.
+
+### Thermal interpretation
+
+CPU execution and temperature increases were measured. The failure was to sustain a specified observation band for 120 seconds, not a failure to apply load or an absence of heating. The 55 C trials reached sampled remote peaks of 55.1-56.2 C; two trials stopped at the independent local 60.05 C guard. Their longest qualifying hold was 65.42 seconds. The 60 C trial reached 58.4 C remotely and 61.15 C locally, but did not enter the required 59-62 C remote band. Local and remote peaks occur at different sample times.
+
+The unchanged controller is a temperature-to-duty curve with hysteresis, not an exact temperature-setpoint regulator. Consequently, failure to produce a sustained target plateau under bounded CPU load is an experimental limitation and does not alone demonstrate defective cooling. No new stability pass is asserted. Every load Pod was deleted and immediate cooldown was verified.
+
+### Accepted scope and deferred follow-up
+
+The verified scope is the existing mixed Pi 4/Pi 5 rack, Pi 4 shared-fan actuation, CRD-only runtime, observed thermal response, source-clock checks, software migration/image rollback, GitOps lifecycle, CI and isolated simulated-I/O fault/scale tests. Maintainer approval accepts the following documented limitations for release preparation:
+
+- Additional 55 C and 60 C workload-based thermal characterization, with the protocol fixed before the experiment. Existing failed holds remain auditable.
+- Exact fan/supply/wiring and electrical PWM/RPM instrumentation, including startup and shutdown defaults. Commanded duty is not measured rotation speed.
+- Physical process-kill, reboot, power-loss and network-partition behavior. Simulated failsafe results do not certify an electrical default.
+- Pi 5 actuator validation, full v0 topology rollback after expanded adoption, and larger distributed-fleet/Prometheus capacity characterization. These remain unverified configurations/scenarios.
+
+Follow-up checklist: [issue #64](https://github.com/jyje/pifanctl/issues/64).
+
+**Closeout:** Practical verification and reporting are complete for this campaign. Proceed with the v1 release proposal while carrying these limitations into release notes and the follow-up backlog. Do not advertise universal hardware safety, Pi 5 actuator validation, exact setpoint regulation or an unmeasured fleet capacity.

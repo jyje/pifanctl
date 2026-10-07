@@ -14,8 +14,10 @@ fake sensors, Prometheus and Kubernetes APIs, and temporary files. Live deployme
 and hardware experiments require explicit user authorization. Operational plans,
 archives, and findings belong in the private operations archive.
 
-A stable v1.0.0 release requires the remaining hardware and failure acceptance
-gates below. Local and CI results alone do not establish electrical cooling safety.
+The maintainer approved practical verification closeout on 2026-10-07 for the
+observed mixed Pi 4/Pi 5 rack. Proceed with release preparation; remaining
+hardware and extended scenarios below are deferred follow-up, not passed checks.
+Local and CI results alone do not establish electrical cooling safety.
 
 ## Work rules
 
@@ -47,7 +49,7 @@ worker deployment and bounded 55°C response observations are recorded in the re
 acceptance manual. Normal visual fan rotation was confirmed before the load run. Other temperature
 targets, RPM, electrical measurements, and failure acceptance remain open.
 
-## Remaining release acceptance gates
+## Release preparation and deferred verification backlog
 
 ### v1 packaging and release preparation
 
@@ -69,8 +71,8 @@ targets, RPM, electrical measurements, and failure acceptance remain open.
   - [x] Exercise live storage promotion and reverse rollback, preserving CRD/resource UIDs and the active worker. Complete v1 re-promotion passed with explicit declaration/history verification.
   - [x] Verify actual alpha.6 runtime for 121.6 seconds and archived alpha.3 image rollback for 62.6 seconds with direct worker and per-member source clocks. These are runtime holds, not thermal stability tests.
   - [x] Restore candidate image and automatic self-heal, then verify another source-aware healthy hold: 120.6 seconds, 22 observations. Cluster PR #150 merged at `fbdb9d2`; source-matched Argo Synced/Healthy, v1 storage and one worker verified.
-- [ ] Complete the hardware, failure, migration/rollback, and fleet-scale acceptance gates below.
-- [ ] Release app `1.0.0` and operator chart `1.0.0` after all applicable gates pass; keep later app/chart versions independent.
+- [x] Close the current practical verification campaign by maintainer approval; retain unmeasured hardware, physical failures and extended fleet scenarios as deferred follow-up.
+- [ ] Prepare and publish app `1.0.0` and operator chart `1.0.0` with the verified scope and deferred limitations in release notes; keep later app/chart versions independent.
 
 - [x] Merge design PR #40 and implementation PR #41 into `main` in dependency order.
 - [x] Verify the first successful main line and branch badge publication under `assets/coverage/`.
@@ -410,3 +412,12 @@ This approval changes the measurement policy, not the deployed control curve.
   Codecov project/patch and ARC ARM64 build/smoke checks. The final CI-record
   documentation rerun, merge and clean-main synchronization are tracked in
   PR #63 and the final handoff; stable release gates remain open.
+
+
+### Practical verification closeout approved (2026-10-07)
+
+- [x] Record Raspberry Pi 4 Model B Rev 1.5 as the shared-fan actuator and Raspberry Pi 5 Model B Rev 1.0 as the observed CPU-load/temperature member. Pi 5 actuator behavior remains unverified.
+- [x] Preserve all thermal verdicts: CPU load raised temperature, but the new 55 C/60 C trials did not establish the prescribed 120-second plateau. Cleanup and cooldown passed.
+- [x] Accept the observed deployment scope for release preparation, with explicit maintainer approval to supplement remaining measurements later. Section 23 of the manual supersedes earlier blanket release-blocking decisions.
+- [x] Track deferred thermal characterization, electrical/RPM measurements, physical failures, Pi 5 actuation, expanded rollback and distributed capacity in [issue #64](https://github.com/jyje/pifanctl/issues/64).
+- [ ] Carry the verified scope and limitations into the stable app/chart release proposal. No stable tag or version bump is part of this acceptance PR.
