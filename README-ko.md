@@ -14,8 +14,7 @@
 [![CI status for pull requests](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml/badge.svg)](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml)
 [![CI status for main branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml/badge.svg?branch=main)](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml)
 [![CI status for develop branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml)
-[![Line coverage](assets/coverage/lines.svg)](docs/testing/coverage.md)
-[![Branch coverage](assets/coverage/branches.svg)](docs/testing/coverage.md)
+[![Codecov 커버리지](https://codecov.io/gh/jyje/pifanctl/branch/main/graph/badge.svg)](https://app.codecov.io/gh/jyje/pifanctl)
 [![GitHub Repo stars](https://img.shields.io/github/stars/jyje/pifanctl?style=flat&color=yellow&label=%F0%9F%8C%9F%20Stars)](https://github.com/jyje/pifanctl)
 
 [English](README.md) | **한국어**
@@ -85,7 +84,7 @@ python3 -m venv .venv
 PYTHONPATH=sources .venv/bin/python sources/main.py --help
 ```
 
-테스트는 가상 센서와 드라이버를 사용하며 전기적 하드웨어를 인증하지 않습니다. [커버리지와 Codecov](docs/testing/coverage.md)에서 CI와 라인/분기 배지를 설명합니다.
+테스트는 가상 센서와 드라이버를 사용하며 전기적 하드웨어를 인증하지 않습니다. [커버리지와 Codecov](docs/testing/coverage.md)에서 CI와 라인/분기 측정 결과를 설명합니다.
 
 ## 3. CI/CD 파이프라인
 

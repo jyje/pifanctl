@@ -14,8 +14,7 @@
 [![CI status for pull requests](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml/badge.svg)](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml)
 [![CI status for main branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml/badge.svg?branch=main)](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml)
 [![CI status for develop branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml)
-[![Line coverage](assets/coverage/lines.svg)](docs/testing/coverage.md)
-[![Branch coverage](assets/coverage/branches.svg)](docs/testing/coverage.md)
+[![Codecov coverage](https://codecov.io/gh/jyje/pifanctl/branch/main/graph/badge.svg)](https://app.codecov.io/gh/jyje/pifanctl)
 [![GitHub Repo stars](https://img.shields.io/github/stars/jyje/pifanctl?style=flat&color=yellow&label=%F0%9F%8C%9F%20Stars)](https://github.com/jyje/pifanctl)
 
 **English** | [Korean](README-ko.md)
@@ -88,7 +87,7 @@ python3 -m venv .venv
 PYTHONPATH=sources .venv/bin/python sources/main.py --help
 ```
 
-Tests use simulated sensors and drivers. They do not certify electrical hardware. [Coverage policy and Codecov](docs/testing/coverage.md) describe CI reports and the separate line/branch badges.
+Tests use simulated sensors and drivers. They do not certify electrical hardware. [Coverage policy and Codecov](docs/testing/coverage.md) describe CI reports and line/branch measurements.
 
 ## 3. CI/CD Pipeline
 

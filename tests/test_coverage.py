@@ -205,8 +205,7 @@ def test_coverage_actions_remain_outside_the_arm_runner():
     assert "coverage-badges" not in publisher_run
     for readme in ("README.md", "README-ko.md"):
         content = (ROOT / readme).read_text()
-        assert "assets/coverage/lines.svg" in content
-        assert "assets/coverage/branches.svg" in content
+        assert "https://codecov.io/gh/jyje/pifanctl/branch/main/graph/badge.svg" in content
     assert workflow["jobs"]["image"]["runs-on"]["labels"] == "r4spi-microk8s"
     codecov_job = workflow["jobs"]["codecov"]
     assert "github.ref == 'refs/heads/main'" in codecov_job["if"]

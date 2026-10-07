@@ -57,7 +57,7 @@ Upload errors remain non-blocking; the local coverage gates stay authoritative.
 The first OIDC upload in PR #43 returned `Repository not found`. The workflow
 now uses the configured repository upload token instead.
 
-## README badges
+## Coverage badges
 
 After a successful main CI run, the publisher updates
 `assets/coverage/lines.svg`, `assets/coverage/branches.svg` and
@@ -66,7 +66,9 @@ exact main commit and measurement time. The publisher checks that main has not
 advanced before updating the assets. A failed run retains the last successful
 badges and their original measurement metadata. Asset-only pushes are excluded
 from the main CI trigger. Fork pull requests can produce reports and artifacts
-but cannot publish badges.
+but cannot publish badges. The README uses Codecov's official main-branch status
+badge for the canonical Python 3.14 report. The line and branch SVGs remain
+available as detailed coverage assets.
 
 ## Interpreting branch coverage
 
