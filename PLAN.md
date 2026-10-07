@@ -431,3 +431,5 @@ This approval changes the measurement policy, not the deployed control curve.
 - [x] Publish [release proposal PR #65](https://github.com/jyje/pifanctl/pull/65): 427 regression tests passed, Helm lint/render and version validation passed, eight archived changesets validated and pending ledger empty. Prepared release commit: `1162363`.
 - [ ] Verify proposal CI and candidate image availability/runtime preflight before production adoption.
 - [ ] Publish stable artifacts and verify immutable tags, image/chart metadata and deployment rollback readiness.
+
+- Candidate image workflow `37607424951` passed. Its ARM64 Python 3.14.8 image reports app 1.0.0. A temporary nonprivileged Pod failed the read-only in-cluster API transport check with TLS verification enabled. The exact current certificate cause remains unconfirmed; no hardware driver was loaded, the Pod was deleted, and the existing Python 3.12 operator/worker remained Ready. Evidence: `docs/releases/1.0.0/candidate-preflight.json`. Resolve the stable runtime compatibility path before merging automatic publication or adopting the candidate.
