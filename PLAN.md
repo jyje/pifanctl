@@ -439,5 +439,5 @@ This approval changes the measurement policy, not the deployed control curve.
 
 - [x] Diagnose candidate TLS failure without exposing credentials: certificate verification code 92, CA missing key-usage extension. Temporary diagnostic Pod deleted.
 - [x] Prepare immutable Python 3.12 compatibility version tags alongside canonical Python 3.14, without changing certificate/hostname checks or canonical latest behavior. Application release waits for both builds.
-- [ ] Verify variant-tag tests, full regression and workflow lint; publish and preflight the candidate Python 3.12 image before production adoption.
+- [x] Verify variant-tag tests (32 passed), full regression (429 passed before two additional immutable-tag cases), workflow lint, candidate build `37608453952` and real Python 3.12.15 preflight. One Fan, one CoolingZone and four fresh telemetry members resolved; wrong-hostname and untrusted-CA connections rejected. Temporary Pod deleted; production unchanged. See `docs/releases/1.0.0/compatibility-preflight.json`.
 - [ ] Verify real stable-runtime hold and source-aware rollback readiness, then finalize publication.
