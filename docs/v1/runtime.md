@@ -223,14 +223,30 @@ remain acceptance gates in PLAN.md. Live deployment requires an explicitly autho
 
 Python 3.13+ enables stricter X.509 validation that can reject a legacy cluster
 CA missing required extensions. Keep certificate and hostname verification
-enabled. An isolated experimental image can use the supported Python 3.12
-runtime while CA modernization is planned separately:
+enabled. A stable compatibility image can use Python 3.12 while CA modernization is
+planned separately. For app 1.0.0, explicitly select:
+
+```yaml
+image:
+  repository: ghcr.io/jyje/pifanctl
+  tag: v1.0.0-py312
+```
+
+The application version is still 1.0.0; `-py312` identifies the image runtime,
+not a separate prerelease. Both version tags are immutable. Python 3.14 remains
+the canonical image and the only runtime that updates `latest`. Publication
+waits for both runtime builds before creating the application GitHub release.
+Keep CA and hostname verification enabled in both variants. This compatibility
+image does not repair the certificate extensions; modernize the cluster CA in a
+separate, archived cluster-maintenance operation.
+
+For pre-publication candidate testing, build an isolated image:
 
 ```sh
 gh workflow run build-image-issue.yaml --ref YOUR_BRANCH -f python-version=3.12
 ```
 
-That image uses `ghcr.io/jyje/pifanctl-issue:<sha>-py312`; it cannot publish
+That image uses `ghcr.io/jyje/pifanctl-issue:<sha>-py312`; this experimental workflow does not publish
 `latest` or release tags. Set the operator chart's image repository/tag to the
 published variant and verify operator readiness before assigning a physical Fan.
 The default image remains Python 3.14, and CI still tests Python 3.10-3.14.

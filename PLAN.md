@@ -421,3 +421,23 @@ This approval changes the measurement policy, not the deployed control curve.
 - [x] Accept the observed deployment scope for release preparation, with explicit maintainer approval to supplement remaining measurements later. Section 23 of the manual supersedes earlier blanket release-blocking decisions.
 - [x] Track deferred thermal characterization, electrical/RPM measurements, physical failures, Pi 5 actuation, expanded rollback and distributed capacity in [issue #64](https://github.com/jyje/pifanctl/issues/64).
 - [ ] Carry the verified scope and limitations into the stable app/chart release proposal. No stable tag or version bump is part of this acceptance PR.
+
+
+### Stable release proposal preparation
+
+- [x] Prepare independent app 1.0.0 and operator chart 1.0.0 version changes.
+- [x] Consume eight pending changesets into archived release provenance and a consolidated CHANGELOG.md, without releasing the legacy chart.
+- [x] Record verified Pi 4 actuator/Pi 5 member roles, deferred physical/thermal scenarios and Python 3.12 live versus Python 3.14 default-image boundary in release notes.
+- [x] Publish [release proposal PR #65](https://github.com/jyje/pifanctl/pull/65): 427 regression tests passed, Helm lint/render and version validation passed, eight archived changesets validated and pending ledger empty. Prepared release commit: `1162363`.
+- [ ] Verify proposal CI and candidate image availability/runtime preflight before production adoption.
+- [ ] Publish stable artifacts and verify immutable tags, image/chart metadata and deployment rollback readiness.
+
+- Candidate image workflow `37607424951` passed. Its ARM64 Python 3.14.8 image reports app 1.0.0. A temporary nonprivileged Pod failed the read-only in-cluster API transport check with TLS verification enabled. The exact current certificate cause remains unconfirmed; no hardware driver was loaded, the Pod was deleted, and the existing Python 3.12 operator/worker remained Ready. Evidence: `docs/releases/1.0.0/candidate-preflight.json`. Resolve the stable runtime compatibility path before merging automatic publication or adopting the candidate.
+
+
+### Stable runtime compatibility work
+
+- [x] Diagnose candidate TLS failure without exposing credentials: certificate verification code 92, CA missing key-usage extension. Temporary diagnostic Pod deleted.
+- [x] Prepare immutable Python 3.12 compatibility version tags alongside canonical Python 3.14, without changing certificate/hostname checks or canonical latest behavior. Application release waits for both builds.
+- [x] Verify variant-tag tests (32 passed), full regression (429 passed before two additional immutable-tag cases), workflow lint, candidate build `37608453952` and real Python 3.12.15 preflight. One Fan, one CoolingZone and four fresh telemetry members resolved; wrong-hostname and untrusted-CA connections rejected. Temporary Pod deleted; production unchanged. See `docs/releases/1.0.0/compatibility-preflight.json`.
+- [ ] Verify real stable-runtime hold and source-aware rollback readiness, then finalize publication.

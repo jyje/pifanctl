@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "python": "3.14.8",
+  "tls_verification": true,
+  "hardware_access": false,
+  "passed": false,
+  "error": "Kubernetes API 0: transport request failed",
+  "candidate_commit": "1162363",
+  "workflow_run_id": 37607424951,
+  "temporary_pod_deleted": true,
+  "production_image_changed": false,
+  "scope": "read-only in-cluster Kubernetes API transport; no hardware access",
+  "diagnosis": "Transport failed with TLS verification enabled. Detailed certificate cause has not been collected for this candidate."
+}

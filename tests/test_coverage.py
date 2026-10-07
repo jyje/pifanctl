@@ -166,7 +166,9 @@ def test_changeset_ledger_configures_existing_release_streams():
     config = check_changesets.load_config()
     assert set(config["release_streams"]) == {"pifanctl", "pifanctl-chart", "pifanctl-operator"}
     entries = check_changesets.validate(ROOT / ".changeset", config)
-    assert {path.name for path in entries} >= {"branch-coverage-v1.md"}
+    archived = check_changesets.validate(ROOT / "docs/releases/1.0.0/changesets", config)
+    assert {path.name for path in entries + archived} >= {"branch-coverage-v1.md"}
+    assert len(archived) == 8
 
 
 def test_changeset_rejects_unknown_release_stream():

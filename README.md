@@ -24,7 +24,7 @@
 
 🐳 **pifanctl** (Pi Fan Control) manages PWM fans for Raspberry Pi cooling zones through Kubernetes. A zone can contain a single board, four boards sharing one rack fan, or several racks with separate fans. Declare `Fan` actuators and `CoolingZone` membership by Node labels or names. Each fan follows the hottest assigned member plus its local sensor. The operator creates one hardware worker per actuator Node; temperature agents report to Prometheus.
 
-**v1 alpha:** CRDs and the single operator chart are required. Standalone `start` control is removed. Local YAML worker execution requires `--mock`; real workers consume the operator's plan, Node UID, and heartbeat. Stable `1.0.0` awaits the [release acceptance gates](PLAN.md).
+**v1:** CRDs and the single operator chart are required. Standalone `start` control is removed. Local YAML worker execution requires `--mock`; real workers consume the operator's plan, Node UID, and heartbeat. The `1.0.0` release proposal follows the approved practical verification closeout. See the [release scope and limitations](CHANGELOG.md) and [release plan](PLAN.md); proposed artifacts are not available until publication.
 
 The sticker depicts an abstract Raspberry Pi rack, rear-facing board ports, a shared front fan, and a Kubernetes whale mascot. [Illustration style and concepts](docs/illustration-style.md).
 
@@ -38,18 +38,20 @@ The sticker depicts an abstract Raspberry Pi rack, rear-facing board ports, a sh
 
 ## 1. Install and declare cooling instances
 
-Requirements: Kubernetes, ARM64 Raspberry Pi actuator Nodes, reachable Prometheus, and verified fan wiring. Pi 4 shared-rack operation has live alpha evidence. Pi 5 sysfs behavior has mock coverage; physical acceptance remains open.
+Requirements: Kubernetes, ARM64 Raspberry Pi actuator Nodes, reachable Prometheus, and verified fan wiring. The live campaign used Pi 4 shared-fan actuation and a Pi 5 CPU-load/temperature member. Pi 5 sysfs actuation has mock coverage; physical validation is deferred. See [follow-up #64](https://github.com/jyje/pifanctl/issues/64).
 
 Copy and customize the [operator values example](tests/fixtures/operator-extra-resources.yaml). Its `pi-01` Node and rack labels are illustrative and must match your hardware inventory. Declare instances in the chart's `extraResources` array. For a single board, use a one-member CoolingZone and one Fan on that Node.
 
 ```sh
-# Select the intended Kubernetes context and a published, reviewed alpha image.
+# Select the intended Kubernetes context and a published, reviewed image.
 helm upgrade --install pifanctl charts/pifanctl-operator \
   --kube-context lab --namespace pifanctl-system --create-namespace \
   -f cooling-values.yaml
 kubectl --context lab get fans,coolingzones
 kubectl --context lab wait --for=condition=Ready fan/rack-fan-01 --timeout=120s
 ```
+
+For a legacy cluster CA, the stable Python 3.12 compatibility image uses `image.tag: v1.0.0-py312`; the default is canonical Python 3.14. Keep TLS verification enabled and follow the [runtime compatibility procedure](docs/v1/runtime.md#runtime-compatibility-with-legacy-cluster-cas).
 
 The chart pins its own image version. An application release does not automatically update that pin. Verify image availability before installation. Helm installs CRDs on first install; review and explicitly apply schema upgrades as described in the [runtime manual](docs/v1/runtime.md). Argo CD users keep the chart values and `extraResources` in their Application, as in [jyje/cluster](https://github.com/jyje/cluster/blob/main/clusters/r4spi/apps/pifanctl.yaml).
 

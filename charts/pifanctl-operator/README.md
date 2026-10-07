@@ -13,7 +13,7 @@ See [English runtime instructions](../../docs/v1/runtime.md),
 helm lint charts/pifanctl-operator
 helm template pifanctl charts/pifanctl-operator -n pifanctl-system
 # Add Fan and CoolingZone instances through valuesObject.extraResources in GitOps.
-# Only after choosing a disposable cluster and making the alpha image available:
+# Only after choosing a disposable cluster and making the pinned image available:
 helm upgrade --install pifanctl charts/pifanctl-operator \
   -n pifanctl-system --create-namespace
 ```
@@ -23,16 +23,20 @@ helm upgrade --install pifanctl charts/pifanctl-operator \
 | `operatorId` | Short, unique identity; another operator cannot adopt its CRs |
 | `replicas` | 1 by default; only the active Lease holder is Ready |
 | `agent.mode` | `managed` or `reuse`; reused agents must export read timestamps |
-| `image.tag` | Defaults to pinned `v1.0.0-alpha.3`; never `latest` |
+| `image.tag` | Defaults to pinned `v1.0.0`; never `latest` |
 | `extraResources` | Kubernetes resources submitted with the release; use `Fan` and `CoolingZone` CRs for the cooling topology |
 | `networkPolicy.monitoringNamespaceSelector` | Namespaces allowed to read worker metrics/status |
 | `serviceMonitor.enabled` | Create worker and managed-agent ServiceMonitors if Prometheus Operator is installed |
+
+The canonical default uses Python 3.14. For the documented legacy-CA path, select
+`image.tag: v1.0.0-py312` explicitly and retain TLS verification. The app version
+is still 1.0.0. See [runtime compatibility](../../docs/v1/runtime.md#runtime-compatibility-with-legacy-cluster-cas).
 
 Example values for a shared rack fan:
 
 ```yaml
 extraResources:
-  - apiVersion: pifanctl.jyje.online/v1alpha1
+  - apiVersion: pifanctl.jyje.online/v1
     kind: Fan
     metadata:
       name: rack-fan-01
@@ -51,7 +55,7 @@ extraResources:
         refreshIntervalSeconds: 5
         failsafeDuty: 100
         exitDuty: 100
-  - apiVersion: pifanctl.jyje.online/v1alpha1
+  - apiVersion: pifanctl.jyje.online/v1
     kind: CoolingZone
     metadata:
       name: rack-a
@@ -76,7 +80,7 @@ so automatic pruning or Application deletion cannot remove the cluster-wide API.
 Operator replacement uses `Recreate` because leader-only readiness would block
 a surge rollout. The worker keeps its last plan during operator replacement and
 requests failsafe duty if the heartbeat expires. Multi-replica readiness and
-availability during operator upgrades remain alpha follow-ups.
+availability during operator upgrades remain follow-up work; one replica is the supported configuration.
 
 Review and apply schema upgrades explicitly. Namespace-scoped permissions create
 workloads/config, publish Events and update the Lease. The operator patches CR
@@ -104,7 +108,7 @@ hardware safety.
 Use the [declarative Application example](../../design/v1/examples/argocd.yaml).
 Pin a published chart release tag or immutable commit. Configure
 `PrunePropagationPolicy=background` and `PruneLast=true`: foreground pruning is
-not a supported claim-retirement path in this alpha because garbage collection
+not a supported claim-retirement path because garbage collection
 can remove a worker before its release acknowledgement.
 
 Remove retired Fans from zone references and `extraResources` in the desired

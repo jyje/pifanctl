@@ -24,7 +24,7 @@
 
 🐳 **pifanctl** (Pi Fan Control)은 Kubernetes에서 라즈베리 파이 냉각 구역의 PWM 팬을 관리합니다. 단일 보드, 공용 팬으로 식히는 4대 랙, 팬이 각각 연결된 여러 랙을 같은 모델로 구성합니다. `Fan`은 팬과 제어 노드이며, `CoolingZone`은 라벨 또는 이름으로 냉각 대상을 선택합니다. 각 팬은 연결된 멤버와 제어 노드의 로컬 센서 중 최고 온도를 따릅니다. operator가 제어 노드마다 worker를 만들고 agent가 Prometheus에 온도를 보고합니다.
 
-**v1 alpha:** CRD와 단일 operator 차트가 필수입니다. 독립 `start` 제어는 제거했습니다. 로컬 YAML worker는 `--mock`만 허용하며, 실제 worker는 operator의 계획, Node UID와 heartbeat를 사용합니다. 정식 `1.0.0`은 [출시 검증 게이트](PLAN.md)가 남아 있습니다.
+**v1:** CRD와 단일 operator 차트가 필수입니다. 독립 `start` 제어는 제거했습니다. 로컬 YAML worker는 `--mock`만 허용하며, 실제 worker는 operator의 계획, Node UID와 heartbeat를 사용합니다. `1.0.0` 릴리즈 제안은 승인된 현실적 검증 마감을 따릅니다. [지원 범위와 한계](CHANGELOG.md), [릴리즈 계획](PLAN.md)을 참고하세요. 제안된 아티팩트는 게시 후 사용할 수 있습니다.
 
 스티커는 범용 라즈베리 파이 랙, 후면 보드 포트, 전면 공용 팬과 Kubernetes 고래를 표현합니다. [일러스트 스타일과 시안](docs/illustration-style.md).
 
@@ -38,12 +38,12 @@
 
 ## 1. 설치와 냉각 인스턴스 선언
 
-Kubernetes, ARM64 라즈베리 파이 제어 노드, 접근 가능한 Prometheus와 검증된 배선이 필요합니다. Pi 4 공용 랙은 실물 alpha 운영 기록이 있으며 Pi 5 sysfs는 mock 테스트만 완료했습니다.
+Kubernetes, ARM64 라즈베리 파이 제어 노드, 접근 가능한 Prometheus와 검증된 배선이 필요합니다. 실물 실험은 Pi 4가 공용 팬을 제어하고 Pi 5가 부하·온도 측정 대상인 혼합 랙에서 진행했습니다. Pi 5 sysfs 팬 제어는 mock 검증만 있으며 실물 검증은 [후속 이슈 #64](https://github.com/jyje/pifanctl/issues/64)로 이관했습니다.
 
 [operator values 예시](tests/fixtures/operator-extra-resources.yaml)를 복사해 실제 하드웨어에 맞추세요. 예시의 `pi-01`과 랙 라벨은 실제 노드로 바꿔야 합니다. 차트 `extraResources` 배열로 인스턴스를 선언합니다. 단일 보드는 멤버 한 대의 CoolingZone과 해당 노드의 Fan으로 구성합니다.
 
 ```sh
-# 대상 context와 게시된 검토 완료 alpha 이미지를 선택합니다.
+# 대상 context와 게시된 검토 완료 이미지를 선택합니다.
 helm upgrade --install pifanctl charts/pifanctl-operator \
   --kube-context lab --namespace pifanctl-system --create-namespace \
   -f cooling-values.yaml
@@ -191,3 +191,7 @@ operator heartbeat가 만료되면 영향을 받은 모든 worker가 팬을 100%
 
 - [공식: Raspberry Pi Foundation](https://www.raspberrypi.org)
 - [블로그: Using Raspberry Pi to Control a PWM Fan and Monitor its Speed](https://blog.driftking.tw/en/2019/11/Using-Raspberry-Pi-to-Control-a-PWM-Fan-and-Monitor-its-Speed/)
+
+### 레거시 CA 런타임 호환성
+
+Python 3.14 기본 이미지와 별도로 정식 Python 3.12 호환 이미지 `v1.0.0-py312`를 게시합니다. 앱 버전은 동일한 1.0.0이며, `-py312`는 이미지 런타임 표기입니다. 오래된 클러스터 CA에서는 차트의 `image.tag`로 호환 이미지를 명시하고 인증서·호스트명 검증을 유지하세요. 실제 후보 런타임 검증과 롤백 준비 후 배포합니다. [호환 절차](docs/v1/runtime.md#runtime-compatibility-with-legacy-cluster-cas)를 참고하세요.

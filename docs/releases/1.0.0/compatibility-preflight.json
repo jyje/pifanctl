@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "python": "3.12.15",
+  "hardware_access": false,
+  "tls_verification": true,
+  "fan_count": 1,
+  "zone_count": 1,
+  "resolved_members": 4,
+  "telemetry_members": 4,
+  "wrong_hostname_rejected": true,
+  "untrusted_ca_rejected": true,
+  "passed": true,
+  "candidate_image": "ghcr.io/jyje/pifanctl-issue:d11e5ae-py312",
+  "image_digest": "sha256:4ebf44ad549ec9cfbbc27d969b328e9db4f82c51f242bba1cc9c4a12d5c21a30",
+  "workflow_run_id": 37608453952,
+  "temporary_pod_deleted": true,
+  "production_image_changed": false,
+  "scope": "read-only Kubernetes topology, fresh member telemetry, TLS trust and hostname rejection; no hardware actuation"
+}
