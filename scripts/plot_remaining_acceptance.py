@@ -18,7 +18,7 @@ def build(directory):
     axes[0].bar(x, [s['apply_to_ready_seconds'] for s in stages], color='#3478b9')
     axes[0].set_ylabel('Apply to all CRs Ready (seconds)')
     axes[1].bar(x, [s['status_nearest_rank_p95_seconds']*1000 for s in stages], color='#218b82')
-    axes[1].set_ylabel('Status endpoint empirical p95 (ms)')
+    axes[1].set_ylabel('Status proxy call empirical p95 (ms)')
     for ax in axes[:2]:
         ax.set_xticks(list(x), [str(s['fans'])+' fans\n'+str(s['zones'])+' zones' for s in stages])
         ax.grid(axis='y', alpha=0.2)
