@@ -421,3 +421,13 @@ This approval changes the measurement policy, not the deployed control curve.
 - [x] Accept the observed deployment scope for release preparation, with explicit maintainer approval to supplement remaining measurements later. Section 23 of the manual supersedes earlier blanket release-blocking decisions.
 - [x] Track deferred thermal characterization, electrical/RPM measurements, physical failures, Pi 5 actuation, expanded rollback and distributed capacity in [issue #64](https://github.com/jyje/pifanctl/issues/64).
 - [ ] Carry the verified scope and limitations into the stable app/chart release proposal. No stable tag or version bump is part of this acceptance PR.
+
+
+### Stable release proposal preparation
+
+- [x] Prepare independent app 1.0.0 and operator chart 1.0.0 version changes.
+- [x] Consume eight pending changesets into archived release provenance and a consolidated CHANGELOG.md, without releasing the legacy chart.
+- [x] Record verified Pi 4 actuator/Pi 5 member roles, deferred physical/thermal scenarios and Python 3.12 live versus Python 3.14 default-image boundary in release notes.
+- [ ] Publish the release proposal PR after local checks: 427 regression tests passed, Helm lint/render passed, archived changesets validated and pending ledger empty. Version validation follows the prepared release commit.
+- [ ] Verify proposal CI and candidate image availability/runtime preflight before production adoption.
+- [ ] Publish stable artifacts and verify immutable tags, image/chart metadata and deployment rollback readiness.

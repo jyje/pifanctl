@@ -24,7 +24,7 @@
 
 🐳 **pifanctl** (Pi Fan Control) manages PWM fans for Raspberry Pi cooling zones through Kubernetes. A zone can contain a single board, four boards sharing one rack fan, or several racks with separate fans. Declare `Fan` actuators and `CoolingZone` membership by Node labels or names. Each fan follows the hottest assigned member plus its local sensor. The operator creates one hardware worker per actuator Node; temperature agents report to Prometheus.
 
-**v1 alpha:** CRDs and the single operator chart are required. Standalone `start` control is removed. Local YAML worker execution requires `--mock`; real workers consume the operator's plan, Node UID, and heartbeat. Stable `1.0.0` awaits the [release acceptance gates](PLAN.md).
+**v1:** CRDs and the single operator chart are required. Standalone `start` control is removed. Local YAML worker execution requires `--mock`; real workers consume the operator's plan, Node UID, and heartbeat. The `1.0.0` release proposal follows the approved practical verification closeout. See the [release scope and limitations](CHANGELOG.md) and [release plan](PLAN.md); proposed artifacts are not available until publication.
 
 The sticker depicts an abstract Raspberry Pi rack, rear-facing board ports, a shared front fan, and a Kubernetes whale mascot. [Illustration style and concepts](docs/illustration-style.md).
 
@@ -38,12 +38,12 @@ The sticker depicts an abstract Raspberry Pi rack, rear-facing board ports, a sh
 
 ## 1. Install and declare cooling instances
 
-Requirements: Kubernetes, ARM64 Raspberry Pi actuator Nodes, reachable Prometheus, and verified fan wiring. Pi 4 shared-rack operation has live alpha evidence. Pi 5 sysfs behavior has mock coverage; physical acceptance remains open.
+Requirements: Kubernetes, ARM64 Raspberry Pi actuator Nodes, reachable Prometheus, and verified fan wiring. The live campaign used Pi 4 shared-fan actuation and a Pi 5 CPU-load/temperature member. Pi 5 sysfs actuation has mock coverage; physical validation is deferred. See [follow-up #64](https://github.com/jyje/pifanctl/issues/64).
 
 Copy and customize the [operator values example](tests/fixtures/operator-extra-resources.yaml). Its `pi-01` Node and rack labels are illustrative and must match your hardware inventory. Declare instances in the chart's `extraResources` array. For a single board, use a one-member CoolingZone and one Fan on that Node.
 
 ```sh
-# Select the intended Kubernetes context and a published, reviewed alpha image.
+# Select the intended Kubernetes context and a published, reviewed image.
 helm upgrade --install pifanctl charts/pifanctl-operator \
   --kube-context lab --namespace pifanctl-system --create-namespace \
   -f cooling-values.yaml
