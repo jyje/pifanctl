@@ -364,8 +364,8 @@ This approval changes the measurement policy, not the deployed control curve.
   failure detection, failsafe commands, recovery and cooperative cleanup.
 - [x] Supplement anonymized CSV/JSON/figures and the visually inspected 26-page acceptance PDF. Keep
   electrical PWM, RPM, power-loss and untested hardware gates explicitly open.
-- [ ] Run the full suite and compatibility checks, commit each concern, publish
-  a reviewable PR and monitor CI. Judge release readiness from all required gates.
+- [x] Run the full suite and compatibility checks and commit each concern.
+- [ ] Publish the reviewable PR and monitor CI. Judge release readiness from all required gates.
 
 - Resource-scale campaign: ten lifecycle checks passed. Twelve status samples
   per stage; all fixture finalizers and workers cooperatively released. At
@@ -390,8 +390,8 @@ This approval changes the measurement policy, not the deployed control curve.
   Worker mean 0.02291 vCPU / 38.19 MiB sampled RSS; temperature-query p95
   140.06 ms including kubectl and proxy. No broader capacity contract claimed.
 
-- Final local regression: 425 passed, zero skips, Python 3.13.2; statement
-  coverage 96.29%, branch 89.81%. Python 3.10 focused acceptance checks: 70
+- Final local regression: 427 passed, zero skips, Python 3.13.2; statement
+  coverage 96.29%, branch 89.81%. Python 3.10 focused acceptance checks: 72
   passed. Version and eight pending changesets validated.
 - All four load Pods were deleted and immediate cooldown verified. Live
   postflight confirmed source-matched Synced/Healthy, Ready CRs, the same
@@ -399,3 +399,8 @@ This approval changes the measurement policy, not the deployed control curve.
   The lab operator and all simulated source fixtures were removed; CRDs retained.
 - PDF now contains 26 pages. Cover and new pages 18-26 visually inspected;
   original evidence and original policy verdicts remain unchanged.
+
+- New generated SVG trailing spaces and CSV line endings were normalized.
+  Measurement rows are unchanged, original evidence untouched, and all four
+  new verdicts reproduce exactly. Explicit legacy reassessment preserves the
+  original CSV line ending. Final full/compatibility suites: 427 / 72 passed.
