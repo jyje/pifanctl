@@ -288,11 +288,12 @@ maintainer. Raw infrastructure snapshots remain private.
   duty-span criteria using independent, advancing per-member source clocks.
 - [x] Publish the first measured graph and pass/fail result in the acceptance
   manual, anonymous CSV/JSON and visually reviewed 15-page PDF.
-- [ ] Complete separately bounded 55 C and 60 C scenarios under the approved
-  `v1-3c` policy. Repeat 50 C after any configuration/runtime change that
-  invalidates the recorded observation; retain historical legacy verdicts.
-- [ ] Recheck CI and merge each reviewable concern; update the acceptance PDF
-  without declaring stable v1 until all remaining hardware gates pass.
+- [x] Execute separately bounded 55 C and 60 C scenarios under the approved
+  `v1-3c` policy and retain failed holds. Further characterization is deferred
+  to issue #64 under the approved practical closeout; these holds did not pass.
+- [x] Recheck CI, merge the release/report changes and update the acceptance
+  PDF. The approved scope in Section 23 supersedes the earlier requirement
+  that every physical hardware measurement block publication.
 
 - Collector verification: 387 full Python 3.13.2 tests and 33 focused Python
   3.10 tests passed. The initial sandbox run could not bind two local HTTP
@@ -450,4 +451,4 @@ This approval changes the measurement policy, not the deployed control curve.
 - [x] Verify canonical Python 3.14.8 strict TLS on isolated Kubernetes 1.30; wrong-hostname and untrusted-CA connections rejected, all owned fixtures deleted.
 - [x] Correct the generic runtime observer from scrape timestamps to actual sensor acquisition metrics. Preserve the earlier 124.54-second observation privately as scrape-clock evidence. The new 120.14-second rerun is the current acquisition-freshness proof. Ten focused and 434 full local tests passed, including public-clock consistency and deterministic SVG regeneration.
 - [x] Record anonymous stable-runtime CSV/JSON, reproducible SVG/PNG and the updated 29-page PDF. Deferred measurements remain explicitly unpassed.
-- [ ] Merge the final evidence/tool correction PR after CI and verify the clean synchronized primary checkout.
+- [x] Merge [final evidence/tool correction PR #66](https://github.com/jyje/pifanctl/pull/66) after all CI and Codecov checks passed in run `37628819560`. Synchronize the clean primary checkout with main before recording this closeout.
