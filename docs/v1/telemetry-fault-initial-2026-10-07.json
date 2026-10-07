@@ -1,0 +1,84 @@
+{
+  "started_at_utc": "2026-10-06T23:43:38.196403+00:00",
+  "simulated_gpio": true,
+  "simulated_temperature_HTTP_source": true,
+  "hardware_acceptance": false,
+  "physical_network_partition_acceptance": false,
+  "checks": [
+    {
+      "name": "fresh_HTTP_source_regulates",
+      "passed": true,
+      "elapsed_seconds": 6.403348708001431,
+      "requested_duty_percent": 47.5,
+      "reason": ""
+    },
+    {
+      "name": "stale_source_full_duty",
+      "passed": true,
+      "elapsed_seconds": 71.56981295801234,
+      "requested_duty_percent": 100.0,
+      "reason": "MissingOrStaleTemperature: pifanctl-release-control-plane"
+    },
+    {
+      "name": "stale_source_recovery",
+      "passed": true,
+      "elapsed_seconds": 80.0533287919825,
+      "requested_duty_percent": 47.5,
+      "reason": ""
+    },
+    {
+      "name": "missing_source_full_duty",
+      "passed": true,
+      "elapsed_seconds": 86.64843270898564,
+      "requested_duty_percent": 100.0,
+      "reason": "MissingOrStaleTemperature: pifanctl-release-control-plane"
+    },
+    {
+      "name": "missing_source_recovery",
+      "passed": true,
+      "elapsed_seconds": 75.88863779202802,
+      "requested_duty_percent": 47.5,
+      "reason": ""
+    },
+    {
+      "name": "malformed_source_full_duty",
+      "passed": true,
+      "elapsed_seconds": 82.07390683301492,
+      "requested_duty_percent": 100.0,
+      "reason": "invalid Prometheus response"
+    },
+    {
+      "name": "malformed_source_recovery",
+      "passed": true,
+      "elapsed_seconds": 71.44381999998586,
+      "requested_duty_percent": 47.5,
+      "reason": ""
+    },
+    {
+      "name": "unreachable_HTTP_endpoint_full_duty",
+      "passed": true,
+      "elapsed_seconds": 2.176924625004176,
+      "requested_duty_percent": 100.0,
+      "reason": "Prometheus query failed"
+    },
+    {
+      "name": "HTTP_endpoint_recovery",
+      "passed": true,
+      "elapsed_seconds": 2.20828091702424,
+      "requested_duty_percent": 47.5,
+      "reason": ""
+    },
+    {
+      "name": "cooperative_worker_cleanup",
+      "passed": true,
+      "elapsed_seconds": 47.31424520898145,
+      "requested_duty_percent": null,
+      "reason": null
+    }
+  ],
+  "passed": false,
+  "error": "abrupt_worker_restart_recovers: timed out",
+  "cleanup_verified": false,
+  "cleanup_error": "error: timed out waiting for the condition on pods/fault-source\n",
+  "finished_at_utc": "2026-10-06T23:55:55.862065+00:00"
+}

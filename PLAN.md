@@ -14,8 +14,10 @@ fake sensors, Prometheus and Kubernetes APIs, and temporary files. Live deployme
 and hardware experiments require explicit user authorization. Operational plans,
 archives, and findings belong in the private operations archive.
 
-A stable v1.0.0 release requires the remaining hardware and failure acceptance
-gates below. Local and CI results alone do not establish electrical cooling safety.
+The maintainer approved practical verification closeout on 2026-10-07 for the
+observed mixed Pi 4/Pi 5 rack. Proceed with release preparation; remaining
+hardware and extended scenarios below are deferred follow-up, not passed checks.
+Local and CI results alone do not establish electrical cooling safety.
 
 ## Work rules
 
@@ -47,7 +49,7 @@ worker deployment and bounded 55°C response observations are recorded in the re
 acceptance manual. Normal visual fan rotation was confirmed before the load run. Other temperature
 targets, RPM, electrical measurements, and failure acceptance remain open.
 
-## Remaining release acceptance gates
+## Release preparation and deferred verification backlog
 
 ### v1 packaging and release preparation
 
@@ -69,16 +71,16 @@ targets, RPM, electrical measurements, and failure acceptance remain open.
   - [x] Exercise live storage promotion and reverse rollback, preserving CRD/resource UIDs and the active worker. Complete v1 re-promotion passed with explicit declaration/history verification.
   - [x] Verify actual alpha.6 runtime for 121.6 seconds and archived alpha.3 image rollback for 62.6 seconds with direct worker and per-member source clocks. These are runtime holds, not thermal stability tests.
   - [x] Restore candidate image and automatic self-heal, then verify another source-aware healthy hold: 120.6 seconds, 22 observations. Cluster PR #150 merged at `fbdb9d2`; source-matched Argo Synced/Healthy, v1 storage and one worker verified.
-- [ ] Complete the hardware, failure, migration/rollback, and fleet-scale acceptance gates below.
-- [ ] Release app `1.0.0` and operator chart `1.0.0` after all applicable gates pass; keep later app/chart versions independent.
+- [x] Close the current practical verification campaign by maintainer approval; retain unmeasured hardware, physical failures and extended fleet scenarios as deferred follow-up.
+- [ ] Prepare and publish app `1.0.0` and operator chart `1.0.0` with the verified scope and deferred limitations in release notes; keep later app/chart versions independent.
 
 - [x] Merge design PR #40 and implementation PR #41 into `main` in dependency order.
 - [x] Verify the first successful main line and branch badge publication under `assets/coverage/`.
 - [x] Record direct visual confirmation of normal shared-fan rotation for the active alpha.3 deployment. The user confirmed continuous blade rotation; RPM, waveform, and stop/restart behavior remain unmeasured. See Section 12 of the acceptance manual.
 - [ ] Measure real Pi 4 GPIO and Pi 5 sysfs wiring, channel, initialization and shutdown PWM behavior.
 - [x] Pass the existing 50 C fixed-load observation under the approved `v1-3c` policy: 140.24 seconds within 49-52 C, measured span 2.75 C, duty 35.04%, complete acquisition clocks and cooldown. This is a post-hoc reassessment, not a new trial. See Section 16.
-- [ ] Complete the 60 C controlled-load stability run under `v1-3c`; record requested duty, complete source clocks and cooldown. RPM remains a separate instrumentation gate.
-- [ ] Complete the 55 C controlled-load stability run under `v1-3c`. The old record lacks per-member acquisition clocks and cannot pass certification under either policy. Its original 1 C failure remains archived. Preserve each member source timestamp in the next run. Visual rotation was confirmed before the test; RPM remains unmeasured. See the [acceptance record](docs/v1/release-acceptance.md#10-2026-10-06-alpha3-55c-shared-rack-stability-run).
+- [ ] Pass the 60 C controlled-load stability gate under `v1-3c`. The new fixed 1000m, 360-second trial completed with complete clocks and immediate cooldown, but its remote peak 58.4 C stayed below the 59 C observation lower bound. Local peak 61.15 C stayed below the 65 C local cutoff. RPM remains a separate instrumentation gate.
+- [ ] Pass the 55 C controlled-load stability gate under `v1-3c`. Fresh 500m, 750m and 600m trials retained every member acquisition clock but failed the 120-second hold. Longest qualifying interval: 65.42 seconds. Both higher loads stopped at the independent 60 C local guard. See Section 17 of the acceptance manual; RPM remains unmeasured.
 - [ ] Measure fan behavior during process kill, Node reboot, power loss, and network partition.
 - [ ] Complete supported hardware migration and rollback acceptance across the documented configurations.
 - [ ] Measure status, Prometheus, and API load at the supported fleet size.
@@ -351,3 +353,71 @@ This approval changes the measurement policy, not the deployed control curve.
 - Final duration-boundary verification: 409 complete tests and 55 focused
   Python 3.10 tests passed without skips. The approved 50 C verdict remains
   140.24 seconds; only display values are rounded.
+
+### Remaining acceptance campaign (2026-10-07)
+
+- [x] Collect fresh 55 C fixed-load trials with complete member acquisition
+  clocks, independent local cutoff, unchanged fan settings and immediate cooldown.
+- [x] Review the 55 C traces before selecting a separately bounded 60 C trial.
+  Preserve failed attempts and actual load execution evidence.
+- [x] Measure the disposable runtime lab at declared resource sizes (1/4/16 fans, 4/16/64 zones on one actuator). Separate
+  measured API/status behavior from simulated sensor/GPIO and real hardware.
+- [x] Exercise recoverable software faults in the disposable lab and record
+  failure detection, failsafe commands, recovery and cooperative cleanup.
+- [x] Supplement anonymized CSV/JSON/figures and the visually inspected 26-page acceptance PDF. Keep
+  electrical PWM, RPM, power-loss and untested hardware gates explicitly open.
+- [x] Run the full suite and compatibility checks and commit each concern.
+- [x] Publish [PR #63](https://github.com/jyje/pifanctl/pull/63) and verify source/evidence CI on `04bc71d`. Judge release readiness from all required gates.
+
+- Resource-scale campaign: ten lifecycle checks passed. Twelve status samples
+  per stage; all fixture finalizers and workers cooperatively released. At
+  16 fans / 64 zones, operator mean 0.0193 vCPU / 75.48 MiB sampled RSS and
+  worker 0.00393 vCPU / 39.25 MiB; 117 CR API requests include the observer.
+  This does not close distributed fleet or actual Prometheus load acceptance.
+- HTTP fault campaign: nine normal/fault/recovery checks observed full-duty
+  failsafe and fresh recovery. The first abrupt-stop attempt was ineffective
+  inside the PID namespace; two harness runs also timed out on source fixture
+  cleanup. Both failed reports are retained. The corrected ancestor-PID stop
+  and SIGTERM-capable source fixture passed the separate three-check retry
+  including cleanup. This is simulated GPIO evidence, not physical safety.
+- Read-only actuator inventory now records Pi 4 Model B Rev 1.5 (d03115). No
+  exposed tachometer input was found; electrical PWM, RPM and fan/supply model
+  remain unmeasured. No production reboot, network cut or power loss occurred.
+
+- Completed 60 C collection: eighty source-aware samples, 360.06-second load,
+  0.999 vCPU mean, local peak 61.15 C, remote peak 58.4 C. No qualifying
+  interval; last immediate cooldown maximum 45.75 C. Thermal gate remains open.
+- Existing production fleet measured read-only: twelve samples over 81.02
+  seconds with real Prometheus, one operator/worker/fan and four members.
+  Worker mean 0.02291 vCPU / 38.19 MiB sampled RSS; temperature-query p95
+  140.06 ms including kubectl and proxy. No broader capacity contract claimed.
+
+- Final local regression: 427 passed, zero skips, Python 3.13.2; statement
+  coverage 96.29%, branch 89.81%. Python 3.10 focused acceptance checks: 72
+  passed. Version and eight pending changesets validated.
+- All four load Pods were deleted and immediate cooldown verified. Live
+  postflight confirmed source-matched Synced/Healthy, Ready CRs, the same
+  worker Pod/container and topology identities, and no legacy controller.
+  The lab operator and all simulated source fixtures were removed; CRDs retained.
+- PDF now contains 26 pages. Cover and new pages 18-26 visually inspected;
+  original evidence and original policy verdicts remain unchanged.
+
+- New generated SVG trailing spaces and CSV line endings were normalized.
+  Measurement rows are unchanged, original evidence untouched, and all four
+  new verdicts reproduce exactly. Explicit legacy reassessment preserves the
+  original CSV line ending. Final full/compatibility suites: 427 / 72 passed.
+
+- PR CI run `37550806713` passed on `04bc71d`: Python 3.10-3.14,
+  chart/version/workflows, coverage quality, authenticated Codecov upload,
+  Codecov project/patch and ARC ARM64 build/smoke checks. The final CI-record
+  documentation rerun, merge and clean-main synchronization are tracked in
+  PR #63 and the final handoff; stable release gates remain open.
+
+
+### Practical verification closeout approved (2026-10-07)
+
+- [x] Record Raspberry Pi 4 Model B Rev 1.5 as the shared-fan actuator and Raspberry Pi 5 Model B Rev 1.0 as the observed CPU-load/temperature member. Pi 5 actuator behavior remains unverified.
+- [x] Preserve all thermal verdicts: CPU load raised temperature, but the new 55 C/60 C trials did not establish the prescribed 120-second plateau. Cleanup and cooldown passed.
+- [x] Accept the observed deployment scope for release preparation, with explicit maintainer approval to supplement remaining measurements later. Section 23 of the manual supersedes earlier blanket release-blocking decisions.
+- [x] Track deferred thermal characterization, electrical/RPM measurements, physical failures, Pi 5 actuation, expanded rollback and distributed capacity in [issue #64](https://github.com/jyje/pifanctl/issues/64).
+- [ ] Carry the verified scope and limitations into the stable app/chart release proposal. No stable tag or version bump is part of this acceptance PR.

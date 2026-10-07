@@ -1,0 +1,45 @@
+{
+  "verified_at_utc": "2026-10-07T00:08:22.568338+00:00",
+  "harness_source_commit": "e9f18e293e9b96099393366ebf935a517ed3f647",
+  "python": "3.13.2",
+  "full_tests_passed": 427,
+  "skipped": 0,
+  "statement_coverage_percent": 96.28930817610063,
+  "branch_coverage_percent": 89.81132075471699,
+  "python_310_focused_tests_passed": 72,
+  "thermal_collector_trials_completed": 4,
+  "new_thermal_target_holds_passed": 0,
+  "pdf_pages": 26,
+  "pdf_new_pages_visually_inspected": [
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26
+  ],
+  "pdf_cover_visually_inspected": true,
+  "stable_release_ready": false,
+  "all_new_thermal_verdicts_reproduced": true,
+  "branch_diff_whitespace_clean": true,
+  "remote_ci": {
+    "run_id": 37550806713,
+    "validated_commit": "04bc71d438f3b0a210a7a96af9e10dfa16670212",
+    "passed": true,
+    "python_matrix": [
+      "3.10",
+      "3.11",
+      "3.12",
+      "3.13",
+      "3.14"
+    ],
+    "arc_arm64_passed": true,
+    "codecov_upload_passed": true,
+    "codecov_project_and_patch_passed": true,
+    "pr": 63,
+    "final_documentation_rerun_tracked_on_pr": true
+  }
+}

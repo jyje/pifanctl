@@ -40,6 +40,14 @@ def project(rows):
     return public
 
 
+
+def normalize_svg(path):
+    path.write_text('\n'.join(line.rstrip() for line in path.read_text().splitlines())+'\n')
+
+
+def csv_line_ending(original=None):
+    return '\r\n' if original is not None and b'\r\n' in original.read_bytes() else '\n'
+
 def figure(rows, target, output, policy="v1-3c"):
     import matplotlib
     matplotlib.use('Agg')
@@ -75,6 +83,8 @@ def figure(rows, target, output, policy="v1-3c"):
     fig.tight_layout(rect=(0, 0.035, 1, 0.96))
     for suffix in ('.svg', '.png'):
         fig.savefig(output.with_suffix(suffix), dpi=180)
+        if suffix == '.svg':
+            normalize_svg(output.with_suffix(suffix))
     plt.close(fig)
 
 
@@ -86,8 +96,15 @@ def execution(log):
     elapsed, cpu = float(value['elapsed_seconds']), float(value['cpu_seconds'])
     if not math.isfinite(elapsed) or not math.isfinite(cpu) or elapsed <= 0 or cpu < 0:
         raise ValueError('Invalid load execution counters')
-    return {'reason': reason, 'elapsed_seconds': elapsed, 'cpu_seconds': cpu,
-            'average_consumed_vcpu': cpu / elapsed}
+    result = {'reason': reason, 'elapsed_seconds': elapsed, 'cpu_seconds': cpu,
+              'average_consumed_vcpu': cpu / elapsed}
+    for key in ('local_peak_celsius', 'last_local_celsius'):
+        if key in value:
+            reading = float(value[key])
+            if not math.isfinite(reading) or not -20 <= reading <= 120:
+                raise ValueError('Invalid local thermal observation')
+            result[key] = reading
+    return result
 
 
 def reassessment(path, rows, target):
@@ -146,7 +163,8 @@ def main():
             raise ValueError('Invalid process CPU counter')
         report['load_process_cpu_seconds_at_intermediate_observation'] = value
     with paths[0].open('w', newline='') as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(public[0]))
+        writer = csv.DictWriter(stream, fieldnames=list(public[0]),
+                                lineterminator=csv_line_ending(args.reassessment_of.with_suffix('.csv') if args.reassessment_of else None))
         writer.writeheader()
         writer.writerows(public)
     paths[1].write_text(json.dumps(report, indent=2)+'\n')

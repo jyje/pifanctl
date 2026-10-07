@@ -1,0 +1,36 @@
+{
+  "started_at_utc": "2026-10-06T23:57:35.170341+00:00",
+  "simulated_gpio": true,
+  "simulated_temperature_HTTP_source": true,
+  "hardware_acceptance": false,
+  "restart_only": true,
+  "physical_network_partition_acceptance": false,
+  "checks": [
+    {
+      "name": "fresh_HTTP_source_regulates",
+      "passed": true,
+      "elapsed_seconds": 6.408692582976073,
+      "requested_duty_percent": 47.5,
+      "reason": ""
+    },
+    {
+      "name": "abrupt_worker_restart_recovers",
+      "passed": true,
+      "elapsed_seconds": 2.250334624957759,
+      "requested_duty_percent": 47.5,
+      "reason": ""
+    },
+    {
+      "name": "cooperative_worker_cleanup",
+      "passed": true,
+      "elapsed_seconds": 4.452782750013284,
+      "requested_duty_percent": null,
+      "reason": null
+    }
+  ],
+  "passed": true,
+  "abrupt_stop_method": "SIGKILL from the verified kind-node ancestor PID namespace",
+  "abrupt_restart_cannot_prove_electrical_safe_default": true,
+  "cleanup_verified": true,
+  "finished_at_utc": "2026-10-06T23:57:50.102998+00:00"
+}
