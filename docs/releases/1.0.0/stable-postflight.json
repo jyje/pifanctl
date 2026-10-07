@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "roles": {
+    "operator": {
+      "ready": true,
+      "exact_stable_digest": true
+    },
+    "worker": {
+      "ready": true,
+      "exact_stable_digest": true
+    }
+  },
+  "temporary_preflight_pods_absent": true,
+  "canonical_lab_owned_fixtures_absent": true,
+  "canonical_lab_cleanup_evidence": "kubectl delete --wait=true completed successfully for the owned Namespace, ServiceAccount, ClusterRole, ClusterRoleBinding and Pod",
+  "subsequent_lab_host_endpoint_queries": "TLS handshake timeout; not reported as healthy lab availability"
+}
