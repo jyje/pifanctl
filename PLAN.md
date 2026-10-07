@@ -428,6 +428,6 @@ This approval changes the measurement policy, not the deployed control curve.
 - [x] Prepare independent app 1.0.0 and operator chart 1.0.0 version changes.
 - [x] Consume eight pending changesets into archived release provenance and a consolidated CHANGELOG.md, without releasing the legacy chart.
 - [x] Record verified Pi 4 actuator/Pi 5 member roles, deferred physical/thermal scenarios and Python 3.12 live versus Python 3.14 default-image boundary in release notes.
-- [ ] Publish the release proposal PR after local checks: 427 regression tests passed, Helm lint/render passed, archived changesets validated and pending ledger empty. Version validation follows the prepared release commit.
+- [x] Publish [release proposal PR #65](https://github.com/jyje/pifanctl/pull/65): 427 regression tests passed, Helm lint/render and version validation passed, eight archived changesets validated and pending ledger empty. Prepared release commit: `1162363`.
 - [ ] Verify proposal CI and candidate image availability/runtime preflight before production adoption.
 - [ ] Publish stable artifacts and verify immutable tags, image/chart metadata and deployment rollback readiness.
