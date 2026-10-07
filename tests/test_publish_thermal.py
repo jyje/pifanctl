@@ -94,3 +94,24 @@ def test_execution_preserves_only_finite_local_guard_observations():
         raw['local_peak_celsius'] = value
         with pytest.raises(ValueError, match='local thermal'):
             execution(json.dumps(raw))
+
+
+def test_svg_whitespace_normalization_keeps_coordinate_tokens(tmp_path):
+    from publish_thermal_evidence import normalize_svg
+    import xml.etree.ElementTree as ET
+    path = tmp_path/'image.svg'
+    path.write_text('<svg><path d="M 0 0 \nL 1 1 \n"/></svg> \n')
+    before = ET.parse(path).getroot()[0].attrib['d'].split()
+    normalize_svg(path)
+    assert ET.parse(path).getroot()[0].attrib['d'].split() == before
+    assert all(line == line.rstrip() for line in path.read_text().splitlines())
+
+
+def test_new_csv_uses_lf_and_explicit_legacy_reassessment_keeps_original_ending(tmp_path):
+    from publish_thermal_evidence import csv_line_ending
+    assert csv_line_ending() == '\n'
+    path = tmp_path/'original.csv'
+    path.write_bytes(b'header\r\nrow\r\n')
+    assert csv_line_ending(path) == '\r\n'
+    path.write_bytes(b'header\nrow\n')
+    assert csv_line_ending(path) == '\n'

@@ -4,6 +4,7 @@ import argparse
 import csv
 import json
 from pathlib import Path
+from publish_thermal_evidence import normalize_svg
 
 
 def build(directory):
@@ -30,6 +31,8 @@ def build(directory):
     fig.tight_layout(rect=(0,0.05,1,0.93))
     for suffix in ('.png','.svg'):
         fig.savefig(directory/('fleet-scale-2026-10-07'+suffix), dpi=180)
+        if suffix == '.svg':
+            normalize_svg(directory/('fleet-scale-2026-10-07'+suffix))
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(10,5))
@@ -54,6 +57,8 @@ def build(directory):
     fig.tight_layout(rect=(0,0.035,1,0.94))
     for suffix in ('.png','.svg'):
         fig.savefig(directory/('current-curve-2026-10-07'+suffix),dpi=180)
+        if suffix == '.svg':
+            normalize_svg(directory/('current-curve-2026-10-07'+suffix))
     plt.close(fig)
 
 
