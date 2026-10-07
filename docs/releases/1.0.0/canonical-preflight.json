@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "python": "3.14.8",
+  "hardware_access": false,
+  "strict_x509_default": true,
+  "tls_verification": true,
+  "fan_count": 0,
+  "zone_count": 0,
+  "node_count": 1,
+  "strict_tls_handshake": true,
+  "wrong_hostname_rejected": true,
+  "untrusted_ca_rejected": true,
+  "passed": true,
+  "kubernetes_version": "1.30.0",
+  "platform": "linux/arm64",
+  "image": "ghcr.io/jyje/pifanctl:v1.0.0",
+  "image_digest": "sha256:6a3a7834da287568756e16e71c14b40c1daaab9115ee9bc242ff5448db010a03",
+  "owned_fixtures_deleted": true
+}

@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "app_version": "1.0.0",
+  "operator_chart_version": "1.0.0",
+  "release_source_commit": "0b37ed93e28095d0973ff5d171cdaba1ce17a8f0",
+  "image": "ghcr.io/jyje/pifanctl:v1.0.0-py312",
+  "image_digest": "sha256:322ddb3b1501fcec177420b12b7c81de4588cfd68a2a34564bd6ed1d06eb82d1",
+  "canonical_image_digest": "sha256:6a3a7834da287568756e16e71c14b40c1daaab9115ee9bc242ff5448db010a03",
+  "platform": "linux/arm64",
+  "chart_digest": "sha256:7129f68a3ad26fa8effc322a61e45fec32f18b6593e6508d51556f4488394f95",
+  "image_publication_run": 37609419118,
+  "chart_publication_run": 37609418706,
+  "main_ci_run": 37609418623,
+  "release_pr": 65,
+  "cluster_adoption_pr": 151,
+  "source_clock_metric": "pifanctl_temperature_observed_timestamp_seconds",
+  "observations": 22,
+  "hold_seconds": 120.13755166699411,
+  "max_member_age_seconds": 18.192395448684692,
+  "max_worker_age_seconds": 5.124474287033081,
+  "hottest_c_range": [
+    47.4,
+    49.6
+  ],
+  "all_member_c_range": [
+    39.433,
+    49.6
+  ],
+  "commanded_duty_percent_range": [
+    33.63999999999999,
+    33.63999999999999
+  ],
+  "fan_count": 1,
+  "member_count": 4,
+  "cr_identity_and_spec_preserved": true,
+  "source_matched_synced_healthy": true,
+  "rollback_previous_image": "ghcr.io/jyje/pifanctl-issue:cbc8958-py312",
+  "rollback_previous_digest_available_and_matches_archive": true,
+  "new_reverse_rollback_executed": false,
+  "physical_measurements_deferred_issue": 64,
+  "local_tests_passed": 434,
+  "canonical_modern_ca_verification": true,
+  "historical_observer_clock_limitation": "Earlier generic runtime observer used Prometheus scrape timestamp. This actual acquisition-clock rerun supplies the current freshness proof."
+}
