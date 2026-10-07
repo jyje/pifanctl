@@ -11,7 +11,7 @@ on:
         type: string
         default: ""
       python-version:
-        description: Supported Python runtime; alternate runtimes use distinct experimental tags
+        description: Supported Python runtime; Python 3.12 also has immutable compatibility release tags
         type: string
         default: '3.14'
       tag-latest:
@@ -60,19 +60,27 @@ jobs:
           esac
           short_sha="${GITHUB_SHA::7}"
           if [ "${PYTHON_VERSION}" != '3.14' ]; then
-            if [ "${TAG_LATEST}" = true ] || [ "${TAG_RELEASE}" = true ]; then
-              echo 'alternate runtimes are experimental and cannot publish release/latest tags' >&2
+            if [ "${TAG_LATEST}" = true ]; then
+              echo 'alternate runtimes cannot publish latest tags' >&2
+              exit 1
+            fi
+            if [ "${TAG_RELEASE}" = true ] && [ "${PYTHON_VERSION}" != '3.12' ]; then
+              echo 'only Python 3.12 is a supported compatibility release runtime' >&2
               exit 1
             fi
             short_sha="${short_sha}-py${PYTHON_VERSION//./}"
           fi
           echo "${short_sha}" > ./sources/version
           version="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' sources/pifanctl/__init__.py)"
+          tag_version="${version}"
+          if [ "${PYTHON_VERSION}" != '3.14' ]; then
+            tag_version="${version}-py${PYTHON_VERSION//./}"
+          fi
           {
             echo "short_sha=${short_sha}"
             echo "version=${version}"
             echo "tags<<EOF"
-            SHORT_SHA="${short_sha}" VERSION="${version}" ./scripts/image-tags.sh
+            SHORT_SHA="${short_sha}" VERSION="${tag_version}" ./scripts/image-tags.sh
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
