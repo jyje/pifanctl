@@ -37,7 +37,7 @@ Local and CI results alone do not establish electrical cooling safety.
 - Implementation branch: `feat/v1-topology-runtime`, [PR #41](https://github.com/jyje/pifanctl/pull/41), merged into `main` at `eb77c0c`
 - Coverage CI follow-up: issue #42 completed by [PR #43](https://github.com/jyje/pifanctl/pull/43), merged into PR #41 at `6dc6bfa` and included in `main` at `eb77c0c` on 2026-10-04.
 - Coverage badge assets: [PR #44](https://github.com/jyje/pifanctl/pull/44), merged into `main`; generated assets live under `assets/coverage/`.
-- Candidate API: `pifanctl.jyje.online/v1`, cluster scoped Fan and CoolingZone, with served `v1alpha1` compatibility. Live MicroK8s serves both APIs with v1 storage and the verified alpha.6 Python 3.12 compatibility operator/worker; alpha.2 temperature agents remain reused.
+- Candidate API: `pifanctl.jyje.online/v1`, cluster scoped Fan and CoolingZone, with served `v1alpha1` compatibility. Live MicroK8s serves both APIs with v1 storage and stable app/chart 1.0.0 using the verified Python 3.12 compatibility operator/worker; alpha.2 temperature agents remain reused.
 - Diagrams: shared fans and one fan per board, each with normal, hot, missing-data, and expired-heartbeat scenarios in English and Korean locale files
 
 ## Pending checklist
@@ -72,7 +72,7 @@ targets, RPM, electrical measurements, and failure acceptance remain open.
   - [x] Verify actual alpha.6 runtime for 121.6 seconds and archived alpha.3 image rollback for 62.6 seconds with direct worker and per-member source clocks. These are runtime holds, not thermal stability tests.
   - [x] Restore candidate image and automatic self-heal, then verify another source-aware healthy hold: 120.6 seconds, 22 observations. Cluster PR #150 merged at `fbdb9d2`; source-matched Argo Synced/Healthy, v1 storage and one worker verified.
 - [x] Close the current practical verification campaign by maintainer approval; retain unmeasured hardware, physical failures and extended fleet scenarios as deferred follow-up.
-- [ ] Prepare and publish app `1.0.0` and operator chart `1.0.0` with the verified scope and deferred limitations in release notes; keep later app/chart versions independent.
+- [x] Publish app `1.0.0` and operator chart `1.0.0` with verified scope and deferred limitations in release notes; keep later app/chart versions independent. See release PR #65 and cluster adoption PR #151.
 
 - [x] Merge design PR #40 and implementation PR #41 into `main` in dependency order.
 - [x] Verify the first successful main line and branch badge publication under `assets/coverage/`.
@@ -420,7 +420,7 @@ This approval changes the measurement policy, not the deployed control curve.
 - [x] Preserve all thermal verdicts: CPU load raised temperature, but the new 55 C/60 C trials did not establish the prescribed 120-second plateau. Cleanup and cooldown passed.
 - [x] Accept the observed deployment scope for release preparation, with explicit maintainer approval to supplement remaining measurements later. Section 23 of the manual supersedes earlier blanket release-blocking decisions.
 - [x] Track deferred thermal characterization, electrical/RPM measurements, physical failures, Pi 5 actuation, expanded rollback and distributed capacity in [issue #64](https://github.com/jyje/pifanctl/issues/64).
-- [ ] Carry the verified scope and limitations into the stable app/chart release proposal. No stable tag or version bump is part of this acceptance PR.
+- [x] Carry the verified scope and limitations into stable app/chart release PR #65 and published release notes. Acceptance PR #63 itself did not change versions.
 
 
 ### Stable release proposal preparation
@@ -429,8 +429,8 @@ This approval changes the measurement policy, not the deployed control curve.
 - [x] Consume eight pending changesets into archived release provenance and a consolidated CHANGELOG.md, without releasing the legacy chart.
 - [x] Record verified Pi 4 actuator/Pi 5 member roles, deferred physical/thermal scenarios and Python 3.12 live versus Python 3.14 default-image boundary in release notes.
 - [x] Publish [release proposal PR #65](https://github.com/jyje/pifanctl/pull/65): 427 regression tests passed, Helm lint/render and version validation passed, eight archived changesets validated and pending ledger empty. Prepared release commit: `1162363`.
-- [ ] Verify proposal CI and candidate image availability/runtime preflight before production adoption.
-- [ ] Publish stable artifacts and verify immutable tags, image/chart metadata and deployment rollback readiness.
+- [x] Verify release PR CI: 431 tests on Python 3.10-3.14, ARC and Codecov; real compatibility preflight passed before adoption.
+- [x] Publish and verify stable artifacts: two Linux ARM64 runtime variants, independent app/chart releases, exact OCI content and pre-adoption rollback archive/image availability.
 
 - Candidate image workflow `37607424951` passed. Its ARM64 Python 3.14.8 image reports app 1.0.0. A temporary nonprivileged Pod failed the read-only in-cluster API transport check with TLS verification enabled. The exact current certificate cause remains unconfirmed; no hardware driver was loaded, the Pod was deleted, and the existing Python 3.12 operator/worker remained Ready. Evidence: `docs/releases/1.0.0/candidate-preflight.json`. Resolve the stable runtime compatibility path before merging automatic publication or adopting the candidate.
 
@@ -440,4 +440,14 @@ This approval changes the measurement policy, not the deployed control curve.
 - [x] Diagnose candidate TLS failure without exposing credentials: certificate verification code 92, CA missing key-usage extension. Temporary diagnostic Pod deleted.
 - [x] Prepare immutable Python 3.12 compatibility version tags alongside canonical Python 3.14, without changing certificate/hostname checks or canonical latest behavior. Application release waits for both builds.
 - [x] Verify variant-tag tests (32 passed), full regression (429 passed before two additional immutable-tag cases), workflow lint, candidate build `37608453952` and real Python 3.12.15 preflight. One Fan, one CoolingZone and four fresh telemetry members resolved; wrong-hostname and untrusted-CA connections rejected. Temporary Pod deleted; production unchanged. See `docs/releases/1.0.0/compatibility-preflight.json`.
-- [ ] Verify real stable-runtime hold and source-aware rollback readiness, then finalize publication.
+- [x] Adopt stable runtime through cluster PR #151 and pass a corrected acquisition-clock hold: 120.14 seconds, 22 observations. Exact worker digest and topology preserved; old image digest still matches the private baseline. No new reverse rollback executed; extended full v0 rollback remains deferred in #64.
+
+
+### Final release evidence and observer correction
+
+- [x] Publish app v1.0.0, compatibility image v1.0.0-py312 and operator chart 1.0.0; image, chart and main CI workflows passed.
+- [x] Match all 13 OCI chart source files and both Linux ARM64 image configurations to the release artifacts.
+- [x] Verify canonical Python 3.14.8 strict TLS on isolated Kubernetes 1.30; wrong-hostname and untrusted-CA connections rejected, all owned fixtures deleted.
+- [x] Correct the generic runtime observer from scrape timestamps to actual sensor acquisition metrics. Preserve the earlier 124.54-second observation privately as scrape-clock evidence. The new 120.14-second rerun is the current acquisition-freshness proof. Ten focused and 434 full local tests passed, including public-clock consistency and deterministic SVG regeneration.
+- [x] Record anonymous stable-runtime CSV/JSON, reproducible SVG/PNG and the updated 29-page PDF. Deferred measurements remain explicitly unpassed.
+- [ ] Merge the final evidence/tool correction PR after CI and verify the clean synchronized primary checkout.

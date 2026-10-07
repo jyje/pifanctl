@@ -1,18 +1,18 @@
 # pifanctl v1 Release Acceptance Field Manual
 
-**Status:** Live v1 alpha runtime and thermal observations recorded through 2026-10-07
-**Release target:** `1.0.0`
-- **Active deployment:** alpha.6 Python 3.12 compatibility operator and worker; alpha.2 temperature agents
-- **v1 candidate under review:** app `1.0.0-alpha.6`, operator chart `0.1.0-alpha.6`
-**Decision:** Current practical verification is complete by maintainer approval on 2026-10-07. Proceed with release preparation for the observed deployment scope; unmeasured hardware and broader scenarios are deferred, not passed. Section 23 supersedes earlier release-blocking decisions.
+**Status:** Stable v1 published and deployed; observations recorded through 2026-10-07
+**Release:** app `1.0.0`, operator chart `1.0.0`
+- **Active deployment:** stable `1.0.0` Python 3.12.15 compatibility operator and worker; alpha.2 temperature agents reused
+- **Publication:** separate app and operator chart releases; verified Linux ARM64 image variants
+**Decision:** Stable publication and current-rack software runtime verification passed after maintainer-approved practical closeout. Extended physical and capacity measurements remain deferred, not passed. Sections 23-25 supersede earlier release-blocking decisions.
 
-This manual records MicroK8s trials, bounded temperature-response tests, measured evidence, and remaining release checks. The alpha.6 CRD operator and worker now regulate the shared rack with v1 storage and served alpha compatibility after verified migration and image rollback. Earlier alpha.3 observations remain historical evidence. The maintainer-approved `v1-3c` policy uses target - 1 C through target + 2 C. The unchanged 50 C trial passes for 140.24 seconds under this policy; its original 1 C failure remains archived. Fresh 55 C trials include complete member clocks but fail the 120-second hold. The 60 C bounded trial remains below its target observation band. Sections 17-22 record these new trials, scale/fault evidence and final verification; Section 16 preserves the policy approval and reassessment. A user visually confirmed normal fan rotation; RPM and electrical PWM measurements remain unavailable. Values unavailable from Kubernetes or direct measurements are explicitly marked **Not recorded** instead of being guessed.
+This manual records MicroK8s trials, bounded temperature-response tests, measured evidence, and remaining release checks. The stable 1.0.0 CRD operator and worker now regulate the shared rack with v1 storage and served alpha compatibility. Alpha.6 migration and image rollback remain historical evidence. Earlier alpha.3 observations remain historical evidence. The maintainer-approved `v1-3c` policy uses target - 1 C through target + 2 C. The unchanged 50 C trial passes for 140.24 seconds under this policy; its original 1 C failure remains archived. Fresh 55 C trials include complete member clocks but fail the 120-second hold. The 60 C bounded trial remains below its target observation band. Sections 17-22 record these new trials, scale/fault evidence and final verification; Section 16 preserves the policy approval and reassessment. A user visually confirmed rotation on the earlier alpha.3 deployment; no new continuous visual, RPM or electrical PWM measurement was recorded for the stable hold. Values unavailable from Kubernetes or direct measurements are explicitly marked **Not recorded** instead of being guessed.
 
 ## 1. Initial alpha.2 trial configuration (2026-10-04)
 
 This inventory documents the earlier alpha.2 load trial. The later alpha.3 CRD
 operator and shared-rack worker are recorded in Sections 9 and 10; Section 14
-records the current alpha.6 deployment.
+records alpha.6 before the stable adoption in Section 24.
 
 | Item | Observed value |
 | --- | --- |
@@ -740,3 +740,58 @@ The verified scope is the existing mixed Pi 4/Pi 5 rack, Pi 4 shared-fan actuati
 Follow-up checklist: [issue #64](https://github.com/jyje/pifanctl/issues/64).
 
 **Closeout:** Practical verification and reporting are complete for this campaign. Proceed with the v1 release proposal while carrying these limitations into release notes and the follow-up backlog. Do not advertise universal hardware safety, Pi 5 actuator validation, exact setpoint regulation or an unmeasured fleet capacity.
+
+
+<!-- pagebreak -->
+
+## 24. Stable v1 publication and live adoption
+
+App 1.0.0 and operator chart 1.0.0 were published independently from immutable source commit `0b37ed93e28095d0973ff5d171cdaba1ce17a8f0`. Release PR #65 passed Python 3.10-3.14 with 431 tests per version, ARC ARM64 image checks and Codecov. Both image publication jobs, chart publication and main CI passed. The observer correction and public-evidence/figure checks passed 434 local regression tests.
+
+| Published artifact | Verified identity |
+| --- | --- |
+| App 1.0.0, canonical Python 3.14 | `ghcr.io/jyje/pifanctl:v1.0.0`; Linux ARM64 |
+| App 1.0.0, Python 3.12 compatibility | `ghcr.io/jyje/pifanctl:v1.0.0-py312`; Linux ARM64 |
+| Operator chart 1.0.0 | OCI package metadata matches; 13 source files match the release commit |
+| Application release | [v1.0.0](https://github.com/jyje/pifanctl/releases/tag/v1.0.0), published 2026-10-07 10:47:56 UTC |
+| Chart release | [operator-chart-v1.0.0](https://github.com/jyje/pifanctl/releases/tag/operator-chart-v1.0.0), published 2026-10-07 10:47:27 UTC |
+
+### Runtime selection and certificate validation
+
+The canonical Python 3.14.8 image failed against the production CA with certificate verification code 92: the CA lacks a key-usage extension. This failure remains recorded. It passed real API and strict TLS checks on isolated ARM64 Kubernetes 1.30 with a modern CA, including rejection of wrong-hostname and untrusted-CA connections.
+
+The Python 3.12.15 compatibility candidate passed real production API/topology and all four fresh telemetry members, plus the same negative trust checks. No CA/hostname verification bypass or certificate mutation was introduced. The compatibility image uses a separate immutable runtime tag and never updates latest. Both build jobs must succeed before the application GitHub release is created.
+
+### Deployment checklist
+
+- Passed: archive the full pre-adoption Application, resources and workloads privately with owner-only permissions and SHA256.
+- Passed: compare chart values and preserve operator identity, cooling members, driver/channel, curve, failsafe/exit duty and sync policy.
+- Passed: validate the rendered chart through server dry-run in the actual production namespace.
+- Passed: merge cluster PR #151 after CodeQL; source-matched Argo Synced/Healthy now uses the stable compatibility image.
+- Passed: verify exact worker image digest, one Ready operator/worker, preserved CR identity/spec and actual acquisition-clock freshness for the new runtime hold.
+- Rollback readiness: the prior chart source and exact image remain archived; the previous image digest is still available and matches the pre-adoption Pod. No new reverse rollback was executed in this stable campaign. Earlier image/storage rollback evidence remains in the manual; expanded full v0 rollback stays deferred.
+
+The active worker digest is `sha256:322ddb3b1501fcec177420b12b7c81de4588cfd68a2a34564bd6ed1d06eb82d1`. Full identifiers and settings stay private; public [stable-runtime evidence](../releases/1.0.0/stable-runtime.json) contains selected measurements and Boolean identity checks.
+
+<!-- pagebreak -->
+
+## 25. Corrected acquisition-clock runtime observation
+
+The generic runtime observer previously queried Prometheus scrape timestamps. Those records remain archived as scrape-clock observations and are not reused as proof of sensor acquisition age. The observer now queries `pifanctl_temperature_observed_timestamp_seconds` and records that metric explicitly. The corrected rerun supplies the current freshness proof; earlier API, identity and software rollback checks remain separately recorded.
+
+| Corrected stable observation | Measured result |
+| --- | --- |
+| Continuous runtime hold | 120.14 seconds; 22 observations |
+| Oldest member acquisition age | 18.19 seconds, below the configured 30-second limit |
+| Oldest worker heartbeat age | 5.12 seconds, below the observer's 15-second limit |
+| Hottest member range | 47.4-49.6 C |
+| All member values | 39.43-49.6 C |
+| Commanded PWM duty | 33.64% throughout this window; RPM not measured |
+
+This is normal runtime/readiness acceptance without an injected CPU workload. It is not a replacement pass for the failed 55 C/60 C target-hold experiments. Constant commanded duty during cooling is consistent with the configured hysteresis; it is not a physical fan-speed measurement.
+
+![Stable runtime, real acquisition age and commanded duty](../releases/1.0.0/stable-runtime.png)
+
+Reproduce the figure from the anonymous [CSV](../releases/1.0.0/stable-runtime.csv) using `scripts/plot_stable_runtime.py`. The [canonical TLS test](../releases/1.0.0/canonical-preflight.json), [compatibility test](../releases/1.0.0/compatibility-preflight.json) and [chart content verification](../releases/1.0.0/chart-content-verification.json) record separate evidence scopes. All temporary Pods, namespace and read-only RBAC fixtures were deleted with a successful synchronous cleanup command. Subsequent lab host-endpoint absence queries timed out during TLS handshakes; no ongoing lab API availability claim is made. Production API and both exact-digest Ready roles passed postflight.
+
+**Final decision:** Published app/chart 1.0.0 and the existing mixed Pi 4/Pi 5 rack's stable CRD runtime are verified in the stated software scope. Carry the explicitly approved physical, thermal-characterization and extended-capacity follow-up in issue #64. These deferred items are not marked as passing measurements.
