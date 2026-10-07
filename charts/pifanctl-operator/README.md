@@ -28,6 +28,10 @@ helm upgrade --install pifanctl charts/pifanctl-operator \
 | `networkPolicy.monitoringNamespaceSelector` | Namespaces allowed to read worker metrics/status |
 | `serviceMonitor.enabled` | Create worker and managed-agent ServiceMonitors if Prometheus Operator is installed |
 
+The canonical default uses Python 3.14. For the documented legacy-CA path, select
+`image.tag: v1.0.0-py312` explicitly and retain TLS verification. The app version
+is still 1.0.0. See [runtime compatibility](../../docs/v1/runtime.md#runtime-compatibility-with-legacy-cluster-cas).
+
 Example values for a shared rack fan:
 
 ```yaml

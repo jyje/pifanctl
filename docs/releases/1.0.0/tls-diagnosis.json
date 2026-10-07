@@ -1,0 +1,10 @@
+{
+  "tls_verification": true,
+  "hostname_verification": true,
+  "hardware_access": false,
+  "verify_flags": 557088,
+  "passed": false,
+  "verify_code": 92,
+  "verify_message": "CA cert does not include key usage extension",
+  "temporary_pod_deleted": true
+}

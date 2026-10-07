@@ -191,3 +191,7 @@ operator heartbeat가 만료되면 영향을 받은 모든 worker가 팬을 100%
 
 - [공식: Raspberry Pi Foundation](https://www.raspberrypi.org)
 - [블로그: Using Raspberry Pi to Control a PWM Fan and Monitor its Speed](https://blog.driftking.tw/en/2019/11/Using-Raspberry-Pi-to-Control-a-PWM-Fan-and-Monitor-its-Speed/)
+
+### 레거시 CA 런타임 호환성
+
+Python 3.14 기본 이미지와 별도로 정식 Python 3.12 호환 이미지 `v1.0.0-py312`를 게시합니다. 앱 버전은 동일한 1.0.0이며, `-py312`는 이미지 런타임 표기입니다. 오래된 클러스터 CA에서는 차트의 `image.tag`로 호환 이미지를 명시하고 인증서·호스트명 검증을 유지하세요. 실제 후보 런타임 검증과 롤백 준비 후 배포합니다. [호환 절차](docs/v1/runtime.md#runtime-compatibility-with-legacy-cluster-cas)를 참고하세요.

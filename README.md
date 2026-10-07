@@ -51,6 +51,8 @@ kubectl --context lab get fans,coolingzones
 kubectl --context lab wait --for=condition=Ready fan/rack-fan-01 --timeout=120s
 ```
 
+For a legacy cluster CA, the stable Python 3.12 compatibility image uses `image.tag: v1.0.0-py312`; the default is canonical Python 3.14. Keep TLS verification enabled and follow the [runtime compatibility procedure](docs/v1/runtime.md#runtime-compatibility-with-legacy-cluster-cas).
+
 The chart pins its own image version. An application release does not automatically update that pin. Verify image availability before installation. Helm installs CRDs on first install; review and explicitly apply schema upgrades as described in the [runtime manual](docs/v1/runtime.md). Argo CD users keep the chart values and `extraResources` in their Application, as in [jyje/cluster](https://github.com/jyje/cluster/blob/main/clusters/r4spi/apps/pifanctl.yaml).
 
 ### CLI and kubectl
