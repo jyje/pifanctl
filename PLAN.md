@@ -365,7 +365,7 @@ This approval changes the measurement policy, not the deployed control curve.
 - [x] Supplement anonymized CSV/JSON/figures and the visually inspected 26-page acceptance PDF. Keep
   electrical PWM, RPM, power-loss and untested hardware gates explicitly open.
 - [x] Run the full suite and compatibility checks and commit each concern.
-- [ ] Publish the reviewable PR and monitor CI. Judge release readiness from all required gates.
+- [x] Publish [PR #63](https://github.com/jyje/pifanctl/pull/63) and verify source/evidence CI on `04bc71d`. Judge release readiness from all required gates.
 
 - Resource-scale campaign: ten lifecycle checks passed. Twelve status samples
   per stage; all fixture finalizers and workers cooperatively released. At
@@ -404,3 +404,9 @@ This approval changes the measurement policy, not the deployed control curve.
   Measurement rows are unchanged, original evidence untouched, and all four
   new verdicts reproduce exactly. Explicit legacy reassessment preserves the
   original CSV line ending. Final full/compatibility suites: 427 / 72 passed.
+
+- PR CI run `37550806713` passed on `04bc71d`: Python 3.10-3.14,
+  chart/version/workflows, coverage quality, authenticated Codecov upload,
+  Codecov project/patch and ARC ARM64 build/smoke checks. The final CI-record
+  documentation rerun, merge and clean-main synchronization are tracked in
+  PR #63 and the final handoff; stable release gates remain open.

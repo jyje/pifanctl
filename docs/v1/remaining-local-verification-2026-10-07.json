@@ -24,5 +24,22 @@
   "pdf_cover_visually_inspected": true,
   "stable_release_ready": false,
   "all_new_thermal_verdicts_reproduced": true,
-  "branch_diff_whitespace_clean": true
+  "branch_diff_whitespace_clean": true,
+  "remote_ci": {
+    "run_id": 37550806713,
+    "validated_commit": "04bc71d438f3b0a210a7a96af9e10dfa16670212",
+    "passed": true,
+    "python_matrix": [
+      "3.10",
+      "3.11",
+      "3.12",
+      "3.13",
+      "3.14"
+    ],
+    "arc_arm64_passed": true,
+    "codecov_upload_passed": true,
+    "codecov_project_and_patch_passed": true,
+    "pr": 63,
+    "final_documentation_rerun_tracked_on_pr": true
+  }
 }
