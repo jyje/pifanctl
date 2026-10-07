@@ -14,6 +14,8 @@ from verify_runtime_lifecycle import fan, ready, regulating
 def run_simulator():
     import json
     import os
+    import signal
+    import sys
     from pathlib import Path
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
     import time
@@ -30,6 +32,7 @@ def run_simulator():
             self.wfile.write(json.dumps(payload).encode())
         def log_message(self, *args):
             pass
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
     ThreadingHTTPServer(('0.0.0.0', 9090), Handler).serve_forever()
 
 
@@ -117,6 +120,7 @@ def main():
         apply({'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': metadata, 'data': {'mode': 'fresh'}})
         apply({'apiVersion': 'v1', 'kind': 'Pod', 'metadata': metadata,
                'spec': {'automountServiceAccountToken': False, 'restartPolicy': 'Never', 'nodeName': node,
+                        'terminationGracePeriodSeconds': 5,
                         'securityContext': {'runAsNonRoot': True, 'runAsUser': 10001},
                         'containers': [{'name': 'source', 'image': image, 'imagePullPolicy': 'Never',
                                         'command': ['python', '-c', inspect.getsource(run_simulator)+'\nrun_simulator()'],
