@@ -4,7 +4,7 @@ import sys
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from verify_live_runtime import main, telemetry
+from verify_live_runtime import main, telemetry, source_clock_query
 
 
 def series(node, value):
@@ -38,3 +38,8 @@ def test_runtime_report_is_never_overwritten_before_api_access(monkeypatch, tmp_
     with pytest.raises(SystemExit, match='already exists'):
         main()
     assert report.read_text() == 'original'
+
+
+def test_runtime_observer_queries_sensor_acquisition_clock():
+    assert source_clock_query('{node=~"pi"}') == (
+        'min by(node)(pifanctl_temperature_observed_timestamp_seconds{node=~"pi"})')

@@ -25,6 +25,10 @@ def telemetry(values, clocks, expected, now):
     return temperatures, observed
 
 
+def source_clock_query(selector):
+    return "min by(node)(pifanctl_temperature_observed_timestamp_seconds" + selector + ")"
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--context', required=True)
@@ -62,7 +66,8 @@ def main():
     selector = '{node=~"' + '|'.join(expected) + '"}'
     report = {'passed': False, 'context': args.context, 'expected_image': args.image,
               'expected_digest': args.digest, 'minimum_hold_seconds': args.duration,
-              'started_at_utc': datetime.now(timezone.utc).isoformat(), 'samples': []}
+              'started_at_utc': datetime.now(timezone.utc).isoformat(),
+              'source_clock_metric': 'pifanctl_temperature_observed_timestamp_seconds', 'samples': []}
     deadline, hold = time.monotonic() + 240 + args.duration, None
     try:
         while time.monotonic() < deadline:
@@ -111,7 +116,7 @@ def main():
             if direct['appliedTopologyHash'] != original['Fan']['status']['appliedTopologyHash']:
                 raise RuntimeError('Worker plan hash changed')
             values = cmd('get', '--raw=' + prom + quote('max by(node)(pifanctl_temperature_celsius' + selector + ')', safe=''))
-            clocks = cmd('get', '--raw=' + prom + quote('min by(node)(timestamp(pifanctl_temperature_celsius' + selector + '))', safe=''))
+            clocks = cmd('get', '--raw=' + prom + quote(source_clock_query(selector), safe=''))
             temperatures, stamps = telemetry(values['data']['result'], clocks['data']['result'], expected, time.time())
             hold = hold if hold is not None else time.monotonic()
             report['samples'].append({'observed_at_utc': datetime.now(timezone.utc).isoformat(),
