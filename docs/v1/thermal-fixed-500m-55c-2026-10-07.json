@@ -1,0 +1,40 @@
+{
+  "visibility": "public_anonymous_measurements",
+  "full_originals_excluded": true,
+  "target_celsius": 55,
+  "cpu_millicores": 500,
+  "collector_passed": true,
+  "cleanup_verified": true,
+  "cooldown_recorded": true,
+  "acceptance": {
+    "target_celsius": 55,
+    "required_duration_seconds": 120.0,
+    "maximum_temperature_span_celsius": 3.0,
+    "maximum_duty_span_percentage_points": 5.0,
+    "load_observations": 56,
+    "invalid_observations": 0,
+    "target_band_seconds": 50.4,
+    "strict_stability_seconds": 50.4,
+    "member_source_identity_recorded": true,
+    "thermal_stability_passed": false,
+    "policy": "v1-3c",
+    "target_band_lower_celsius": 54,
+    "target_band_upper_celsius": 57,
+    "stability_seconds": 50.4,
+    "stability_seconds_unrounded": 50.40477418899536,
+    "minimum_observations": 8,
+    "maximum_source_gap_seconds": 20,
+    "legacy_target_band_seconds": 50.4,
+    "legacy_strict_stability_seconds": 50.4
+  },
+  "load_stop_reason": "maximum_load_duration",
+  "started_at_utc": "2026-10-06T23:33:25.385777+00:00",
+  "finished_at_utc": "2026-10-06T23:42:05.537953+00:00",
+  "load_execution": {
+    "reason": "local_duration_deadline",
+    "elapsed_seconds": 360.0940567920916,
+    "cpu_seconds": 179.883081804,
+    "average_consumed_vcpu": 0.49954471175251736
+  },
+  "load_process_cpu_seconds_at_intermediate_observation": 13.89
+}

@@ -77,8 +77,8 @@ targets, RPM, electrical measurements, and failure acceptance remain open.
 - [x] Record direct visual confirmation of normal shared-fan rotation for the active alpha.3 deployment. The user confirmed continuous blade rotation; RPM, waveform, and stop/restart behavior remain unmeasured. See Section 12 of the acceptance manual.
 - [ ] Measure real Pi 4 GPIO and Pi 5 sysfs wiring, channel, initialization and shutdown PWM behavior.
 - [x] Pass the existing 50 C fixed-load observation under the approved `v1-3c` policy: 140.24 seconds within 49-52 C, measured span 2.75 C, duty 35.04%, complete acquisition clocks and cooldown. This is a post-hoc reassessment, not a new trial. See Section 16.
-- [ ] Complete the 60 C controlled-load stability run under `v1-3c`; record requested duty, complete source clocks and cooldown. RPM remains a separate instrumentation gate.
-- [ ] Complete the 55 C controlled-load stability run under `v1-3c`. The old record lacks per-member acquisition clocks and cannot pass certification under either policy. Its original 1 C failure remains archived. Preserve each member source timestamp in the next run. Visual rotation was confirmed before the test; RPM remains unmeasured. See the [acceptance record](docs/v1/release-acceptance.md#10-2026-10-06-alpha3-55c-shared-rack-stability-run).
+- [ ] Pass the 60 C controlled-load stability gate under `v1-3c`. The new fixed 1000m, 360-second trial completed with complete clocks and immediate cooldown, but its remote peak 58.4 C stayed below the 59 C observation lower bound. Local peak 61.15 C stayed below the 65 C local cutoff. RPM remains a separate instrumentation gate.
+- [ ] Pass the 55 C controlled-load stability gate under `v1-3c`. Fresh 500m, 750m and 600m trials retained every member acquisition clock but failed the 120-second hold. Longest qualifying interval: 65.42 seconds. Both higher loads stopped at the independent 60 C local guard. See Section 17 of the acceptance manual; RPM remains unmeasured.
 - [ ] Measure fan behavior during process kill, Node reboot, power loss, and network partition.
 - [ ] Complete supported hardware migration and rollback acceptance across the documented configurations.
 - [ ] Measure status, Prometheus, and API load at the supported fleet size.
@@ -354,15 +354,48 @@ This approval changes the measurement policy, not the deployed control curve.
 
 ### Remaining acceptance campaign (2026-10-07)
 
-- [ ] Collect a fresh 55 C fixed-load trial with complete member acquisition
+- [x] Collect fresh 55 C fixed-load trials with complete member acquisition
   clocks, independent local cutoff, unchanged fan settings and immediate cooldown.
-- [ ] Review the 55 C trace before selecting a separately bounded 60 C trial.
+- [x] Review the 55 C traces before selecting a separately bounded 60 C trial.
   Preserve failed attempts and actual load execution evidence.
-- [ ] Measure the disposable runtime lab at declared fleet sizes. Separate
+- [x] Measure the disposable runtime lab at declared resource sizes (1/4/16 fans, 4/16/64 zones on one actuator). Separate
   measured API/status behavior from simulated sensor/GPIO and real hardware.
-- [ ] Exercise recoverable software faults in the disposable lab and record
+- [x] Exercise recoverable software faults in the disposable lab and record
   failure detection, failsafe commands, recovery and cooperative cleanup.
-- [ ] Supplement anonymized CSV/JSON/figures and the acceptance PDF. Keep
+- [x] Supplement anonymized CSV/JSON/figures and the visually inspected 26-page acceptance PDF. Keep
   electrical PWM, RPM, power-loss and untested hardware gates explicitly open.
 - [ ] Run the full suite and compatibility checks, commit each concern, publish
   a reviewable PR and monitor CI. Judge release readiness from all required gates.
+
+- Resource-scale campaign: ten lifecycle checks passed. Twelve status samples
+  per stage; all fixture finalizers and workers cooperatively released. At
+  16 fans / 64 zones, operator mean 0.0193 vCPU / 75.48 MiB sampled RSS and
+  worker 0.00393 vCPU / 39.25 MiB; 117 CR API requests include the observer.
+  This does not close distributed fleet or actual Prometheus load acceptance.
+- HTTP fault campaign: nine normal/fault/recovery checks observed full-duty
+  failsafe and fresh recovery. The first abrupt-stop attempt was ineffective
+  inside the PID namespace; two harness runs also timed out on source fixture
+  cleanup. Both failed reports are retained. The corrected ancestor-PID stop
+  and SIGTERM-capable source fixture passed the separate three-check retry
+  including cleanup. This is simulated GPIO evidence, not physical safety.
+- Read-only actuator inventory now records Pi 4 Model B Rev 1.5 (d03115). No
+  exposed tachometer input was found; electrical PWM, RPM and fan/supply model
+  remain unmeasured. No production reboot, network cut or power loss occurred.
+
+- Completed 60 C collection: eighty source-aware samples, 360.06-second load,
+  0.999 vCPU mean, local peak 61.15 C, remote peak 58.4 C. No qualifying
+  interval; last immediate cooldown maximum 45.75 C. Thermal gate remains open.
+- Existing production fleet measured read-only: twelve samples over 81.02
+  seconds with real Prometheus, one operator/worker/fan and four members.
+  Worker mean 0.02291 vCPU / 38.19 MiB sampled RSS; temperature-query p95
+  140.06 ms including kubectl and proxy. No broader capacity contract claimed.
+
+- Final local regression: 425 passed, zero skips, Python 3.13.2; statement
+  coverage 96.29%, branch 89.81%. Python 3.10 focused acceptance checks: 70
+  passed. Version and eight pending changesets validated.
+- All four load Pods were deleted and immediate cooldown verified. Live
+  postflight confirmed source-matched Synced/Healthy, Ready CRs, the same
+  worker Pod/container and topology identities, and no legacy controller.
+  The lab operator and all simulated source fixtures were removed; CRDs retained.
+- PDF now contains 26 pages. Cover and new pages 18-26 visually inspected;
+  original evidence and original policy verdicts remain unchanged.

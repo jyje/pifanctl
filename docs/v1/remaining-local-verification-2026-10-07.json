@@ -1,0 +1,26 @@
+{
+  "verified_at_utc": "2026-10-07T00:08:22.568338+00:00",
+  "harness_source_commit": "74954b44827deeb3c0ae266a065eac75288ab18b",
+  "python": "3.13.2",
+  "full_tests_passed": 425,
+  "skipped": 0,
+  "statement_coverage_percent": 96.28930817610063,
+  "branch_coverage_percent": 89.81132075471699,
+  "python_310_focused_tests_passed": 70,
+  "thermal_collector_trials_completed": 4,
+  "new_thermal_target_holds_passed": 0,
+  "pdf_pages": 26,
+  "pdf_new_pages_visually_inspected": [
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26
+  ],
+  "pdf_cover_visually_inspected": true,
+  "stable_release_ready": false
+}

@@ -1,0 +1,367 @@
+{
+  "started_at_utc": "2026-10-07T00:02:50.613615+00:00",
+  "read_only": true,
+  "visibility": "public_anonymous_measurements",
+  "passed": true,
+  "samples": [
+    {
+      "at_utc": "2026-10-07T00:02:53.667424+00:00",
+      "status_seconds": 0.07056429202202708,
+      "temperature_query_seconds": 0.14006325002992526,
+      "clock_query_seconds": 0.07600562501465902,
+      "member_temperatures": {
+        "node-c": 42.45,
+        "node-d": 49.6,
+        "node-a": 40.407,
+        "node-b": 39.92
+      },
+      "maximum_source_age_seconds": 12.488387823104858,
+      "worker_heartbeat_age_seconds": 3.9331917762756348,
+      "requested_duty_percent": 32.1,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 109.84,
+          "rss_bytes": 86245376,
+          "monotonic_seconds": 1296585.219337014
+        },
+        "worker": {
+          "cpu_seconds": 278.62,
+          "rss_bytes": 40042496,
+          "monotonic_seconds": 97460.83362926
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-07T00:03:01.846226+00:00",
+      "status_seconds": 0.06033741601277143,
+      "temperature_query_seconds": 0.06642670801375061,
+      "clock_query_seconds": 0.06294012500438839,
+      "member_temperatures": {
+        "node-c": 41.9,
+        "node-d": 49.6,
+        "node-a": 40.407,
+        "node-b": 39.92
+      },
+      "maximum_source_age_seconds": 15.263938188552856,
+      "worker_heartbeat_age_seconds": 2.24625301361084,
+      "requested_duty_percent": 32.1,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 109.86,
+          "rss_bytes": 86245376,
+          "monotonic_seconds": 1296593.498215645
+        },
+        "worker": {
+          "cpu_seconds": 278.8,
+          "rss_bytes": 40042496,
+          "monotonic_seconds": 97469.024927846
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-07T00:03:08.372966+00:00",
+      "status_seconds": 0.07311704102903605,
+      "temperature_query_seconds": 0.06462391599779949,
+      "clock_query_seconds": 0.06440662505337968,
+      "member_temperatures": {
+        "node-c": 41.9,
+        "node-d": 51.25,
+        "node-a": 41.868,
+        "node-b": 41.868
+      },
+      "maximum_source_age_seconds": 12.192361831665039,
+      "worker_heartbeat_age_seconds": 3.7838215827941895,
+      "requested_duty_percent": 32.1,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 109.95,
+          "rss_bytes": 86245376,
+          "monotonic_seconds": 1296599.977531391
+        },
+        "worker": {
+          "cpu_seconds": 278.95,
+          "rss_bytes": 40042496,
+          "monotonic_seconds": 97475.551778796
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-07T00:03:14.814084+00:00",
+      "status_seconds": 0.05526333302259445,
+      "temperature_query_seconds": 0.06099433300551027,
+      "clock_query_seconds": 0.06373020802857354,
+      "member_temperatures": {
+        "node-c": 42.45,
+        "node-d": 51.25,
+        "node-a": 41.868,
+        "node-b": 41.868
+      },
+      "maximum_source_age_seconds": 13.229005575180054,
+      "worker_heartbeat_age_seconds": 0.2394556999206543,
+      "requested_duty_percent": 33.5,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 109.97,
+          "rss_bytes": 86245376,
+          "monotonic_seconds": 1296606.472300597
+        },
+        "worker": {
+          "cpu_seconds": 279.07,
+          "rss_bytes": 40042496,
+          "monotonic_seconds": 97481.997861992
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-07T00:03:21.346187+00:00",
+      "status_seconds": 0.06105929199839011,
+      "temperature_query_seconds": 0.07882304198574275,
+      "clock_query_seconds": 0.06553091597743332,
+      "member_temperatures": {
+        "node-c": 42.45,
+        "node-d": 49.05,
+        "node-a": 41.381,
+        "node-b": 41.868
+      },
+      "maximum_source_age_seconds": 18.85187530517578,
+      "worker_heartbeat_age_seconds": 1.7065708637237549,
+      "requested_duty_percent": 33.5,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 110.04,
+          "rss_bytes": 86245376,
+          "monotonic_seconds": 1296613.012392427
+        },
+        "worker": {
+          "cpu_seconds": 279.22,
+          "rss_bytes": 40042496,
+          "monotonic_seconds": 97488.523373846
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-07T00:03:28.076461+00:00",
+      "status_seconds": 0.09605508297681808,
+      "temperature_query_seconds": 0.07561408297624439,
+      "clock_query_seconds": 0.06686320796143264,
+      "member_temperatures": {
+        "node-c": 42.45,
+        "node-d": 49.05,
+        "node-a": 41.381,
+        "node-b": 40.407
+      },
+      "maximum_source_age_seconds": 16.89430284500122,
+      "worker_heartbeat_age_seconds": 3.254868745803833,
+      "requested_duty_percent": 33.5,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 110.14,
+          "rss_bytes": 86245376,
+          "monotonic_seconds": 1296619.541174125
+        },
+        "worker": {
+          "cpu_seconds": 279.38,
+          "rss_bytes": 40042496,
+          "monotonic_seconds": 97495.162996609
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-07T00:03:35.024810+00:00",
+      "status_seconds": 0.065904208982829,
+      "temperature_query_seconds": 0.08724754099966958,
+      "clock_query_seconds": 0.07396591699216515,
+      "member_temperatures": {
+        "node-c": 42.45,
+        "node-d": 49.05,
+        "node-a": 41.381,
+        "node-b": 40.407
+      },
+      "maximum_source_age_seconds": 18.438167333602905,
+      "worker_heartbeat_age_seconds": 0.3324770927429199,
+      "requested_duty_percent": 33.5,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 110.17,
+          "rss_bytes": 86245376,
+          "monotonic_seconds": 1296626.676035447
+        },
+        "worker": {
+          "cpu_seconds": 279.54,
+          "rss_bytes": 40042496,
+          "monotonic_seconds": 97502.198919641
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-07T00:03:41.587378+00:00",
+      "status_seconds": 0.05986458295956254,
+      "temperature_query_seconds": 0.06766891700681299,
+      "clock_query_seconds": 0.06420512503245845,
+      "member_temperatures": {
+        "node-c": 42.45,
+        "node-d": 47.4,
+        "node-a": 40.407,
+        "node-b": 40.894
+      },
+      "maximum_source_age_seconds": 15.403531074523926,
+      "worker_heartbeat_age_seconds": 1.876314401626587,
+      "requested_duty_percent": 33.5,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 110.19,
+          "rss_bytes": 86245376,
+          "monotonic_seconds": 1296633.230691699
+        },
+        "worker": {
+          "cpu_seconds": 279.71,
+          "rss_bytes": 40042496,
+          "monotonic_seconds": 97508.72261431
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-07T00:03:48.136118+00:00",
+      "status_seconds": 0.0670200830209069,
+      "temperature_query_seconds": 0.06811449996894225,
+      "clock_query_seconds": 0.0888370830216445,
+      "member_temperatures": {
+        "node-c": 43.0,
+        "node-d": 47.4,
+        "node-a": 40.407,
+        "node-b": 40.894
+      },
+      "maximum_source_age_seconds": 16.547791719436646,
+      "worker_heartbeat_age_seconds": 3.4331159591674805,
+      "requested_duty_percent": 33.5,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 110.28,
+          "rss_bytes": 86245376,
+          "monotonic_seconds": 1296639.798210839
+        },
+        "worker": {
+          "cpu_seconds": 279.86,
+          "rss_bytes": 40042496,
+          "monotonic_seconds": 97515.308471786
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-07T00:03:54.743642+00:00",
+      "status_seconds": 0.06265475001418963,
+      "temperature_query_seconds": 0.0671560830087401,
+      "clock_query_seconds": 0.06849800003692508,
+      "member_temperatures": {
+        "node-c": 43.0,
+        "node-d": 49.05,
+        "node-a": 41.381,
+        "node-b": 40.894
+      },
+      "maximum_source_age_seconds": 13.558228015899658,
+      "worker_heartbeat_age_seconds": 4.966317892074585,
+      "requested_duty_percent": 33.5,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 110.36,
+          "rss_bytes": 86245376,
+          "monotonic_seconds": 1296646.332434434
+        },
+        "worker": {
+          "cpu_seconds": 280.04,
+          "rss_bytes": 40042496,
+          "monotonic_seconds": 97521.9151385
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-07T00:04:01.352959+00:00",
+      "status_seconds": 0.07467162498505786,
+      "temperature_query_seconds": 0.07860750000691041,
+      "clock_query_seconds": 0.084861166018527,
+      "member_temperatures": {
+        "node-c": 41.9,
+        "node-d": 49.05,
+        "node-a": 41.381,
+        "node-b": 40.894
+      },
+      "maximum_source_age_seconds": 14.762853384017944,
+      "worker_heartbeat_age_seconds": 1.5862433910369873,
+      "requested_duty_percent": 33.5,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 110.38,
+          "rss_bytes": 86245376,
+          "monotonic_seconds": 1296652.994509089
+        },
+        "worker": {
+          "cpu_seconds": 280.18,
+          "rss_bytes": 40042496,
+          "monotonic_seconds": 97528.511190905
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-07T00:04:07.912260+00:00",
+      "status_seconds": 0.06735133402980864,
+      "temperature_query_seconds": 0.06809612497454509,
+      "clock_query_seconds": 0.0659219580120407,
+      "member_temperatures": {
+        "node-c": 41.9,
+        "node-d": 50.15,
+        "node-a": 41.868,
+        "node-b": 42.842
+      },
+      "maximum_source_age_seconds": 11.725255727767944,
+      "worker_heartbeat_age_seconds": 3.078401803970337,
+      "requested_duty_percent": 33.5,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 110.46,
+          "rss_bytes": 86245376,
+          "monotonic_seconds": 1296659.50901255
+        },
+        "worker": {
+          "cpu_seconds": 280.32,
+          "rss_bytes": 40042496,
+          "monotonic_seconds": 97535.045688165
+        }
+      }
+    }
+  ],
+  "latency_scope": "kubectl command, Kubernetes proxy and remote endpoint combined",
+  "supported_capacity_contract_changed": false,
+  "fleet": {
+    "operator_pods": 1,
+    "worker_pods": 1,
+    "fans": 1,
+    "member_nodes": 4
+  },
+  "images": {
+    "operator": "ghcr.io/jyje/pifanctl-issue:cbc8958-py312",
+    "worker": "ghcr.io/jyje/pifanctl-issue:cbc8958-py312"
+  },
+  "elapsed_seconds": 81.0203464590013,
+  "cr_api_requests_including_operator_and_observer": 87.0,
+  "operator": {
+    "average_vcpu": 0.008345708815200192,
+    "maximum_sampled_rss_bytes": 86245376
+  },
+  "worker": {
+    "average_vcpu": 0.022907328338324654,
+    "maximum_sampled_rss_bytes": 40042496
+  },
+  "status_seconds": {
+    "median": 0.06646214600186795,
+    "nearest_rank_p95": 0.09605508297681808
+  },
+  "temperature_query_seconds": {
+    "median": 0.06810531247174367,
+    "nearest_rank_p95": 0.14006325002992526
+  },
+  "clock_query_seconds": {
+    "median": 0.06639258298673667,
+    "nearest_rank_p95": 0.0888370830216445
+  },
+  "finished_at_utc": "2026-10-07T00:04:14.475459+00:00"
+}

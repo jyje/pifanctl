@@ -1,0 +1,10 @@
+{
+  "observed_at_utc": "2026-10-07T00:06:24.875659+00:00",
+  "source_matched_gitops_healthy": true,
+  "fan_and_zone_ready": true,
+  "one_ready_worker": true,
+  "worker_pod_and_container_unchanged": true,
+  "topology_uids_and_specs_unchanged": true,
+  "no_load_pods": true,
+  "no_legacy_controller": true
+}

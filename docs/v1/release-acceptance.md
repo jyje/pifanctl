@@ -6,7 +6,7 @@
 - **v1 candidate under review:** app `1.0.0-alpha.6`, operator chart `0.1.0-alpha.6`
 **Decision:** Not ready for a stable release. Hardware-specific acceptance remains open.
 
-This manual records MicroK8s trials, bounded temperature-response tests, measured evidence, and remaining release checks. The alpha.6 CRD operator and worker now regulate the shared rack with v1 storage and served alpha compatibility after verified migration and image rollback. Earlier alpha.3 observations remain historical evidence. The maintainer-approved `v1-3c` policy uses target - 1 C through target + 2 C. The unchanged 50 C trial passes for 140.24 seconds under this policy; its original 1 C failure remains archived. The 55 C record lacks individual member acquisition clocks, so 55 C and 60 C acceptance remain open. Section 16 records the policy approval and reassessment. A user visually confirmed normal fan rotation; RPM and electrical PWM measurements remain unavailable. Values unavailable from Kubernetes or direct measurements are explicitly marked **Not recorded** instead of being guessed.
+This manual records MicroK8s trials, bounded temperature-response tests, measured evidence, and remaining release checks. The alpha.6 CRD operator and worker now regulate the shared rack with v1 storage and served alpha compatibility after verified migration and image rollback. Earlier alpha.3 observations remain historical evidence. The maintainer-approved `v1-3c` policy uses target - 1 C through target + 2 C. The unchanged 50 C trial passes for 140.24 seconds under this policy; its original 1 C failure remains archived. Fresh 55 C trials include complete member clocks but fail the 120-second hold. The 60 C bounded trial remains below its target observation band. Sections 17-22 record these new trials, scale/fault evidence and final verification; Section 16 preserves the policy approval and reassessment. A user visually confirmed normal fan rotation; RPM and electrical PWM measurements remain unavailable. Values unavailable from Kubernetes or direct measurements are explicitly marked **Not recorded** instead of being guessed.
 
 ## 1. Initial alpha.2 trial configuration (2026-10-04)
 
@@ -390,6 +390,316 @@ Evidence: [approved reassessment](thermal-fixed-250m-50c-2026-10-07-reassessment
 ![Three-degree policy reassessment](thermal-fixed-250m-50c-2026-10-07-reassessment.png)
 
 The red band now shows the approved 49-52 C observation interval. Temperatures, acquisition clocks, requested duty and sampled load shading are unchanged. The dashed line is the nominal 50 C observation target; it is not a temperature setpoint supplied to the deployed controller. The policy was approved after this trial and must be fixed before future trials.
+
+<!-- pagebreak -->
+
+## 17. Fresh 55 C thermal acceptance: first fixed-load attempt
+
+The alpha.6 rack kept its deployed 50-75 C rising curve, 5 C hysteresis and
+shared fan enabled. A fixed 500m CPU limit on the hottest member ran for
+360.09 seconds, consumed 179.88 CPU seconds (0.500 vCPU mean), and exited at
+the independent local duration deadline. The remote cutoff was 58 C and the
+local cutoff 60 C. Neither was reached. Eighty complete acquisition-clock
+observations include baseline, 56 load samples and immediate 120-second
+cooldown. No fan settings, topology or worker identity changed.
+
+| Check | Measured result |
+| --- | --- |
+| Approved 55 C interval | 54-57 C, inclusive; 120 continuous source-clock seconds required |
+| Longest qualifying interval | 50.40 seconds: failed |
+| Peak observed member temperature | 55.1 C |
+| Maximum member source age | 19.25 seconds; below the 25-second limit |
+| Load execution | 360.09 seconds / 179.88 CPU seconds |
+| Cleanup and cooldown | Load Pod deleted; last recorded cooldown maximum 48.5 C |
+
+[CSV](thermal-fixed-500m-55c-2026-10-07.csv) and
+[verdict](thermal-fixed-500m-55c-2026-10-07.json) retain this failed attempt.
+Temperatures repeatedly fell below 54 C, so an eventual lower temperature is
+not counted as successful 55 C stabilization. The next attempt uses a new,
+fixed 750m load rather than changing the load inside a qualifying window.
+
+![First fresh 55 C trial: complete member clocks and failed hold](thermal-fixed-500m-55c-2026-10-07.png)
+
+### Second attempt: 750m load and independent local cutoff
+
+The separately bounded 750m attempt stopped at the node-local guard after
+76.25 seconds, consumed 57.19 CPU seconds (0.750 vCPU mean), and recorded a
+local peak of 60.05 C. The sampled remote peak was 56.2 C. These values have
+different observation times; the difference is not a simultaneous sensor-error
+measurement. Every per-member acquisition clock is retained, but freshness
+limits do not guarantee that a scrape catches a short local temperature peak.
+The guard reads directly at approximately 50 ms intervals, independently of
+Prometheus and the remote collector.
+
+Only twelve load observations were available. No interval met the minimum
+sample and duration conditions, so this attempt also failed. Both the load Pod
+and its process were removed, and immediate cooldown ended at a recorded
+48.5 C rack maximum. The next fixed load is 600m, between the previous loads;
+the 60 C local and 58 C remote cutoffs remain unchanged.
+
+Evidence: [CSV](thermal-fixed-750m-55c-2026-10-07.csv),
+[verdict and local guard](thermal-fixed-750m-55c-2026-10-07.json).
+
+![750m trial: local safety cutoff and immediate cooldown](thermal-fixed-750m-55c-2026-10-07.png)
+
+### Third attempt: 600m load
+
+The 600m trial ran for 174.98 seconds, consumed 105.00 CPU seconds
+(0.600 vCPU mean), and stopped at the unchanged local 60 C guard with a
+60.05 C peak. Remote temperatures fell below 54 C during the load. Its longest
+qualifying interval was 65.42 source-clock seconds, below the required 120.
+All twenty-nine load observations retain complete member clocks. Cleanup and
+immediate cooldown passed; the last recorded maximum was 47.95 C.
+
+Evidence: [CSV](thermal-fixed-600m-55c-2026-10-07.csv),
+[verdict and local guard](thermal-fixed-600m-55c-2026-10-07.json).
+This is a third failed attempt, not a candidate software crash. The existing
+curve regulates fan duty from temperature; it does not regulate the board to
+an exact setpoint. None of these fixed loads establishes the required 55 C
+thermal hold. Do not relax the cutoffs to obtain a passing verdict.
+
+![600m trial: longest qualifying interval remains below 120 seconds](thermal-fixed-600m-55c-2026-10-07.png)
+
+<!-- pagebreak -->
+
+## 18. Isolated resource scale and software-fault acceptance
+
+This campaign runs the unmodified alpha.6 runtime with explicitly simulated
+GPIO and local temperatures on a real Kubernetes 1.30.0 kind API. One actuator
+and one member node host the declared sizes below. The simulated channels are
+fixtures, not a claim that sixteen physical fans can be wired safely to this
+board. These are resource-scale observations, not a supported distributed-fleet
+capacity declaration.
+
+| Simulated fans / local zones | Apply to all CRs Ready | Status median / empirical p95 |
+| --- | --- | --- |
+| 1 / 4 | 6.55 seconds | 99.62 / 186.24 ms |
+| 4 / 16 | 6.75 seconds | 97.23 / 193.74 ms |
+| 16 / 64 | 15.58 seconds | 94.48 / 109.45 ms |
+
+Each stage records twelve status and metrics samples. Latencies include the kubectl process and Kubernetes Pod proxy, not just the worker HTTP handler. Empirical p95 uses nearest
+rank on twelve observations, so it is the maximum observed latency. It is not
+a throughput or tail-latency guarantee. At sixteen fans / sixty-four zones,
+six process samples over 33.67 seconds measured operator mean 0.0193 vCPU and
+maximum sampled RSS 75.48 MiB, and worker mean 0.00393 vCPU / 39.25 MiB. The
+API server counted 117 custom-resource requests during that interval, including
+the operator and observer. This count excludes core APIs and does not measure
+Prometheus query traffic or end-to-end distributed sensor load.
+
+Ten lifecycle checks passed. Normal worker SIGTERM restarted the container in
+2.26 seconds and emitted simulated full-duty exit commands plus driver close
+for every fan. Stopping only the lab operator caused all sixteen fans to report
+`OperatorHeartbeatExpired` and request 100% after 116.26 seconds from the scale
+action. This interval begins after the last heartbeat renewal, so it is not an
+exact 120-second watchdog latency measurement. Operator restoration returned all
+CRs to Ready in 30.91 seconds. Cooperative finalization removed every fixture
+and the worker without overriding finalizers.
+
+Evidence: [scale/fault report](fleet-fault-verification-2026-10-07.json),
+[process/API report](fleet-resource-verification-2026-10-07.json).
+Reproduce with `scripts/verify_fleet_faults.py` and, during the sixteen-fan
+steady interval, `scripts/measure_lab_resources.py`, using the separately owned
+kind kubeconfig described in `tests/runtime_lab/README.md`.
+
+![Measured single-actuator software resource scale](fleet-scale-2026-10-07.png)
+
+The new read-only [actuator inventory](actuator-readonly-inventory-2026-10-07.json)
+identifies the production controller as Raspberry Pi 4 Model B Rev 1.5,
+revision d03115, kernel 6.12.93+rpt-rpi-v8. Its exposed sysfs view contains no
+PWM-chip or tachometer input. RPi.GPIO software PWM remains the configured
+driver; absent sysfs entries do not prove absent electrical output. Exact fan
+model, supply, polarity, waveform and RPM remain unmeasured.
+
+<!-- pagebreak -->
+
+## 19. Real HTTP telemetry faults and abrupt worker restart
+
+The real Kubernetes worker queried a deliberately synthetic HTTP source using
+the production Prometheus client. The candidate planner, worker, watchdog,
+status server and reconciliation code were unchanged; GPIO and sensor values
+were explicitly simulated. No production rack fault, node restart or power
+interruption was injected.
+
+| HTTP scenario | Full-duty detection | Fresh-source recovery |
+| --- | --- | --- |
+| Acquisition clock 120 seconds old | 71.57 seconds | 80.05 seconds |
+| Required temperature sample missing | 86.65 seconds | 75.89 seconds |
+| Malformed response | 82.07 seconds | 71.44 seconds |
+| Service endpoint unavailable | 2.18 seconds | 2.21 seconds |
+
+For every fault, direct worker status was unhealthy and requested 100%.
+Recovery restored 47.5% regulation. The first three intervals include Kubernetes
+ConfigMap projection delay; they must not be reported as the worker's intrinsic
+fault-detection latency. Removing only the synthetic Service's endpoint tested
+real HTTP unavailability. It does not establish recovery from a physical node
+network partition or validate a policy CNI.
+
+Nine initial normal/fault/recovery checks passed, but the first harness run
+failed its abrupt-restart step: a SIGKILL sent inside the container namespace
+did not terminate its PID 1. Its fixture cleanup also timed out, so the
+[initial report](telemetry-fault-initial-2026-10-07.json) remains failed.
+The second attempt used SIGKILL from the verified kind-node ancestor PID
+namespace. It observed worker recovery in 2.22 seconds, but its auxiliary
+source Pod cleanup again exceeded the thirty-second wait; the
+[cleanup failure](telemetry-hardstop-cleanup-failure-2026-10-07.json) remains
+failed. Both failures describe the test harness and are not erased by a retry.
+
+The corrected harness verifies the exact worker Pod UID, runtime container ID,
+lab image, namespace, component and non-init host PID before killing the
+simulated worker. It handles SIGTERM in its source fixture and limits that
+fixture's termination grace to five seconds. The corrected bounded restart
+retry passed all three checks: fresh HTTP regulation, abrupt worker recovery
+in 2.25 seconds and cooperative worker cleanup in 4.45 seconds. All source
+fixtures were also removed within the bounded wait. See the
+[corrected restart report](telemetry-hardstop-verification-2026-10-07.json).
+Reproduce the full fault campaign with `scripts/verify_telemetry_faults.py`;
+`--restart-only` selects the corrected isolated abrupt-restart retry.
+
+This verifies process recovery and software commands with simulated GPIO. It
+cannot prove voltage during SIGKILL, continued physical fan rotation, reboot
+or power-loss safety. The source fixture is not an actual Prometheus server,
+so these HTTP compatibility checks do not constitute Prometheus fleet-load
+acceptance.
+
+<!-- pagebreak -->
+
+## 20. Fresh 60 C fixed-load response
+
+After the third 55 C trial and immediate cooldown, a new fixed 1000m load used
+the same candidate, actuator, four-member zone and unchanged fan settings.
+The 60 C observation interval is 59-62 C. The independent local cutoff remains
+65 C and the remote cutoff 63 C. This trial ran to its local duration deadline
+at 360.06 seconds and consumed 359.70 CPU seconds (0.999 vCPU mean). Its local
+peak was 61.15 C, below the local cutoff. The remote peak was only 58.4 C, so
+the qualifying interval is zero. Requested duty rose to 53.52%.
+
+The fixed load did not generate a 60 C plateau under the existing shared fan
+curve. This is not a worker crash, and cooler readings are not treated as a
+passed target hold. No fan was disabled and no curve or cutoff was relaxed.
+The controller regulates duty from measured temperature; it is not a board
+setpoint controller. These experiments do not isolate ambient conditions or
+other cluster workloads and do not establish a universal cooling-capacity
+limit. They preserve the actual observed response and its acceptance result.
+
+Eighty complete member-clock observations include fifty-six load samples and
+immediate 120-second cooldown. Maximum recorded source age was 18.68 seconds.
+The temporary load Pod was deleted; the last cooldown maximum was 45.75 C.
+Evidence: [CSV](thermal-fixed-1000m-60c-2026-10-07.csv),
+[verdict](thermal-fixed-1000m-60c-2026-10-07.json).
+
+![Fresh 60 C response: below the required target interval](thermal-fixed-1000m-60c-2026-10-07.png)
+
+![Current rising-curve hypothesis and all measured fixed-load observations](current-curve-2026-10-07.png)
+
+The current rising-curve hypothesis is 30% at 50 C, 44% at 55 C and 58% at
+60 C, reaching 100% at 75 C. These are mathematical commands, not measured
+RPM or a prediction that the board settles at those temperatures. Hysteresis
+and downward slew can keep duty above this line while temperature falls.
+
+<!-- pagebreak -->
+
+## 21. Read-only production fleet measurement and current release decision
+
+The unchanged production rack has one operator, one worker, one shared fan and
+four sensor members. Twelve read-only samples over 81.02 seconds used the real
+Prometheus temperature and acquisition-clock queries. All required telemetry,
+GitOps source matching and runtime readiness checks passed. No source, CR,
+fan setting or workload was changed by the measurement.
+
+| Production measurement | Observed result |
+| --- | --- |
+| Operator process | Mean 0.00835 vCPU; maximum sampled RSS 82.25 MiB |
+| Worker process | Mean 0.02291 vCPU; maximum sampled RSS 38.19 MiB |
+| Worker status query | Median 66.46 ms; empirical p95 96.06 ms |
+| Real Prometheus temperature query | Median 68.11 ms; empirical p95 140.06 ms |
+| Real Prometheus acquisition-clock query | Median 66.39 ms; empirical p95 88.84 ms |
+| Custom-resource API requests | 87 including operator and observer; core API requests excluded |
+
+Latencies include kubectl startup and Kubernetes proxying. Empirical p95 is the
+largest of twelve observations. CPU is process CPU consumption divided by the
+observed monotonic interval; RSS is sampled resident memory, not a memory-limit
+stress result. This confirms measurement on the existing one-fan/four-member
+fleet, not performance guarantees for larger or multiple-rack deployments.
+Evidence: [production fleet report](live-fleet-verification-2026-10-07.json).
+Reproduce the read-only probe with `scripts/measure_live_fleet.py --report <new-path>`.
+
+### Release gate matrix
+
+| Gate | Current decision |
+| --- | --- |
+| CRD/API, migration, software rollback and GitOps lifecycle | Passed in the previously documented scopes |
+| 50 C approved observation | Passed post-hoc: 140.24 seconds, original measurements retained |
+| 55 C approved observation | Not passed: three fresh attempts; longest qualifying hold 65.42 seconds |
+| 60 C approved observation | Not passed: fixed 1 vCPU load remained below 59 C |
+| Software sensor/heartbeat/process fault responses | Observed in the isolated simulated-I/O lab; failed harness attempts retained |
+| Resource scale and current production fleet | Measured: single actuator 16 simulated fans/64 zones, and actual one-fan/four-member rack |
+| Larger/distributed fleet and Prometheus saturation | Not measured; do not claim broader capacity |
+| Pi 4 electrical PWM, exact fan/supply and RPM | Not measured; instrumented hardware inspection required |
+| Pi 5 sysfs actuator, reboot, power loss, physical network partition | Not tested on supported hardware |
+| Full v0 topology rollback after expanded adoption | Not demonstrated; historical rollback archive retained |
+
+**Decision:** Not ready for stable app 1.0.0 or operator chart 1.0.0. The new tests
+advance software and observational evidence but do not waive thermal or physical
+release gates. Cooling below a target is not an application crash, and a duty
+command cannot certify a safe electrical default. Define any replacement
+workload-based thermal acceptance policy before its experiment; preserve these
+failed target-hold records and obtain explicit approval for policy changes.
+
+All four new thermal trials independently verified Pod deletion and immediate
+cooldown. The isolated lab returned to its empty operator/worker baseline,
+retaining shared CRDs. Original configurations, clocks and execution records
+are privately archived with owner-only permissions and verified SHA-256
+checksums. Public files contain selected or anonymous measurements, not full
+latest Kubernetes objects, node UIDs or IPs. Final live readiness and CI are
+recorded in PLAN and the accompanying verification record.
+
+<!-- pagebreak -->
+
+## 22. Final verification and evidence integrity
+
+The postflight at 2026-10-07 00:06:24 UTC confirmed source-matched Synced and
+Healthy GitOps, Ready Fan/CoolingZone, one Ready worker, unchanged worker Pod
+and container identities, and unchanged topology UIDs and specs. No temporary
+load Pod or legacy controller remained. The isolated kind namespace contains
+no operator, worker or synthetic source fixtures after cooperative cleanup;
+shared CRDs remain installed. See the
+[anonymous postflight record](remaining-live-postflight-2026-10-07.json).
+
+The current production source and image are the same alpha.6 candidate
+recorded before this campaign. Test harness, plotting and documentation changes
+do not upgrade its application or chart. Every thermal observation therefore
+belongs to that pinned candidate and current rack configuration. The physical
+rotation confirmation from an earlier candidate is retained at its original
+confirmation point, not promoted into a new RPM measurement.
+
+### Evidence interpretation checklist
+
+- Distinguish collector success from thermal acceptance. All four collectors
+  completed cleanup and cooldown; all four new target holds failed.
+- Preserve failed attempts. The initial in-namespace SIGKILL and both source
+  cleanup timeouts remain false in their original public reports.
+- Label simulated I/O. Real Kubernetes and HTTP faults with simulated GPIO do
+  not certify voltage, RPM, airflow or power-loss behavior.
+- Preserve time provenance. Source acquisition clocks, not scrape or host
+  polling time, determine thermal hold duration. High-frequency local peaks
+  and slower remote samples are not simultaneous measurements.
+- Bound capacity claims. Current production measurement covers one fan/four
+  members; kind resource scale covers one actuator with sixteen simulated fans
+  and sixty-four zones. Larger physical fleets remain unmeasured.
+- Retain rollback archives and record a supported configuration before stable
+  tags. Full v0 topology restoration after expanded adoption remains open.
+
+### Reproduction
+
+Run the complete regression suite with pytest branch coverage using the pinned
+development requirements. Render new thermal figures from private trial
+archives using `scripts/publish_thermal_evidence.py`; select a new public
+prefix so a prior attempt cannot be overwritten. Render comparative figures
+with `scripts/plot_remaining_acceptance.py`. Rebuild this PDF using the
+`build_pdf()` entry point in `scripts/build_release_acceptance.py` to leave
+unchanged historical figures intact. Inspect the rendered PDF pages before
+committing. PLAN and the verification JSON record test counts, coverage,
+compatibility checks and the CI/PR lifecycle separately from release readiness.
 
 ## References
 

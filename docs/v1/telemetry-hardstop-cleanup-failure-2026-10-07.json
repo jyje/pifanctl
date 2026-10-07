@@ -1,0 +1,37 @@
+{
+  "started_at_utc": "2026-10-06T23:56:14.132489+00:00",
+  "simulated_gpio": true,
+  "simulated_temperature_HTTP_source": true,
+  "hardware_acceptance": false,
+  "restart_only": true,
+  "physical_network_partition_acceptance": false,
+  "checks": [
+    {
+      "name": "fresh_HTTP_source_regulates",
+      "passed": true,
+      "elapsed_seconds": 6.320627707988024,
+      "requested_duty_percent": 47.5,
+      "reason": ""
+    },
+    {
+      "name": "abrupt_worker_restart_recovers",
+      "passed": true,
+      "elapsed_seconds": 2.2238304580096155,
+      "requested_duty_percent": 47.5,
+      "reason": ""
+    },
+    {
+      "name": "cooperative_worker_cleanup",
+      "passed": true,
+      "elapsed_seconds": 4.438014084007591,
+      "requested_duty_percent": null,
+      "reason": null
+    }
+  ],
+  "passed": false,
+  "abrupt_stop_method": "SIGKILL from the verified kind-node ancestor PID namespace",
+  "abrupt_restart_cannot_prove_electrical_safe_default": true,
+  "cleanup_verified": false,
+  "cleanup_error": "error: timed out waiting for the condition on pods/fault-source\n",
+  "finished_at_utc": "2026-10-06T23:56:59.165622+00:00"
+}

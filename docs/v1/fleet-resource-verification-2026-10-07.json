@@ -1,0 +1,127 @@
+{
+  "visibility": "public_lab_measurements",
+  "simulated_io": true,
+  "scope": "one actuator/member node, sixteen simulated fans and sixty-four local zones",
+  "samples": [
+    {
+      "at_utc": "2026-10-06T23:40:00.947586+00:00",
+      "fans": 16,
+      "zones": 64,
+      "all_crs_ready": true,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 3.86,
+          "rss_bytes": 79147008,
+          "monotonic_seconds": 30830.353029229
+        },
+        "worker": {
+          "cpu_seconds": 0.79,
+          "rss_bytes": 41160704,
+          "monotonic_seconds": 30830.562060179
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-06T23:40:06.693702+00:00",
+      "fans": 16,
+      "zones": 64,
+      "all_crs_ready": true,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 3.97,
+          "rss_bytes": 78622720,
+          "monotonic_seconds": 30836.106803966
+        },
+        "worker": {
+          "cpu_seconds": 0.81,
+          "rss_bytes": 38699008,
+          "monotonic_seconds": 30836.307397226
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-06T23:40:12.263673+00:00",
+      "fans": 16,
+      "zones": 64,
+      "all_crs_ready": true,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 4.01,
+          "rss_bytes": 78905344,
+          "monotonic_seconds": 30841.690680945
+        },
+        "worker": {
+          "cpu_seconds": 0.83,
+          "rss_bytes": 38699008,
+          "monotonic_seconds": 30841.879524339
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-06T23:40:17.818967+00:00",
+      "fans": 16,
+      "zones": 64,
+      "all_crs_ready": true,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 4.25,
+          "rss_bytes": 78905344,
+          "monotonic_seconds": 30847.213980674
+        },
+        "worker": {
+          "cpu_seconds": 0.84,
+          "rss_bytes": 38699008,
+          "monotonic_seconds": 30847.433067943
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-06T23:40:23.352163+00:00",
+      "fans": 16,
+      "zones": 64,
+      "all_crs_ready": true,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 4.29,
+          "rss_bytes": 78905344,
+          "monotonic_seconds": 30852.778133431
+        },
+        "worker": {
+          "cpu_seconds": 0.86,
+          "rss_bytes": 38699008,
+          "monotonic_seconds": 30852.969377707
+        }
+      }
+    },
+    {
+      "at_utc": "2026-10-06T23:40:28.907552+00:00",
+      "fans": 16,
+      "zones": 64,
+      "all_crs_ready": true,
+      "processes": {
+        "operator": {
+          "cpu_seconds": 4.4,
+          "rss_bytes": 78905344,
+          "monotonic_seconds": 30858.335330878
+        },
+        "worker": {
+          "cpu_seconds": 0.9,
+          "rss_bytes": 38699008,
+          "monotonic_seconds": 30858.522984977
+        }
+      }
+    }
+  ],
+  "elapsed_seconds": 33.67437808297109,
+  "cr_api_requests_including_operator_and_observer": 117.0,
+  "counts_exclude_core_API_and_prometheus_queries": true,
+  "passed": true,
+  "operator": {
+    "average_vcpu": 0.019297912186553523,
+    "maximum_sampled_rss_bytes": 79147008
+  },
+  "worker": {
+    "average_vcpu": 0.003934061580390417,
+    "maximum_sampled_rss_bytes": 41160704
+  }
+}

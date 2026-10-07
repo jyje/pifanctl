@@ -1,0 +1,14 @@
+{
+  "model": "Raspberry Pi 4 Model B Rev 1.5",
+  "kernel": "6.12.93+rpt-rpi-v8",
+  "revision": [
+    "d03115"
+  ],
+  "pwm_chips": [],
+  "rpm_inputs": [],
+  "visibility": "public_selected_hardware_inventory",
+  "read_only": true,
+  "electrical_PWM_measured": false,
+  "fan_model_not_recorded": true,
+  "observed_at_utc": "2026-10-06T23:44:34.197547+00:00"
+}

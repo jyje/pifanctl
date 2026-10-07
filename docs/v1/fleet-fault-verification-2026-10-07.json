@@ -1,0 +1,314 @@
+{
+  "started_at_utc": "2026-10-06T23:36:35.154563+00:00",
+  "simulated_io": true,
+  "hardware_acceptance": false,
+  "distributed_fleet_acceptance": false,
+  "passed": true,
+  "stages": [
+    {
+      "fans": 1,
+      "zones": 4,
+      "actuator_nodes": 1,
+      "member_nodes": 1,
+      "apply_to_ready_seconds": 6.550555541005451,
+      "samples": [
+        {
+          "at_utc": "2026-10-06T23:36:42.036364+00:00",
+          "status_seconds": 0.07524233299773186,
+          "metrics_bytes": 959,
+          "heartbeat_age_seconds": 0.8408207893371582
+        },
+        {
+          "at_utc": "2026-10-06T23:36:47.204758+00:00",
+          "status_seconds": 0.12497533299028873,
+          "metrics_bytes": 959,
+          "heartbeat_age_seconds": 0.9932594299316406
+        },
+        {
+          "at_utc": "2026-10-06T23:36:52.338324+00:00",
+          "status_seconds": 0.09279204200720415,
+          "metrics_bytes": 959,
+          "heartbeat_age_seconds": 0.11152815818786621
+        },
+        {
+          "at_utc": "2026-10-06T23:36:57.469783+00:00",
+          "status_seconds": 0.09403212502365932,
+          "metrics_bytes": 959,
+          "heartbeat_age_seconds": 0.23481249809265137
+        },
+        {
+          "at_utc": "2026-10-06T23:37:02.615407+00:00",
+          "status_seconds": 0.09852362499805167,
+          "metrics_bytes": 959,
+          "heartbeat_age_seconds": 0.3709142208099365
+        },
+        {
+          "at_utc": "2026-10-06T23:37:07.849892+00:00",
+          "status_seconds": 0.18624416698003188,
+          "metrics_bytes": 959,
+          "heartbeat_age_seconds": 0.5921657085418701
+        },
+        {
+          "at_utc": "2026-10-06T23:37:12.968656+00:00",
+          "status_seconds": 0.08182774996384978,
+          "metrics_bytes": 959,
+          "heartbeat_age_seconds": 0.7000408172607422
+        },
+        {
+          "at_utc": "2026-10-06T23:37:18.139908+00:00",
+          "status_seconds": 0.1117698330199346,
+          "metrics_bytes": 959,
+          "heartbeat_age_seconds": 0.8567540645599365
+        },
+        {
+          "at_utc": "2026-10-06T23:37:23.270674+00:00",
+          "status_seconds": 0.09387070900993422,
+          "metrics_bytes": 959,
+          "heartbeat_age_seconds": 0.9747366905212402
+        },
+        {
+          "at_utc": "2026-10-06T23:37:28.414561+00:00",
+          "status_seconds": 0.10809575003804639,
+          "metrics_bytes": 959,
+          "heartbeat_age_seconds": 0.09780454635620117
+        },
+        {
+          "at_utc": "2026-10-06T23:37:33.553980+00:00",
+          "status_seconds": 0.1007217500009574,
+          "metrics_bytes": 959,
+          "heartbeat_age_seconds": 0.22127485275268555
+        },
+        {
+          "at_utc": "2026-10-06T23:37:38.726872+00:00",
+          "status_seconds": 0.10396858298918232,
+          "metrics_bytes": 959,
+          "heartbeat_age_seconds": 0.379927396774292
+        }
+      ],
+      "status_median_seconds": 0.09962268749950454,
+      "status_nearest_rank_p95_seconds": 0.18624416698003188
+    },
+    {
+      "fans": 4,
+      "zones": 16,
+      "actuator_nodes": 1,
+      "member_nodes": 1,
+      "apply_to_ready_seconds": 6.750683541991748,
+      "samples": [
+        {
+          "at_utc": "2026-10-06T23:37:59.238375+00:00",
+          "status_seconds": 0.07634495903039351,
+          "metrics_bytes": 2861,
+          "heartbeat_age_seconds": 0.42778730392456055
+        },
+        {
+          "at_utc": "2026-10-06T23:38:04.381619+00:00",
+          "status_seconds": 0.10100799996871501,
+          "metrics_bytes": 2861,
+          "heartbeat_age_seconds": 0.5597097873687744
+        },
+        {
+          "at_utc": "2026-10-06T23:38:09.504317+00:00",
+          "status_seconds": 0.08334462495986372,
+          "metrics_bytes": 2861,
+          "heartbeat_age_seconds": 0.666630744934082
+        },
+        {
+          "at_utc": "2026-10-06T23:38:14.636277+00:00",
+          "status_seconds": 0.09370662498986349,
+          "metrics_bytes": 2861,
+          "heartbeat_age_seconds": 0.7824902534484863
+        },
+        {
+          "at_utc": "2026-10-06T23:38:19.773719+00:00",
+          "status_seconds": 0.09463137504644692,
+          "metrics_bytes": 2861,
+          "heartbeat_age_seconds": 0.9066684246063232
+        },
+        {
+          "at_utc": "2026-10-06T23:38:24.928139+00:00",
+          "status_seconds": 0.1137744999723509,
+          "metrics_bytes": 2861,
+          "heartbeat_age_seconds": 0.042291879653930664
+        },
+        {
+          "at_utc": "2026-10-06T23:38:30.085987+00:00",
+          "status_seconds": 0.1161245420225896,
+          "metrics_bytes": 2861,
+          "heartbeat_age_seconds": 0.1849226951599121
+        },
+        {
+          "at_utc": "2026-10-06T23:38:35.321214+00:00",
+          "status_seconds": 0.19374166597845033,
+          "metrics_bytes": 2861,
+          "heartbeat_age_seconds": 0.4098532199859619
+        },
+        {
+          "at_utc": "2026-10-06T23:38:40.440239+00:00",
+          "status_seconds": 0.07690029102377594,
+          "metrics_bytes": 2861,
+          "heartbeat_age_seconds": 0.48409295082092285
+        },
+        {
+          "at_utc": "2026-10-06T23:38:45.591517+00:00",
+          "status_seconds": 0.09983845904935151,
+          "metrics_bytes": 2861,
+          "heartbeat_age_seconds": 0.6187613010406494
+        },
+        {
+          "at_utc": "2026-10-06T23:38:50.755280+00:00",
+          "status_seconds": 0.07953866600291803,
+          "metrics_bytes": 2861,
+          "heartbeat_age_seconds": 0.7745988368988037
+        },
+        {
+          "at_utc": "2026-10-06T23:38:55.911819+00:00",
+          "status_seconds": 0.1166296669980511,
+          "metrics_bytes": 2861,
+          "heartbeat_age_seconds": 0.9173498153686523
+        }
+      ],
+      "status_median_seconds": 0.09723491704789922,
+      "status_nearest_rank_p95_seconds": 0.19374166597845033
+    },
+    {
+      "fans": 16,
+      "zones": 64,
+      "actuator_nodes": 1,
+      "member_nodes": 1,
+      "apply_to_ready_seconds": 15.583006334025413,
+      "samples": [
+        {
+          "at_utc": "2026-10-06T23:39:44.392785+00:00",
+          "status_seconds": 0.07993758301017806,
+          "metrics_bytes": 10505,
+          "heartbeat_age_seconds": 0.26708984375
+        },
+        {
+          "at_utc": "2026-10-06T23:39:49.529790+00:00",
+          "status_seconds": 0.09482104197377339,
+          "metrics_bytes": 10505,
+          "heartbeat_age_seconds": 0.38016414642333984
+        },
+        {
+          "at_utc": "2026-10-06T23:39:54.693920+00:00",
+          "status_seconds": 0.09413720801239833,
+          "metrics_bytes": 10505,
+          "heartbeat_age_seconds": 0.5203931331634521
+        },
+        {
+          "at_utc": "2026-10-06T23:39:59.836358+00:00",
+          "status_seconds": 0.09794966696063057,
+          "metrics_bytes": 10505,
+          "heartbeat_age_seconds": 0.640376091003418
+        },
+        {
+          "at_utc": "2026-10-06T23:40:04.953602+00:00",
+          "status_seconds": 0.08264004200464115,
+          "metrics_bytes": 10505,
+          "heartbeat_age_seconds": 0.7399675846099854
+        },
+        {
+          "at_utc": "2026-10-06T23:40:10.064734+00:00",
+          "status_seconds": 0.06895012501627207,
+          "metrics_bytes": 10505,
+          "heartbeat_age_seconds": 0.8302633762359619
+        },
+        {
+          "at_utc": "2026-10-06T23:40:15.220780+00:00",
+          "status_seconds": 0.10945420904317871,
+          "metrics_bytes": 10505,
+          "heartbeat_age_seconds": 0.9678704738616943
+        },
+        {
+          "at_utc": "2026-10-06T23:40:20.334584+00:00",
+          "status_seconds": 0.08019641600549221,
+          "metrics_bytes": 10505,
+          "heartbeat_age_seconds": 0.0611727237701416
+        },
+        {
+          "at_utc": "2026-10-06T23:40:25.495660+00:00",
+          "status_seconds": 0.09683579101692885,
+          "metrics_bytes": 10505,
+          "heartbeat_age_seconds": 0.20037436485290527
+        },
+        {
+          "at_utc": "2026-10-06T23:40:30.633857+00:00",
+          "status_seconds": 0.09836966701550409,
+          "metrics_bytes": 10505,
+          "heartbeat_age_seconds": 0.3024590015411377
+        },
+        {
+          "at_utc": "2026-10-06T23:40:35.747396+00:00",
+          "status_seconds": 0.07757958403090015,
+          "metrics_bytes": 10505,
+          "heartbeat_age_seconds": 0.38466501235961914
+        },
+        {
+          "at_utc": "2026-10-06T23:40:40.888642+00:00",
+          "status_seconds": 0.09606816695304587,
+          "metrics_bytes": 10505,
+          "heartbeat_age_seconds": 0.5060482025146484
+        }
+      ],
+      "status_median_seconds": 0.09447912499308586,
+      "status_nearest_rank_p95_seconds": 0.10945420904317871
+    }
+  ],
+  "checks": [
+    {
+      "name": "ready_1_fans",
+      "passed": true,
+      "elapsed_seconds": 6.351470916997641
+    },
+    {
+      "name": "cooperative_cleanup",
+      "passed": true,
+      "elapsed_seconds": 8.458015666983556
+    },
+    {
+      "name": "ready_4_fans",
+      "passed": true,
+      "elapsed_seconds": 6.398497875023168
+    },
+    {
+      "name": "cooperative_cleanup",
+      "passed": true,
+      "elapsed_seconds": 27.48895587498555
+    },
+    {
+      "name": "ready_16_fans",
+      "passed": true,
+      "elapsed_seconds": 14.910732791002374
+    },
+    {
+      "name": "graceful_worker_restart",
+      "passed": true,
+      "elapsed_seconds": 2.260747166001238
+    },
+    {
+      "name": "graceful_exit_full_duty_and_driver_close",
+      "passed": true
+    },
+    {
+      "name": "operator_heartbeat_expires_all_fans_full_duty",
+      "passed": true,
+      "elapsed_seconds": 116.26093870901968
+    },
+    {
+      "name": "operator_recovery_all_crs_ready",
+      "passed": true,
+      "elapsed_seconds": 30.912668250035495
+    },
+    {
+      "name": "cooperative_cleanup",
+      "passed": true,
+      "elapsed_seconds": 4.274575166986324
+    }
+  ],
+  "harness_commands": 315,
+  "context": "kind-pifanctl-release",
+  "image": "pifanctl-runtime-lab:alpha6",
+  "kubernetes_version": "v1.30.0",
+  "finished_at_utc": "2026-10-06T23:43:20.731392+00:00"
+}
