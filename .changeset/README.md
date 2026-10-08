@@ -7,8 +7,8 @@ category, scope, short title and a concise user-facing summary.
 
 This repository uses Python application and Helm chart versions as its release
 sources. The lightweight Changesets ledger does not invoke npm, modify versions,
-or replace `scripts/check_version_bump.py`. A later release change consumes the
-approved entries and updates the existing version files in a reviewed commit.
+or replace `scripts/check_version_bump.py`. A reviewed release proposal updates
+the version files and retains or archives approved entries as release provenance.
 
 ## Release streams
 
@@ -17,6 +17,10 @@ approved entries and updates the existing version files in a reviewed commit.
 | `pifanctl` | `sources/pifanctl/__init__.py` |
 | `pifanctl-chart` | `charts/pifanctl/Chart.yaml` |
 | `pifanctl-operator` | `charts/pifanctl-operator/Chart.yaml` |
+
+Starting with 1.1.0, the supported operator chart follows the application version.
+Record application and supported chart changes together using `pifanctl` and
+`pifanctl-operator`. The legacy `pifanctl-chart` stream is historical.
 
 Use only the configured names and `patch`, `minor` or `major`. Categories are
 `Feature`, `Fix`, `Security`, `Dependency`, `Documentation`, `Deprecated` and
