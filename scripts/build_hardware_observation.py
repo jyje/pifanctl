@@ -35,7 +35,9 @@ def build(charts=True, pdf=True):
                     title='B. Userspace observations: missed edges and observer load are possible')
         axes[1].legend(fontsize=8, loc='lower right')
         fig.savefig(DATA / 'passive-observation.png', dpi=180)
-        fig.savefig(DATA / 'passive-observation.svg', metadata={'Date': None})
+        svg = DATA / 'passive-observation.svg'
+        fig.savefig(svg, metadata={'Date': None})
+        svg.write_text('\n'.join(line.rstrip() for line in svg.read_text().splitlines()) + '\n')
         plt.close(fig)
     if not pdf: return
     from reportlab.lib import colors
