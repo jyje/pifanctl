@@ -471,3 +471,19 @@ This approval changes the measurement policy, not the deployed control curve.
 - [x] Adopt through [cluster PR #153](https://github.com/jyje/cluster/pull/153), preserving existing cooling values and leaving tachometer feedback disabled. Parent/child Argo applications are Synced/Healthy, with operator, worker and four managed agents on v1.1.0-py312.
 - [x] Verify a 125.33-second read-only hold with 23 samples: exact worker image digest, unchanged resource UID/spec, Node identity, plan hash, fresh acquisition clocks and healthy regulation. Both served Fan schemas include feedback and v1 remains the storage version. Baseline/postflight archives remain private.
 - [x] Resolve the preflight legacy CRD field-ownership concern: after GitOps advanced, the exact-schema patch reported no change and the following Argo-manager server-side dry run passed without force-conflicts. Post-merge cluster CodeQL run `37807729487` passed. Physical RPM/waveform acceptance remains open in #69 and #64.
+
+
+### Instrumented hardware verification after v1.1 adoption
+
+- [x] Recheck the live 1.1.0 worker, optional feedback disabled, unchanged 1 kHz software PWM and four-member telemetry.
+- [x] Capture 10 seconds of existing GPIO levels without changing pin function/pull, duty or frequency; preserve anonymous raw transitions and explicit sampling/observer limitations.
+- [x] Analyze 8,432 complete cycles: 892.54 Hz median observed frequency and 36.59% median HIGH ratio. This is not calibrated connector-level PWM or RPM acceptance.
+- [x] Confirm zero observed tach falling edges with existing pull-down and no exposed kernel PWM chip; these observations do not establish a stopped fan.
+- [x] Prepare reproducible read-only collection/analysis, plots, an interim PDF and the full remaining hardware matrix in docs/v1/hardware-verification/.
+- [ ] Confirm actual wiring, Pi-safe signal voltage, supply/ground and available physical instruments with the maintainer.
+- [ ] Verify a conforming connector-level 25 kHz PWM path and controlled immutable-hardware handoff before a formal sweep.
+- [ ] Enable verified tach input and collect a 60-second baseline with independent physical observation.
+- [ ] Run guarded 100/75/50/30% duty stages, publish actual RPM/temperature plots and verify restoration.
+- [ ] Execute the remaining physical fault, Pi 5, thermal, rollback and expanded-fleet checks where the required hardware is available. Missing hardware evidence stays unpassed in #69/#64.
+
+- [x] Run 491 full local regression tests (Python 3.13): line 96.69%, branch 91.36%; 14 new observation-tool tests passed. Validate the two-page interim PDF by rendering and visually reviewing every page.
