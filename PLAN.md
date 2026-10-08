@@ -464,6 +464,7 @@ This approval changes the measurement policy, not the deployed control curve.
 - [x] Add values comments, configuration defaults, explicit CRD upgrade and rollback documentation.
 - [x] Prepare app/chart/appVersion 1.1.0 and a minor Changeset for both supported release streams.
 - [x] Run 477 regression tests with CI coverage settings: lines 96.69%, branches 91.36%; tachometer module line/branch coverage 100%. Helm lint, workflow lint, Changeset and version checks passed locally on Python 3.13.2.
-- [ ] Commit, publish the release proposal PR and review remote CI.
+- [x] Commit implementation, compatibility documentation and release metadata separately; publish [PR #70](https://github.com/jyje/pifanctl/pull/70).
+- [x] Verify runtime/release head `12637f0` in CI run `37804499678`: Python 3.10-3.14, chart/schema validation, version/workflow checks, coverage quality, Codecov upload/project/patch and ARC ARM64 build/smoke all passed. The following checklist-only commit receives its own CI rerun.
 - [ ] Perform the separately authorized physical voltage/RPM/PWM experiment in issue #69. This is not a completed v1.1 software verification claim.
 - [ ] Merge and publish reviewed artifacts, then separately review production adoption.
