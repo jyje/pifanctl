@@ -169,9 +169,49 @@ spec:
                     - 100
                     default: 100
                 default: {}
+              feedback:
+                type: object
+                properties:
+                  tachometer:
+                    type: object
+                    properties:
+                      gpio:
+                        type: object
+                        properties:
+                          pin:
+                            type: integer
+                            minimum: 0
+                            maximum: 27
+                          pull:
+                            type: string
+                            enum:
+                            - 'off'
+                            - up
+                            - down
+                            default: 'off'
+                        required:
+                        - pin
+                      pulsesPerRevolution:
+                        type: integer
+                        minimum: 1
+                        maximum: 16
+                        default: 2
+                      sampleSeconds:
+                        type: integer
+                        minimum: 1
+                        maximum: 60
+                        default: 5
+                    required:
+                    - gpio
+                required:
+                - tachometer
             required:
             - nodeName
             - hardware
+            x-kubernetes-validations:
+            - rule: '!has(self.feedback) || (has(self.hardware.rpigpio) && self.feedback.tachometer.gpio.pin
+                != self.hardware.rpigpio.pin)'
+              message: tachometer requires rpigpio and a distinct BCM input pin
           status:
             type: object
             properties:
@@ -244,6 +284,34 @@ spec:
                 type: string
               hardwareClaim:
                 type: string
+              feedback:
+                type: object
+                properties:
+                  tachometer:
+                    type: object
+                    properties:
+                      rpm:
+                        type: number
+                        minimum: 0
+                      ready:
+                        type: boolean
+                      reason:
+                        type: string
+                        maxLength: 128
+                      observedAt:
+                        type: string
+                        format: date-time
+                      sampleSeconds:
+                        type: number
+                        minimum: 0
+                      pulseCount:
+                        type: integer
+                        minimum: 0
+                    required:
+                    - ready
+                    - reason
+                    - sampleSeconds
+                    - pulseCount
         required:
         - spec
   - name: v1alpha1
@@ -400,9 +468,49 @@ spec:
                     - 100
                     default: 100
                 default: {}
+              feedback:
+                type: object
+                properties:
+                  tachometer:
+                    type: object
+                    properties:
+                      gpio:
+                        type: object
+                        properties:
+                          pin:
+                            type: integer
+                            minimum: 0
+                            maximum: 27
+                          pull:
+                            type: string
+                            enum:
+                            - 'off'
+                            - up
+                            - down
+                            default: 'off'
+                        required:
+                        - pin
+                      pulsesPerRevolution:
+                        type: integer
+                        minimum: 1
+                        maximum: 16
+                        default: 2
+                      sampleSeconds:
+                        type: integer
+                        minimum: 1
+                        maximum: 60
+                        default: 5
+                    required:
+                    - gpio
+                required:
+                - tachometer
             required:
             - nodeName
             - hardware
+            x-kubernetes-validations:
+            - rule: '!has(self.feedback) || (has(self.hardware.rpigpio) && self.feedback.tachometer.gpio.pin
+                != self.hardware.rpigpio.pin)'
+              message: tachometer requires rpigpio and a distinct BCM input pin
           status:
             type: object
             properties:
@@ -475,6 +583,34 @@ spec:
                 type: string
               hardwareClaim:
                 type: string
+              feedback:
+                type: object
+                properties:
+                  tachometer:
+                    type: object
+                    properties:
+                      rpm:
+                        type: number
+                        minimum: 0
+                      ready:
+                        type: boolean
+                      reason:
+                        type: string
+                        maxLength: 128
+                      observedAt:
+                        type: string
+                        format: date-time
+                      sampleSeconds:
+                        type: number
+                        minimum: 0
+                      pulseCount:
+                        type: integer
+                        minimum: 0
+                    required:
+                    - ready
+                    - reason
+                    - sampleSeconds
+                    - pulseCount
         required:
         - spec
   conversion:

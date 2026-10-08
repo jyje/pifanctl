@@ -131,6 +131,10 @@ def normalize(items):
         if kind == 'Fan':
             if not valid_name(spec['nodeName']):
                 raise TopologyError('invalid fan nodeName')
+            if 'feedback' in spec:
+                pin = spec['feedback']['tachometer']['gpio']['pin']
+                if 'rpigpio' not in spec['hardware'] or pin == spec['hardware']['rpigpio']['pin']:
+                    raise TopologyError('tachometer requires rpigpio and a distinct BCM input pin')
             c = spec['control']['curve']
             hysteresis = c.get('temperatureHysteresis', 5)
             if not c['temperatureLow'] < c['temperatureHigh'] or not 0 <= c['dutyIdle'] <= c['dutyStart'] <= c['dutyMax'] <= 100 or c['dutyDownStep'] <= 0 or not 0 <= hysteresis < c['temperatureHigh'] - c['temperatureLow']:

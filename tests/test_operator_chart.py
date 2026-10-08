@@ -186,3 +186,21 @@ def test_worker_mounts_lock_at_direct_path_and_preserves_host_lock():
     assert container['command'][-2:] == ['--lock-dir', '/run/lock/pifanctl']
     volume = next(v for v in pod['volumes'] if v['name'] == 'locks')
     assert volume['hostPath'] == {'path': '/var/lock/pifanctl', 'type': 'DirectoryOrCreate'}
+
+
+def test_optional_tachometer_values_preserve_existing_topology():
+    old = render('-f', 'tests/fixtures/operator-extra-resources.yaml')
+    new = render('-f', 'tests/fixtures/operator-tachometer-values.yaml')
+    old_fan = next(o for o in old if o.get('kind') == 'Fan')
+    new_fan = next(o for o in new if o.get('kind') == 'Fan')
+    feedback = new_fan['spec'].pop('feedback')
+    assert feedback == {'tachometer': {'gpio': {'pin': 23, 'pull': 'up'},
+                                      'pulsesPerRevolution': 2, 'sampleSeconds': 5}}
+    assert new_fan == old_fan
+    assert next(o for o in old if o.get('kind') == 'CoolingZone') == next(o for o in new if o.get('kind') == 'CoolingZone')
+
+
+def test_supported_chart_follows_application_version():
+    from pifanctl import __version__
+    chart = yaml.safe_load((CHART / 'Chart.yaml').read_text())
+    assert chart['version'] == chart['appVersion'] == __version__
