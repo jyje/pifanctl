@@ -3,11 +3,10 @@ Fails a pull request that changes what ships without bumping its version.
 
     python scripts/check_version_bump.py <base-ref>
 
-The application is `sources/main.py` and `sources/pifanctl/`. Each chart has an
-independent version in its own `Chart.yaml`; its `ci/` value sets are fixtures.
-Changing application code does not require a chart version change. Updating a
-chart's pinned appVersion or other chart content requires that chart's version
-to change.
+The application is `sources/main.py` and `sources/pifanctl/`. The supported
+operator chart follows the application version, including appVersion. Historical
+charts retain separate version sources; chart `ci/` value sets are fixtures.
+Updating chart content requires its version to change.
 """
 import re
 from pathlib import Path
@@ -83,10 +82,16 @@ def main(base: str) -> int:
         new_charts[path] = chart_version(file.read_text())
 
     errors = check(changed, old_app, new_app, old_charts, new_charts)
+    operator = Path('charts/pifanctl-operator/Chart.yaml')
+    if operator.exists():
+        text = operator.read_text()
+        pinned = re.search(r'^appVersion:\s*[\'"]?([^\'"\s]+)', text, re.M)
+        if chart_version(text) != new_app or not pinned or pinned.group(1) != new_app:
+            errors.append('The supported operator chart version and appVersion must match the application version.')
     for error in errors:
         print(f"::error::{error}")
     if not errors:
-        print(f"Version check passed (application {new_app}; chart versions are independent).")
+        print(f"Version check passed (application {new_app}; supported operator chart follows the application).")
     return 1 if errors else 0
 
 

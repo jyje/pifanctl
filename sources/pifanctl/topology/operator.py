@@ -283,6 +283,12 @@ class Operator:
                 if state:
                     status['dutyPercent'] = state['dutyPercent']
                     if state.get('temperatureCelsius') is not None: status['controlTemperatureCelsius'] = state['temperatureCelsius']
+                    if 'feedback' in spec and 'feedback' in state:
+                        feedback = copy.deepcopy(state['feedback'])
+                        tachometer = feedback['tachometer']
+                        if 'observedTime' in tachometer:
+                            tachometer['observedAt'] = timestamp(tachometer.pop('observedTime'))
+                        status['feedback'] = feedback
                 if report: status['heartbeatTime'] = timestamp(report['heartbeatTime'])
             else:
                 resolved = topology['zones'].get(resource_name, {})
@@ -387,7 +393,12 @@ class Operator:
             if retry_event: self.event(item, condition, now)
             return
         # Merge patch nulls clear old temperature/duty fields during failures.
-        patch = {k: None for k in item.get('status', {}) if k not in status}; patch.update(status)
+        patch = {k: None for k in item.get('status', {}) if k not in status}; patch.update(copy.deepcopy(status))
+        old_tach = item.get('status', {}).get('feedback', {}).get('tachometer', {})
+        new_tach = patch.get('feedback', {}).get('tachometer') if isinstance(patch.get('feedback'), dict) else None
+        if new_tach is not None:
+            for field in old_tach:
+                if field not in new_tach: new_tach[field] = None
         self.patch(resource(item['kind'], item['metadata']['name']) + '/status', {'status': patch})
         self.last_status[key] = (now, signature)
         if not last or last[1][:2] != signature[:2] or retry_event:

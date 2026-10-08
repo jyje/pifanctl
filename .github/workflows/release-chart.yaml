@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 0
       - uses: azure/setup-helm@v5
       - name: Wait for the image version pinned by the chart
-        # appVersion is an independently maintained default image pointer.
+        # The supported operator chart follows the application release version.
         run: |
           version="$(helm show chart "charts/${CHART_NAME}" | sed -n 's/^appVersion: //p' | tr -d '"')"
           image="ghcr.io/${GITHUB_REPOSITORY}:v${version}"

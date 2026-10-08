@@ -21,6 +21,9 @@ def plan(resources, nodes=None, previous=None):
         hw = s['hardware']; family = next(iter(hw)); channel = hw[family]
         claim = (s['nodeName'], family, channel['pin']) if family == 'rpigpio' else (s['nodeName'], family, channel['chip'], channel['channel'])
         claims.setdefault(claim, []).append(name)
+        if 'feedback' in s:
+            input_pin = s['feedback']['tachometer']['gpio']['pin']
+            claims.setdefault((s['nodeName'], 'rpigpio', input_pin), []).append(name)
         families.setdefault(s['nodeName'], set()).add(family)
         issues = []
         if live and not node:

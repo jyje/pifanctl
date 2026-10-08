@@ -301,3 +301,23 @@ def test_compatibility_release_tag_is_immutable_and_never_latest(bin_dir, exists
         expected.append('ghcr.io/jyje/pifanctl:v1.0.0-py312')
     assert result.stdout.splitlines() == expected
     assert ':latest' not in result.stdout
+
+
+@pytest.mark.parametrize('chart_version,pinned,expected', [
+    ('1.1.0', 'appVersion: "1.1.0"', 0),
+    ('1.0.0', 'appVersion: "1.1.0"', 1),
+    ('1.1.0', 'appVersion: "1.0.0"', 1),
+    ('1.1.0', '', 1),
+])
+def test_supported_release_versions_must_match(tmp_path, monkeypatch, chart_version, pinned, expected):
+    monkeypatch.chdir(tmp_path)
+    package = tmp_path / 'sources/pifanctl'; package.mkdir(parents=True)
+    (package / '__init__.py').write_text('__version__ = "1.1.0"\n')
+    chart = tmp_path / 'charts/pifanctl-operator'; chart.mkdir(parents=True)
+    (chart / 'Chart.yaml').write_text(f'version: {chart_version}\n{pinned}\n')
+    def fake_git(*args):
+        if args[0] == 'diff': return 'README.md\n'
+        if args[-1].endswith(bump.APP_FILE): return '__version__ = "1.1.0"\n'
+        return (chart / 'Chart.yaml').read_text()
+    monkeypatch.setattr(bump, 'git', fake_git)
+    assert bump.main('base') == expected

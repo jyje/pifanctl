@@ -1,6 +1,15 @@
 # Changelog
 
-Application and operator chart versions are independent. Both start the stable v1 series at 1.0.0. App and operator chart 1.0.0 are published from release commit `0b37ed93e28095d0973ff5d171cdaba1ce17a8f0`. The mixed Pi 4/Pi 5 rack now runs the stable Python 3.12 compatibility image.
+App and operator chart 1.0.0 were published from release commit `0b37ed93e28095d0973ff5d171cdaba1ce17a8f0`. Starting with 1.1.0, the supported operator chart version and appVersion follow the application version. Explicit image overrides remain available. The historical legacy chart is not part of this release.
+
+## Application and operator chart 1.1.0 (proposed)
+
+- Add optional `Fan.spec.feedback.tachometer` with BCM input pin, requested internal bias, pulses per revolution and rolling sample window.
+- Observe Pi 4 falling edges through exclusive Linux GPIO v2 input claims. Detect input/output conflicts and lost or stale events.
+- Publish diagnostic RPM, source timestamp and collector readiness in worker metrics and Fan status; clear stale measurements on error or removal.
+- Preserve existing values, PWM duty/frequency and thermal failsafe. Feedback is disabled when omitted and does not introduce RPM-based control.
+- Align application, supported chart and default image version at 1.1.0. Apply additive CRD upgrades explicitly before enabling feedback.
+- Cover compatibility and failure paths with automated tests. Physical voltage/RPM/waveform verification and Pi 5 tachometer support remain unverified; see issues #69 and #64.
 
 ## Application 1.0.0
 

@@ -255,3 +255,10 @@ See the [Python SSL documentation](https://docs.python.org/3/library/ssl.html#ss
 ## CRD API versions
 
 The candidate serves `v1` with `v1alpha1` compatibility. Read the [storage migration and rollback procedure](api-migration.md) before upgrading an existing installation.
+
+## Optional tachometer feedback
+
+Application/chart 1.1.0 introduce opt-in Pi 4 RPM observation under
+`Fan.spec.feedback.tachometer`. Existing values and thermal control remain
+compatible. Read the [tachometer guide](tachometer.md) before enabling GPIO
+bias, upgrading CRDs or rolling back an enabled feedback plan.

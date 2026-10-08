@@ -19,6 +19,7 @@ from pifanctl.topology.locks import HostLock
 from pifanctl.topology.model import API, TopologyError, UniqueLoader, digest, normalize, _plain
 from pifanctl.topology.planner import plan as topology_plan
 from pifanctl.topology.telemetry import fan_reading
+from pifanctl.topology.tachometer import GpioTachometer, MockTachometer
 import yaml
 
 log = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ def validate_plan(raw, node, uid=''):
         if not isinstance(fan, dict) or fan.get('name') != name:
             raise TopologyError('fan identity mismatch')
         normalize([{'apiVersion': API, 'kind': 'Fan', 'metadata': {'name': name},
-                    'spec': {k: fan[k] for k in ('nodeName', 'hardware', 'control')}}])
+                    'spec': {k: fan[k] for k in ('nodeName', 'hardware', 'control', 'feedback') if k in fan}}])
         if fan['nodeName'] != node or not isinstance(fan.get('zones'), list) or not isinstance(fan.get('issues'), list):
             raise TopologyError('fan does not belong to this worker')
         for zone in fan['zones']:
@@ -50,7 +51,7 @@ def validate_plan(raw, node, uid=''):
             if not isinstance(zone.get('issues'), list) or (not zone['members'] and not zone['issues']):
                 raise TopologyError('invalid zone health')
         resources.append({'apiVersion': API, 'kind': 'Fan', 'metadata': {'name': name},
-                          'spec': {k: fan[k] for k in ('nodeName', 'hardware', 'control')}})
+                          'spec': {k: fan[k] for k in ('nodeName', 'hardware', 'control', 'feedback') if k in fan}})
     checked = topology_plan(resources)
     for name, spec in checked['fans'].items():
         for issue in ('HardwareConflict', 'MixedHardwareDrivers'):
@@ -60,10 +61,12 @@ def validate_plan(raw, node, uid=''):
 
 
 class Worker:
-    def __init__(self, node, uid='', thermal_path='/sys/class/thermal', mock=False, driver_factory=None):
+    def __init__(self, node, uid='', thermal_path='/sys/class/thermal', mock=False, driver_factory=None, tachometer_factory=None):
         self.node, self.uid, self.mock = node, uid, mock
         self.local = LocalSource(thermal_path)
         self.driver_factory = driver_factory or create_driver
+        self.tachometer_factory = tachometer_factory or (MockTachometer if mock else GpioTachometer)
+        self.tachometers, self.tachometer_errors = {}, {}
         self.plan = None
         self.drivers, self.controllers, self.specs = {}, {}, {}
         self.updated = {}
@@ -77,6 +80,9 @@ class Worker:
         self.duty = Gauge('pifanctl_worker_fan_duty_percent', 'Requested fan duty', ['node', 'fan'], registry=self.registry)
         self.health = Gauge('pifanctl_worker_fan_ready', 'Fan regulation is healthy', ['node', 'fan'], registry=self.registry)
         self.zone_temp = Gauge('pifanctl_worker_zone_temperature_celsius', 'Complete zone maximum', ['node', 'zone'], registry=self.registry)
+        self.rpm = Gauge('pifanctl_worker_fan_rpm', 'Observed tachometer RPM, not commanded duty', ['node', 'fan'], registry=self.registry)
+        self.tach_health = Gauge('pifanctl_worker_fan_tachometer_ready', 'Tachometer observation is available', ['node', 'fan'], registry=self.registry)
+        self.tach_time = Gauge('pifanctl_worker_fan_rpm_observed_timestamp_seconds', 'Tachometer acquisition timestamp', ['node', 'fan'], registry=self.registry)
 
     def apply(self, raw):
         with self.actuation:
@@ -87,9 +93,12 @@ class Worker:
         def claim(spec):
             family = next(iter(spec['hardware']))
             cfg = spec['hardware'][family]
-            return (family, cfg.get('pin'), cfg.get('chip'), cfg.get('channel'))
+            claims = {(family, cfg.get('pin'), cfg.get('chip'), cfg.get('channel'))}
+            if 'feedback' in spec:
+                claims.add(('rpigpio', spec['feedback']['tachometer']['gpio']['pin'], None, None))
+            return claims
         for name, spec in new['fans'].items():
-            if any(old != name and claim(existing) == claim(spec) for old, existing in self.specs.items()):
+            if any(old != name and claim(existing) & claim(spec) for old, existing in self.specs.items()):
                 raise TopologyError('release the previous fan identity before reusing its channel')
         # Same identity may not change hardware inside a live process.
         for name, spec in new['fans'].items():
@@ -106,6 +115,16 @@ class Worker:
                 self.drivers[name] = driver
                 driver.set_duty(100)
                 self.released.discard(name)
+            feedback = spec.get('feedback')
+            if (feedback != self.specs.get(name, {}).get('feedback') or 'HardwareConflict' in spec['issues']
+                    or (feedback and name not in self.tachometers and name not in self.tachometer_errors)):
+                self._close_tachometer(name)
+                if feedback and 'HardwareConflict' not in spec['issues']:
+                    try:
+                        self.tachometers[name] = self.tachometer_factory(feedback['tachometer'])
+                    except Exception:
+                        self.tachometer_errors[name] = 'Unavailable'
+                        log.warning('Tachometer unavailable for %s; PWM regulation remains independent', name)
             c = spec['control']['curve']
             config = CurveConfig(c['temperatureLow'], c['temperatureHigh'], c['dutyIdle'], c['dutyStart'], c['dutyMax'], c['dutyDownStep'],
                                  c.get('temperatureHysteresis', 5.0))
@@ -114,6 +133,7 @@ class Worker:
             self.specs[name] = spec
         for name in list(self.drivers):
             if name not in new['fans']:
+                self._close_tachometer(name)
                 self.drivers[name].set_duty(100)
                 self.drivers[name].close()
                 del self.drivers[name]; del self.controllers[name]; del self.specs[name]
@@ -184,6 +204,8 @@ class Worker:
                     self.drivers[name].set_duty(duty)
             result['fans'][name] = {'dutyPercent': duty, 'temperatureCelsius': temperature, 'ready': not bool(failure),
                                     'reason': failure, 'zones': zone_values, 'nodes': nodes}
+            if 'feedback' in spec:
+                result['fans'][name]['feedback'] = self._feedback(name)
             result['ready'] = result['ready'] and not failure
             self.duty.labels(self.node, name).set(duty)
             self.health.labels(self.node, name).set(0 if failure else 1)
@@ -196,6 +218,32 @@ class Worker:
         self.progress = time.monotonic()
         return result
 
+    def _close_tachometer(self, name):
+        sensor = self.tachometers.get(name)
+        if sensor is not None:
+            sensor.close()
+            del self.tachometers[name]
+        self.tachometer_errors.pop(name, None)
+        for metric in (self.rpm, self.tach_health, self.tach_time):
+            if (self.node, name) in metric._metrics:
+                metric.remove(self.node, name)
+
+    def _feedback(self, name):
+        sensor = self.tachometers.get(name)
+        try:
+            state = sensor.snapshot() if sensor else {'ready': False, 'reason': self.tachometer_errors.get(name, 'Unavailable'), 'sampleSeconds': 0, 'pulseCount': 0}
+        except Exception:
+            state = {'ready': False, 'reason': 'CollectorError', 'sampleSeconds': 0, 'pulseCount': 0}
+        self.tach_health.labels(self.node, name).set(1 if state['ready'] else 0)
+        if 'rpm' in state:
+            self.rpm.labels(self.node, name).set(state['rpm'])
+            self.tach_time.labels(self.node, name).set(state['observedTime'])
+        else:
+            for metric in (self.rpm, self.tach_time):
+                if (self.node, name) in metric._metrics:
+                    metric.remove(self.node, name)
+        return {'tachometer': state}
+
     def snapshot(self):
         with self.mutex: return copy.deepcopy(self.report)
 
@@ -205,6 +253,9 @@ class Worker:
 
     def _close(self):
         errors = []
+        for name in list(self.tachometers):
+            try: self._close_tachometer(name)
+            except Exception as error: errors.append(error)
         for driver in self.drivers.values():
             try: driver.set_duty(100)
             except Exception as error: errors.append(error)

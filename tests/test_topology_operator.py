@@ -257,3 +257,29 @@ def test_event_failure_does_not_block_reconciliation(setup, caplog):
     assert o.reconcile(now=time.time() + 61)
     assert len(failures) == 4
     assert all(k.get(resource(kind, name))['status']['conditions'] for kind, name in [('Fan', 'fan-a'), ('CoolingZone', 'rack')])
+
+
+def test_optional_tachometer_status_clears_stale_measurements(setup):
+    k, o = setup
+    item = k.get(resource('Fan', 'fan-a'))
+    item['spec']['feedback'] = {'tachometer': {'gpio': {'pin': 23, 'pull': 'up'}}}
+    k.put(resource('Fan', 'fan-a'), item)
+    base_reader = reporter(k, o)
+    state = {'ready': True, 'reason': '', 'rpm': 1200, 'observedTime': 100,
+             'sampleSeconds': 5, 'pulseCount': 200}
+    def read(worker, now):
+        report = base_reader(worker, now)
+        report['fans']['fan-a']['feedback'] = {'tachometer': copy.deepcopy(state)}
+        return report
+    o.report_reader = read
+    o.reconcile(100)
+    tach = k.get(resource('Fan', 'fan-a'))['status']['feedback']['tachometer']
+    assert tach['rpm'] == 1200 and tach['observedAt'].endswith('Z')
+    state.clear(); state.update(ready=False, reason='CollectorError', sampleSeconds=0, pulseCount=0)
+    o.reconcile(131)
+    tach = k.get(resource('Fan', 'fan-a'))['status']['feedback']['tachometer']
+    assert 'rpm' not in tach and 'observedAt' not in tach and not tach['ready']
+    item = k.get(resource('Fan', 'fan-a')); item['spec'].pop('feedback')
+    k.put(resource('Fan', 'fan-a'), item)
+    o.reconcile(162)
+    assert 'feedback' not in k.get(resource('Fan', 'fan-a'))['status']

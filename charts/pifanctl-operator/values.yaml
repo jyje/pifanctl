@@ -4,6 +4,7 @@ operatorId: pifanctl
 replicas: 1
 image:
   repository: ghcr.io/jyje/pifanctl
+  # Empty uses v<appVersion>; chart version and appVersion follow the app release.
   tag: ""
   pullPolicy: IfNotPresent
 agent:
@@ -28,4 +29,17 @@ serviceMonitor:
 # -- Additional Kubernetes resources rendered with this release. Use this for
 # Fan and CoolingZone custom resources so GitOps owns runtime instances beside
 # the operator installation.
+# Existing Fan/CoolingZone values remain valid: feedback is optional and off
+# when absent. Add this block inside a Fan spec only after verifying wiring:
+# feedback:
+#   tachometer:
+#     gpio:
+#       pin: 23                    # BCM GPIO23, physical header pin 16
+#       pull: up                   # Internal 3.3 V bias: off (default), up, down
+#     pulsesPerRevolution: 2       # NF-A12x25 PWM tach output: two pulses/rev
+#     sampleSeconds: 5             # Rolling observation window, 1-60 seconds
+# Pi 4 / rpigpio only, Linux GPIO v2 required. Use a distinct input pin.
+# Verify an open-collector signal without a 5 V / 12 V pull-up before enabling.
+# RPM feedback is observational; PWM duty, frequency and failsafe stay unchanged.
+# Existing Helm installations must apply updated CRDs before using feedback.
 extraResources: []

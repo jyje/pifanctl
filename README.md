@@ -23,7 +23,7 @@
 
 🐳 **pifanctl** (Pi Fan Control) manages PWM fans for Raspberry Pi cooling zones through Kubernetes. A zone can contain a single board, four boards sharing one rack fan, or several racks with separate fans. Declare `Fan` actuators and `CoolingZone` membership by Node labels or names. Each fan follows the hottest assigned member plus its local sensor. The operator creates one hardware worker per actuator Node; temperature agents report to Prometheus.
 
-**v1:** CRDs and the single operator chart are required. Standalone `start` control is removed. Local YAML worker execution requires `--mock`; real workers consume the operator's plan, Node UID, and heartbeat. The `1.0.0` release proposal follows the approved practical verification closeout. See the [release scope and limitations](CHANGELOG.md) and [release plan](PLAN.md); proposed artifacts are not available until publication.
+**v1:** CRDs and the single operator chart are required. Standalone `start` control is removed. Local YAML worker execution requires `--mock`; real workers consume the operator's plan, Node UID, and heartbeat. The stable `1.0.0` release is published. The `1.1.0` proposal adds optional Pi 4 tachometer feedback while preserving existing values. See the [release scope and limitations](CHANGELOG.md), [release plan](PLAN.md), and [tachometer configuration and upgrade guide](docs/v1/tachometer.md); 1.1.0 artifacts are available only after publication.
 
 The sticker depicts an abstract Raspberry Pi rack, rear-facing board ports, a shared front fan, and a Kubernetes whale mascot. [Illustration style and concepts](docs/illustration-style.md).
 
@@ -52,7 +52,7 @@ kubectl --context lab wait --for=condition=Ready fan/rack-fan-01 --timeout=120s
 
 For a legacy cluster CA, the stable Python 3.12 compatibility image uses `image.tag: v1.0.0-py312`; the default is canonical Python 3.14. Keep TLS verification enabled and follow the [runtime compatibility procedure](docs/v1/runtime.md#runtime-compatibility-with-legacy-cluster-cas).
 
-The chart pins its own image version. An application release does not automatically update that pin. Verify image availability before installation. Helm installs CRDs on first install; review and explicitly apply schema upgrades as described in the [runtime manual](docs/v1/runtime.md). Argo CD users keep the chart values and `extraResources` in their Application, as in [jyje/cluster](https://github.com/jyje/cluster/blob/main/clusters/r4spi/apps/pifanctl.yaml).
+The operator chart version and default `appVersion` follow the application release. An explicit `image.tag` still overrides that default. Verify image availability before installation. Helm installs CRDs on first install; review and explicitly apply schema upgrades as described in the [runtime manual](docs/v1/runtime.md). Argo CD users keep the chart values and `extraResources` in their Application, as in [jyje/cluster](https://github.com/jyje/cluster/blob/main/clusters/r4spi/apps/pifanctl.yaml).
 
 ### CLI and kubectl
 
@@ -116,14 +116,17 @@ The three image workflows share one reusable workflow, `_build-image.yaml`.
 
 ### 3.3. Releasing
 
-Application and chart versions are tracked separately. A pull request that changes what ships has to bump the relevant versions:
+Starting with 1.1.0, the supported operator chart follows the application release.
+A shipping change updates the application version, chart `version`, and chart
+`appVersion` together. CI rejects a mismatch. The historical legacy chart is
+excluded from the supported publishing contract.
 
 | Changed | Bump | Checked by |
 | --- | --- | --- |
-| `sources/main.py` or `sources/pifanctl/` | `__version__` in `sources/pifanctl/__init__.py` | the `Version bump` job |
-| A chart directory (not its `ci/` value sets) | `version` in that chart's `Chart.yaml`; chart versions are independent from the application and other charts | the `Version bump` job |
+| Application or supported operator chart | `__version__`, operator chart `version` and `appVersion` to the same release | the `Version bump` job and chart tests |
 
-The operator chart's `appVersion` pins its default image. Updating that pointer changes chart content and requires a chart version bump. An app-only release does not force a chart release.
+An empty `image.tag` uses `v<appVersion>`; an explicit override stays in effect.
+Add a Changeset for both `pifanctl` and `pifanctl-operator` release streams.
 
 Merging to `main` does the rest:
 
