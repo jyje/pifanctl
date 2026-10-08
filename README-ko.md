@@ -23,7 +23,7 @@
 
 🐳 **pifanctl** (Pi Fan Control)은 Kubernetes에서 라즈베리 파이 냉각 구역의 PWM 팬을 관리합니다. 단일 보드, 공용 팬으로 식히는 4대 랙, 팬이 각각 연결된 여러 랙을 같은 모델로 구성합니다. `Fan`은 팬과 제어 노드이며, `CoolingZone`은 라벨 또는 이름으로 냉각 대상을 선택합니다. 각 팬은 연결된 멤버와 제어 노드의 로컬 센서 중 최고 온도를 따릅니다. operator가 제어 노드마다 worker를 만들고 agent가 Prometheus에 온도를 보고합니다.
 
-**v1:** CRD와 단일 operator 차트가 필수입니다. 독립 `start` 제어는 제거했습니다. 로컬 YAML worker는 `--mock`만 허용하며, 실제 worker는 operator의 계획, Node UID와 heartbeat를 사용합니다. `1.0.0` 릴리즈 제안은 승인된 현실적 검증 마감을 따릅니다. [지원 범위와 한계](CHANGELOG.md), [릴리즈 계획](PLAN.md)을 참고하세요. 제안된 아티팩트는 게시 후 사용할 수 있습니다.
+**v1:** CRD와 단일 operator 차트가 필수입니다. 독립 `start` 제어는 제거했습니다. 로컬 YAML worker는 `--mock`만 허용하며, 실제 worker는 operator의 계획, Node UID와 heartbeat를 사용합니다. `1.0.0`은 게시되었습니다. `1.1.0` 제안은 기존 values를 유지하면서 Pi 4 RPM 입력을 선택적으로 추가합니다. [RPM 설정과 업그레이드 안내](docs/v1/tachometer.md)를 참고하세요. [지원 범위와 한계](CHANGELOG.md), [릴리즈 계획](PLAN.md)을 참고하세요. 제안된 아티팩트는 게시 후 사용할 수 있습니다.
 
 스티커는 범용 라즈베리 파이 랙, 후면 보드 포트, 전면 공용 팬과 Kubernetes 고래를 표현합니다. [일러스트 스타일과 시안](docs/illustration-style.md).
 
@@ -50,7 +50,7 @@ kubectl --context lab get fans,coolingzones
 kubectl --context lab wait --for=condition=Ready fan/rack-fan-01 --timeout=120s
 ```
 
-차트는 이미지 버전을 별도로 고정합니다. 앱 출시가 차트의 이미지 버전을 자동으로 바꾸지는 않습니다. 설치 전에 이미지 게시 여부를 확인하세요. Helm은 최초 설치 시 CRD를 설치하지만 스키마 업그레이드는 [런타임 매뉴얼](docs/v1/runtime-ko.md)에 따라 명시적으로 적용해야 합니다. Argo CD에서는 [jyje/cluster](https://github.com/jyje/cluster/blob/main/clusters/r4spi/apps/pifanctl.yaml)처럼 Application에 차트 values와 `extraResources`를 관리합니다.
+1.1.0부터 operator 차트 버전과 `appVersion`은 앱 버전을 따릅니다. 명시적인 `image.tag`는 기본값을 덮어씁니다. 설치 전에 이미지 게시 여부를 확인하세요. Helm은 최초 설치 시 CRD를 설치하지만 스키마 업그레이드는 [런타임 매뉴얼](docs/v1/runtime-ko.md)에 따라 명시적으로 적용해야 합니다. Argo CD에서는 [jyje/cluster](https://github.com/jyje/cluster/blob/main/clusters/r4spi/apps/pifanctl.yaml)처럼 Application에 차트 values와 `extraResources`를 관리합니다.
 
 ### CLI와 kubectl
 
@@ -113,20 +113,13 @@ CI/CD 환경은 [app.jyje.online#stack](https://app.jyje.online/#stack)에서 �
 
 ### 3.3. 릴리스
 
-앱과 각 차트의 버전을 따로 관리합니다. 배포되는 것을 바꾸는 풀 리퀘스트는 해당 버전을 올려야 합니다.
-
-| 변경 | 올릴 것 | 확인 |
-| --- | --- | --- |
-| `sources/main.py` 또는 `sources/pifanctl/` | `sources/pifanctl/__init__.py`의 `__version__`과 두 차트 manifest의 `appVersion` | `Version bump` 잡 |
-| `charts/`의 각 차트 디렉터리 (`ci/` 값 파일 제외) | 해당 `Chart.yaml`의 `version`. 앱 버전이 새로우면 `appVersion`이 바뀌므로 두 차트 버전도 새로워야 합니다 | `Version bump` 잡 |
-
-`k8s/manifests/deployments.yaml`의 이미지 태그와 위 설치 명령의 차트 버전도 함께 바꾸세요. 어긋나면 테스트가 실패합니다.
+1.1.0부터 앱 `__version__`, operator 차트 `version`과 `appVersion`을 같은 버전으로 올립니다. CI가 불일치를 거부합니다. 과거 legacy 차트는 지원되는 게시 범위에서 제외합니다. Changeset에는 `pifanctl`과 `pifanctl-operator`를 함께 기록합니다.
 
 `main`에 병합하면 나머지는 자동입니다.
 
 1. `build-image-main`이 커밋 태그와 버전이 처음 나타날 때 `v<version>`을 발행합니다. 정식 버전만 `latest`를 갱신하고 alpha는 유지합니다.
 2. 이미지가 생긴 뒤 git 태그 `v<version>`과 자동 생성 노트가 붙은 GitHub 릴리스를 만듭니다.
-3. `release-chart`가 이미지를 기다린 뒤 두 차트를 `oci://ghcr.io/jyje/charts/`에 발행하고 `chart-v<version>` 또는 `operator-chart-v<version>` 태그와 릴리스를 만듭니다.
+3. `release-chart`가 이미지를 기다린 뒤 operator 차트만 `oci://ghcr.io/jyje/charts/pifanctl-operator`에 발행하고 `operator-chart-v<version>` 태그와 릴리스를 만듭니다.
 
 각 단계는 이미 있는 것을 건너뛰므로 실패한 워크플로를 다시 실행해도 안전합니다. 앱 릴리스는 `v*`, 차트는 `chart-v*`와 `operator-chart-v*` 태그를 씁니다. alpha는 GitHub prerelease로 발행합니다.
 

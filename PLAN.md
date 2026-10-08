@@ -452,3 +452,18 @@ This approval changes the measurement policy, not the deployed control curve.
 - [x] Correct the generic runtime observer from scrape timestamps to actual sensor acquisition metrics. Preserve the earlier 124.54-second observation privately as scrape-clock evidence. The new 120.14-second rerun is the current acquisition-freshness proof. Ten focused and 434 full local tests passed, including public-clock consistency and deterministic SVG regeneration.
 - [x] Record anonymous stable-runtime CSV/JSON, reproducible SVG/PNG and the updated 29-page PDF. Deferred measurements remain explicitly unpassed.
 - [x] Merge [final evidence/tool correction PR #66](https://github.com/jyje/pifanctl/pull/66) after all CI and Codecov checks passed in run `37628819560`. Synchronize the clean primary checkout with main before recording this closeout.
+
+
+### v1.1 optional tachometer feedback and aligned chart release
+
+- [x] Define additive optional Fan feedback fields and identical served v1/v1alpha1 schemas.
+- [x] Preserve existing values and PWM behavior when feedback is absent.
+- [x] Implement Pi 4 GPIO v2 input claims, requested bias, monotonic falling-edge sampling and optional worker metrics.
+- [x] Detect topology input/output conflicts and clear stale RPM/status on errors or removal.
+- [x] Add mock tests for collection, failures, cleanup, status and existing/new Helm values.
+- [x] Add values comments, configuration defaults, explicit CRD upgrade and rollback documentation.
+- [x] Prepare app/chart/appVersion 1.1.0 and a minor Changeset for both supported release streams.
+- [x] Run 477 regression tests with CI coverage settings: lines 96.69%, branches 91.36%; tachometer module line/branch coverage 100%. Helm lint, workflow lint, Changeset and version checks passed locally on Python 3.13.2.
+- [ ] Commit, publish the release proposal PR and review remote CI.
+- [ ] Perform the separately authorized physical voltage/RPM/PWM experiment in issue #69. This is not a completed v1.1 software verification claim.
+- [ ] Merge and publish reviewed artifacts, then separately review production adoption.

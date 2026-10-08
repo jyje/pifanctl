@@ -23,14 +23,14 @@ helm upgrade --install pifanctl charts/pifanctl-operator \
 | `operatorId` | Short, unique identity; another operator cannot adopt its CRs |
 | `replicas` | 1 by default; only the active Lease holder is Ready |
 | `agent.mode` | `managed` or `reuse`; reused agents must export read timestamps |
-| `image.tag` | Defaults to pinned `v1.0.0`; never `latest` |
+| `image.tag` | Defaults to pinned `v1.1.0`; never `latest` |
 | `extraResources` | Kubernetes resources submitted with the release; use `Fan` and `CoolingZone` CRs for the cooling topology |
 | `networkPolicy.monitoringNamespaceSelector` | Namespaces allowed to read worker metrics/status |
 | `serviceMonitor.enabled` | Create worker and managed-agent ServiceMonitors if Prometheus Operator is installed |
 
 The canonical default uses Python 3.14. For the documented legacy-CA path, select
-`image.tag: v1.0.0-py312` explicitly and retain TLS verification. The app version
-is still 1.0.0. See [runtime compatibility](../../docs/v1/runtime.md#runtime-compatibility-with-legacy-cluster-cas).
+`image.tag: v1.1.0-py312` explicitly and retain TLS verification. The app version
+is still 1.1.0. See [runtime compatibility](../../docs/v1/runtime.md#runtime-compatibility-with-legacy-cluster-cas).
 
 Example values for a shared rack fan:
 
@@ -145,3 +145,16 @@ kubectl -n YOUR_NAMESPACE patch deployment YOUR_RELEASE-operator \
 ```
 
 This replaces operator Pods; the worker retains its plan and heartbeat failsafe.
+
+## Optional RPM feedback (1.1.0)
+
+Existing values remain compatible. Add `spec.feedback.tachometer` to an existing
+Fan in `extraResources` only when its input wiring has been verified. Omitting
+feedback allocates no input and leaves PWM behavior unchanged. See the comments
+in [values.yaml](values.yaml), the [complete values fixture](../../tests/fixtures/operator-tachometer-values.yaml),
+and the [tachometer guide](../../docs/v1/tachometer.md) for defaults, Pi 4 backend
+limits, metrics and explicit CRD upgrade/rollback steps.
+
+Chart `version` and `appVersion` follow the application version, starting with
+1.1.0. An empty `image.tag` uses `v1.1.0`; explicit image overrides remain valid.
+The proposed 1.1.0 artifacts must be published before deployment.
