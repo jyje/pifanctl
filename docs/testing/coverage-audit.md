@@ -94,3 +94,16 @@ pulses per revolution, probe wiring, voltages, PWM waveform fidelity, airflow,
 thermal stabilization, Kubernetes API-server semantics, deployment recovery or
 large-cluster scale. Those remain distinct acceptance procedures. New behavior
 must add tests for meaningful contracts rather than arbitrary dummy variations.
+
+## Remote acceptance evidence
+
+[GitHub Actions run 37871758675](https://github.com/jyje/pifanctl/actions/runs/37871758675)
+passed the runtime candidate `17c4e6b`: 613 tests, 1956/1956 executable lines,
+670/670 branch destinations, independent coverage gates, chart/workflow/version
+checks and the ARC ARM64 build/smoke test. The downloaded report and manifest
+both contain exact 100% line and branch counts.
+
+[Codecov PR #78](https://app.codecov.io/gh/jyje/pifanctl/pull/78)
+reports 100.00% project coverage and all modified coverable lines covered. Its
+native project and patch checks both passed. Main badge publication is skipped
+on pull requests and runs after a successful merge to main.

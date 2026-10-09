@@ -566,5 +566,5 @@ coverage badge metadata commit; it does not modify application or test code.
 - [x] Cover remaining model, CLI, API, control and metrics boundaries.
 - [x] Audit unreachable branches, unnecessary test doubles and tests lacking behavioral assertions; do not fabricate invalid internal state just for coverage.
 - [x] Verify local Python 3.14 coverage: all 1956 lines and 670 branch destinations covered; add independent exact-count floors and an audit of test-double boundaries.
-- [ ] Publish the coverage PR and verify its exact-head GitHub Actions and Codecov results.
+- [x] Publish PR #78 and verify runtime candidate 17c4e6b in CI run 37871758675: 613 tests passed, 1956/1956 lines and 670/670 branch destinations covered, chart/workflow/version checks and ARC ARM64 build/smoke passed, and native Codecov project/patch statuses passed at 100%.
 
