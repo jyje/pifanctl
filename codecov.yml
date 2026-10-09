@@ -1,5 +1,5 @@
 # Native status checks define pass/fail; detailed results remain in Codecov.
-# Avoid summary comments that flag any partial line or badge-only base lag.
+# Keep complete PR reports visible and update one comment for each head.
 coverage:
   status:
     project:
@@ -19,7 +19,13 @@ coverage:
         informational: false
         if_not_found: failure
         if_ci_failed: error
-comment: false
+comment:
+  layout: "reach,diff,flags,files"
+  behavior: default
+  require_changes: false
+  require_base: true
+  require_head: true
+  hide_project_coverage: false
 flags:
   python314:
     carryforward: false

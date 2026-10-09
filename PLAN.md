@@ -525,11 +525,14 @@ reported partial coverage despite passing configured status checks (95% patch
 threshold, informational status). The one-commit main lag is the generated
 coverage badge metadata commit; it does not modify application or test code.
 
-### Enforced Codecov statuses and quieter reports
+### Enforced Codecov statuses and complete reports
 
 - [x] Review historical PR #66/#70/#72/#73 and current #74: recurring main lag is badge metadata-only publication; the sole current changed partial branch is now tested.
-- [x] Disable the redundant Codecov summary comment while retaining native project/patch checks and detailed reports.
+- [x] Retain complete Codecov summary comments, update one report per PR, and require measured head/base reports. An initial comment-disabling change was corrected following user feedback.
+- [x] Measure the actual badge publication commit with Python 3.14 and upload fresh XML for that SHA to address the recurring base-report lag without hiding results.
 - [x] Enforce the existing 95% patch target and auto-project baseline with 0.1-point tolerance; missing reports fail, carryforward is disabled, and authorized upload errors fail CI.
 - [x] Add configuration regression tests and document metric definitions, badge source revisions and intentionally excluded upload contexts.
-- [x] Validate the updated YAML with Codecov (Valid!) and pass 42 focused policy/operator tests.
+- [x] Validate the corrected YAML with Codecov (Valid!), pass actionlint and git diff checks, and run 533 hardware-free tests (43 focused tests).
 - [ ] Verify the enforced policy on final-head CI and native Codecov statuses.
+
+- [ ] After merge, verify a real main badge publication uploads freshly measured coverage for the generated commit and subsequent PR reports have a current base. The publisher is intentionally skipped in PR runs.

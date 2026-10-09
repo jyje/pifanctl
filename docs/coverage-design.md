@@ -146,7 +146,8 @@ same tested commit, and have compatible measurement settings.
 
 The 95% patch target is a Codecov patch policy, not a pure branch threshold.
 Native statuses now enforce it after review of PRs #66, #70, #72, #73 and #74.
-Summary comments are disabled; detailed partial-branch reports remain available.
+Complete summary comments and detailed partial-branch reports remain visible.
+Badge revisions receive freshly measured coverage to keep the main base current.
 See the current [runbook](testing/coverage.md) for normal/pass interpretation.
 
 ### Bootstrap and ratchet

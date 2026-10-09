@@ -217,9 +217,15 @@ def test_coverage_actions_remain_outside_the_arm_runner():
     assert codecov_step["uses"] == "codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5"
 
 
-def test_codecov_uses_enforced_native_statuses_without_noisy_summary():
+def test_codecov_keeps_complete_reports_and_enforces_native_statuses():
     config = yaml.safe_load((ROOT / 'codecov.yml').read_text())
-    assert config['comment'] is False
+    comment = config['comment']
+    assert comment['behavior'] == 'default'
+    assert comment['require_head'] is True
+    assert comment['require_base'] is True
+    assert comment['require_changes'] is False
+    assert comment['hide_project_coverage'] is False
+    assert comment['layout'] == 'reach,diff,flags,files'
     assert config['flags']['python314']['carryforward'] is False
     project = config['coverage']['status']['project']['default']
     patch = config['coverage']['status']['patch']['default']
@@ -233,3 +239,20 @@ def test_codecov_uses_enforced_native_statuses_without_noisy_summary():
     workflow = yaml.safe_load((ROOT / '.github/workflows/ci.yaml').read_text())
     upload = workflow['jobs']['codecov']['steps'][-1]
     assert upload['with']['fail_ci_if_error'] is True
+
+
+def test_badge_commit_gets_a_fresh_coverage_measurement():
+    workflow = yaml.safe_load((ROOT / '.github/workflows/ci.yaml').read_text())
+    steps = workflow['jobs']['publish-badges']['steps']
+    publisher = next(step for step in steps if step.get('id') == 'publish')
+    assert 'git rev-parse HEAD' in publisher['run']
+    measure = next(step for step in steps if step.get('name') == 'Measure the actual badge commit for Codecov')
+    upload = steps[-1]
+    assert '--cov-branch' in measure['run']
+    assert '--cov-report=xml:coverage-badge-commit.xml' in measure['run']
+    assert steps.index(measure) > steps.index(publisher)
+    assert upload['with']['files'] == 'coverage-badge-commit.xml'
+    assert upload['with']['override_commit'] == '${{ steps.publish.outputs.commit_sha }}'
+    assert upload['with']['fail_ci_if_error'] is True
+    for step in steps[steps.index(publisher) + 1:]:
+        assert step['if'] == "steps.publish.outputs.commit_sha != ''"

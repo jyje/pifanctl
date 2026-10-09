@@ -149,6 +149,7 @@ jobs:
       - name: Render line and branch SVG badges with measurement metadata
         run: python scripts/coverage_metrics.py badges --manifest coverage-canonical/coverage-manifest.json --output assets/coverage
       - name: Publish only if this commit is still main
+        id: publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -166,6 +167,28 @@ jobs:
           fi
           git commit -m 'ci(coverage): publish main badges'
           git push origin HEAD:main
+          echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-python@v7
+        if: steps.publish.outputs.commit_sha != ''
+        with:
+          python-version: "3.14"
+      - uses: azure/setup-helm@v5
+        if: steps.publish.outputs.commit_sha != ''
+      - name: Measure the actual badge commit for Codecov
+        if: steps.publish.outputs.commit_sha != ''
+        run: |
+          pip install -r sources/requirements.dev.txt
+          python -m pytest --cov=sources --cov-config=.coveragerc --cov-branch --cov-report=xml:coverage-badge-commit.xml
+      - name: Upload freshly measured badge revision
+        if: steps.publish.outputs.commit_sha != ''
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5
+        with:
+          files: coverage-badge-commit.xml
+          disable_search: true
+          flags: python314
+          token: ${{ secrets.CODECOV_TOKEN }}
+          override_commit: ${{ steps.publish.outputs.commit_sha }}
+          fail_ci_if_error: true
 
   chart:
     name: ⎈ Chart
