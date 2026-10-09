@@ -30,6 +30,15 @@ verification with critical signing Key Usage and fails with that extension
 omitted. This regression proves the diagnosed property without changing the
 production CA or establishing acceptance for its complete chain.
 
+## How pifanctl reports it
+
+When strict verification rejects the API certificate chain, the CLI and the operator
+log show the reason `StrictTLSCertificateRejected` with OpenSSL's finding, for example
+`CA cert does not include key usage extension`, and a pointer to this document. Other
+TLS failures such as an untrusted issuer or an expired certificate keep the generic
+message. The failure is not written to a CR status because the API cannot be reached.
+Verification is never relaxed.
+
 ## Required certificate properties
 
 A CA used to sign certificates needs critical Basic Constraints with `CA:TRUE`
