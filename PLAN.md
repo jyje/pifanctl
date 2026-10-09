@@ -565,5 +565,6 @@ coverage badge metadata commit; it does not modify application or test code.
 - [x] Cover Worker validation, shutdown and watchdog behavior with hardware-free inputs.
 - [x] Cover remaining model, CLI, API, control and metrics boundaries.
 - [x] Audit unreachable branches, unnecessary test doubles and tests lacking behavioral assertions; do not fabricate invalid internal state just for coverage.
-- [ ] Verify Python 3.14 line/branch and Codecov coverage, then enforce reviewed floors and publish a PR.
+- [x] Verify local Python 3.14 coverage: all 1956 lines and 670 branch destinations covered; add independent exact-count floors and an audit of test-double boundaries.
+- [ ] Publish the coverage PR and verify its exact-head GitHub Actions and Codecov results.
 
