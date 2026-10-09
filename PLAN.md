@@ -502,3 +502,37 @@ This approval changes the measurement policy, not the deployed control curve.
 See `docs/v1/hardware-verification/rpm-5v/README.md`. Electrical waveform,
 independent RPM calibration, Pi 5 actuation and expanded fleet acceptance remain
 open in #69/#64. The interim PDF is historical and does not include this campaign.
+
+### v1.2 optional PWM probe feedback
+
+- [x] Define an optional independent GPIO probe with backward-compatible Fan/Helm schemas and exclusive input/output claims.
+- [x] Collect both-edge digital timing and publish measured frequency/HIGH duty only for valid complete windows; report NaN in Prometheus, typed CR reasons and CLI N/A for unconfigured, stale, static or invalid signals.
+- [x] Integrate worker lifecycle, CR status, Prometheus metrics and CLI observation; never substitute commanded duty for measured duty.
+- [x] Document Pi-safe probe wiring, digital timing limitations and per-fan user verification of RPM pulses per revolution.
+- [x] Add app/operator-chart 1.2.0 and a minor Changeset; retain CR API v1 with additive fields.
+- [x] Run hardware-free regression/branch coverage and chart/schema checks, then publish PR #74 and monitor CI. Run 37864022218 passed Python 3.10-3.14, chart/workflow/version checks, coverage quality/Codecov upload and ARC ARM64 build/smoke. Production probe remains disabled until wiring is verified.
+
+Local v1.2 verification: 529 tests passed; line coverage 96.99%, branch coverage 92.11%, PWM probe module line/branch 100%. Helm fixture lint/render, schema parity, Changeset checks and live API CRD server dry-run passed. Physical PWM probe accuracy remains unmeasured.
+
+### PR #74 partial-branch coverage follow-up
+
+- [x] Identify Codecov's sole changed partial line: operator.py's nested feedback type guard, with the explicit-null removal path untested.
+- [x] Add PWM and tachometer null-removal regression cases, verify merge-patch deletion clears prior measurements and preserves thermal conditions, and run 531 tests. The previously missing branch is covered.
+- [x] Confirm the canonical Python 3.14 Codecov report reaches 100% patch coverage with project coverage 94.46%; all checks passed for 9dae016 in run 37865247189.
+
+The previous Codecov project report improved from 93.91% to 94.41%. Its comment
+reported partial coverage despite passing configured status checks (95% patch
+threshold, informational status). The one-commit main lag is the generated
+coverage badge metadata commit; it does not modify application or test code.
+
+### Enforced Codecov statuses and complete reports
+
+- [x] Review historical PR #66/#70/#72/#73 and current #74: recurring main lag is badge metadata-only publication; the sole current changed partial branch is now tested.
+- [x] Retain complete Codecov summary comments, update one report per PR, and require measured head/base reports. An initial comment-disabling change was corrected following user feedback.
+- [x] Measure the actual badge publication commit with Python 3.14 and upload fresh XML for that SHA to address the recurring base-report lag without hiding results.
+- [x] Enforce the existing 95% patch target and auto-project baseline with 0.1-point tolerance; missing reports fail, carryforward is disabled, and authorized upload errors fail CI.
+- [x] Add configuration regression tests and document metric definitions, badge source revisions and intentionally excluded upload contexts.
+- [x] Validate the corrected YAML with Codecov (Valid!), pass actionlint and git diff checks, and run 533 hardware-free tests (43 focused tests).
+- [x] Verify ce32062 in CI run 37865810767: Python 3.10-3.14, chart/workflow/version checks, coverage quality, Codecov upload and ARC image passed. Enforced codecov/project and codecov/patch both passed; the retained comment reports 100% patch and 94.46% project coverage.
+
+- [ ] After merge, verify a real main badge publication uploads freshly measured coverage for the generated commit and subsequent PR reports have a current base. The publisher is intentionally skipped in PR runs.

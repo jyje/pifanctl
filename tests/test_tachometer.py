@@ -105,7 +105,7 @@ def test_worker_feedback_metrics_reload_remove(monkeypatch):
     x.apply(desired()); assert x.tachometers['fan-a'] is old
     x.apply(desired(feedback(pull='off'))); assert old.closed
     removed = fan(); x.apply(worker_plan(plan([removed, zone(telemetry={'source': 'local'})]), 'pi-a'))
-    assert not x.tachometers and 'feedback' not in x.cycle(now=105)['fans']['fan-a']
+    assert not x.tachometers and 'tachometer' not in x.cycle(now=105)['fans']['fan-a']['feedback']
     assert b'pifanctl_worker_fan_rpm{' not in generate_latest(x.registry)
     x.apply(desired()); current = x.tachometers['fan-a']
     x.apply(worker_plan(plan([]), 'pi-a')); assert current.closed

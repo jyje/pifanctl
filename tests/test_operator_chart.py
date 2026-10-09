@@ -204,3 +204,12 @@ def test_supported_chart_follows_application_version():
     from pifanctl import __version__
     chart = yaml.safe_load((CHART / 'Chart.yaml').read_text())
     assert chart['version'] == chart['appVersion'] == __version__
+
+
+def test_optional_pwm_probe_extra_resources():
+    from pifanctl.topology.model import normalize
+    objects = render('-f', 'tests/fixtures/operator-pwm-probe-values.yaml')
+    item = next(o for o in objects if o.get('kind') == 'Fan')
+    cfg = normalize([item])[0]['spec']['feedback']
+    assert cfg['pwm']['gpio'] == {'pin': 24, 'pull': 'off'}
+    assert cfg['tachometer']['pulsesPerRevolution'] == 2

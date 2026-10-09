@@ -282,4 +282,52 @@ def test_optional_tachometer_status_clears_stale_measurements(setup):
     item = k.get(resource('Fan', 'fan-a')); item['spec'].pop('feedback')
     k.put(resource('Fan', 'fan-a'), item)
     o.reconcile(162)
-    assert 'feedback' not in k.get(resource('Fan', 'fan-a'))['status']
+    assert 'tachometer' not in k.get(resource('Fan', 'fan-a'))['status']['feedback']
+
+
+def test_pwm_probe_status_clears_numbers_and_removed_configuration(setup):
+    k, o = setup
+    item = k.get(resource('Fan', 'fan-a'))
+    item['spec']['feedback'] = {'pwm': {'gpio': {'pin': 24}}}
+    k.put(resource('Fan', 'fan-a'), item)
+    base_reader = reporter(k, o)
+    state = {'ready': True, 'reason': '', 'frequencyHz': 1000, 'dutyPercent': 25,
+             'observedTime': 100, 'sampleSeconds': 1, 'cycleCount': 999}
+    def read(worker, now):
+        report = base_reader(worker, now)
+        report['fans']['fan-a']['feedback'] = {'pwm': copy.deepcopy(state)}
+        return report
+    o.report_reader = read; o.reconcile(100)
+    probe = k.get(resource('Fan', 'fan-a'))['status']['feedback']['pwm']
+    assert probe['frequencyHz'] == 1000 and probe['observedAt'].endswith('Z')
+    state.clear(); state.update(ready=False, reason='InsufficientEdges', sampleSeconds=1, cycleCount=0)
+    o.reconcile(131)
+    probe = k.get(resource('Fan', 'fan-a'))['status']['feedback']['pwm']
+    assert 'frequencyHz' not in probe and 'dutyPercent' not in probe and 'observedAt' not in probe
+    item = k.get(resource('Fan', 'fan-a')); item['spec'].pop('feedback'); k.put(resource('Fan', 'fan-a'), item)
+    o.reconcile(162)
+    probe = k.get(resource('Fan', 'fan-a'))['status']['feedback']['pwm']
+    assert not probe['ready'] and probe['reason'] == 'NotConfigured'
+
+
+@pytest.mark.parametrize('kind', ['pwm', 'tachometer'])
+def test_feedback_explicit_null_removes_previous_measurement(setup, kind):
+    """A null nested merge patch removes the collector, including stale numbers."""
+    k, o = setup
+    o.reconcile(100)
+    item = k.get(resource('Fan', 'fan-a'))
+    measurement = {'ready': True, 'reason': '', 'observedAt': '2026-10-09T00:00:00Z',
+                   'sampleSeconds': 1}
+    measurement.update({'rpm': 1200, 'pulseCount': 40} if kind == 'tachometer' else
+                       {'cycleCount': 999, 'frequencyHz': 1000, 'dutyPercent': 25})
+    item['status']['feedback'] = {kind: measurement}
+    k.put(resource('Fan', 'fan-a'), item)
+    status = copy.deepcopy(item['status'])
+    status['feedback'] = {kind: None}
+    o.write_status(item, status, 131)
+    updated = k.get(resource('Fan', 'fan-a'))['status']
+    assert kind not in updated['feedback']
+    assert updated['conditions'] == item['status']['conditions']
+    patch = next(body['status'] for method, path, body in reversed(k.calls)
+                 if method == 'PATCH' and path == resource('Fan', 'fan-a') + '/status')
+    assert patch['feedback'][kind] is None

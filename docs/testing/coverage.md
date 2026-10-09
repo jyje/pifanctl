@@ -46,8 +46,10 @@ the coverage.py combined total.
 
 Python 3.14 is the canonical Codecov report because the default runtime image
 uses Python 3.14. Codecov receives this report once per workflow run. Its project
-and 95% patch statuses are informational during bootstrap. An unavailable
-Codecov service cannot pass or bypass the local CI quality check.
+and 95% patch statuses enforce the configured policy. Project coverage may drop
+by at most 0.1 percentage points from the comparison base. Missing head reports
+fail; uploads do not carry forward old flag data. Codecov upload errors fail the
+authorized upload job, and local matrix quality checks remain mandatory.
 
 Repository owners must enable the pifanctl repository in Codecov for PR
 annotations and Codecov's native project view. Main and same-repository PR
@@ -81,3 +83,32 @@ exclusions only with a specific reviewed reason.
 The per-version branch baseline is intentionally measured before a threshold is
 chosen. Update `coverage-policy.json` in a reviewed change after checking the
 report artifacts. Never infer branch coverage from an earlier line-only result.
+
+## Normal results and repeated warnings
+
+Codecov keeps a complete PR summary with project, patch, flag and file results.
+The default comment behavior updates one report as the head changes. Both head
+and base reports are required. Native `codecov/project` and `codecov/patch`
+checks enforce the configured targets; a passing 95% patch does not mean 100%
+coverage. Actual partial branches remain visible and require review.
+
+The project score uses Codecov hit/partial/miss classifications and differs from
+coverage.py's separately calculated line and branch percentages. Always label
+these metrics explicitly. Fix meaningful missing scenarios when reviewing them;
+never exclude a line merely to improve the displayed percentage.
+
+Reports compare tested source revisions. Automatic main coverage-badge commits
+only update `assets/coverage` and do not trigger a recursive CI run. The publisher
+runs the canonical Python 3.14 suite again on the actual newly created commit,
+then uploads the fresh XML with that commit SHA. It never relabels the previous
+source commit's XML. This supplies the missing base report that caused historical
+one-commit main lag warnings. If no badge commit is created, no extra test/upload
+is needed. Publication or upload failures remain visible in the publisher job.
+
+Fork and Dependabot uploads remain intentionally excluded from secret-bearing
+upload jobs. Their local test/matrix checks still run; never treat an absent
+Codecov check as affirmative coverage evidence. Required checks in GitHub branch
+protection are a separate repository setting.
+
+References: [Codecov status configuration](https://docs.codecov.com/docs/commit-status)
+and [PR summary comments](https://docs.codecov.com/docs/pull-request-comments).

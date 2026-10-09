@@ -134,3 +134,31 @@ def register(app):
     app.add_typer(worker, name='worker')
     from pifanctl.topology.operator import app as operator_app
     app.add_typer(operator_app, name='operator')
+
+
+@fan.command('measurements')
+def measurements(resource_name: str, ctx: typer.Context):
+    """Show available observations separately from configured/requested values."""
+    from datetime import datetime, timezone
+    item = api(ctx).get(resource('Fan', resource_name))
+    spec = item.get('spec', {})
+    status = item.get('status', {})
+    feedback = status.get('feedback', {})
+    def fresh(state):
+        try:
+            age = (datetime.now(timezone.utc) - datetime.fromisoformat(state['observedAt'].replace('Z', '+00:00'))).total_seconds()
+            return 0 <= age <= 60
+        except (KeyError, ValueError, TypeError):
+            return False
+    probe = feedback.get('pwm', {})
+    configured = 'pwm' in spec.get('feedback', {})
+    available = configured and probe.get('ready') and fresh(probe)
+    tach = feedback.get('tachometer', {})
+    rpm_available = 'tachometer' in spec.get('feedback', {}) and fresh(tach) and (tach.get('ready') or tach.get('reason') == 'NoPulses')
+    emit({'commandedDutyPercent': status.get('dutyPercent', 'N/A'),
+          'pwm': {'frequencyHz': probe.get('frequencyHz', 'N/A') if available else 'N/A',
+                  'highDutyPercent': probe.get('dutyPercent', 'N/A') if available else 'N/A',
+                  'reason': ('NotConfigured' if not configured else probe.get('reason', 'Unavailable') if available or not probe.get('ready') else 'Stale'),
+                  'configured': configured},
+          'rpm': tach.get('rpm', 'N/A') if rpm_available else 'N/A',
+          'rpmNotice': 'User must verify pulsesPerRevolution for each fan model; RPM is not airflow or measured PWM.'})

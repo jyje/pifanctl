@@ -140,12 +140,15 @@ same tested commit, and have compatible measurement settings.
 | Line floor on every Python version | 90% required | Keep 90%; raise through reviewed changes |
 | Branch floor on every Python version | Report only | Establish a measured floor for each version |
 | Canonical line and branch regression | Report only | Compare against an equivalent base measurement |
-| Codecov project status | Informational | Keep informational while local gates are authoritative |
-| Codecov patch status | Informational, proposed target 95% | Consider making required after reliability validation |
+| Codecov project status | Informational during initial observation | Enforced auto baseline with 0.1-point tolerance |
+| Codecov patch status | Informational during initial observation | Enforced 95% target; missing reports fail |
 | Selected safety decisions | Scenario checklist | Require all identified branch destinations and scenarios |
 
-The proposed 95% patch target is a review policy, not a pure branch threshold.
-It must be evaluated against real patches before becoming a merge requirement.
+The 95% patch target is a Codecov patch policy, not a pure branch threshold.
+Native statuses now enforce it after review of PRs #66, #70, #72, #73 and #74.
+Complete summary comments and detailed partial-branch reports remain visible.
+Badge revisions receive freshly measured coverage to keep the main base current.
+See the current [runbook](testing/coverage.md) for normal/pass interpretation.
 
 ### Bootstrap and ratchet
 

@@ -197,3 +197,6 @@ Expired operator heartbeat forces every affected worker to hold its fans at 100%
 
 - [Official: Raspberry Pi Foundation](https://www.raspberrypi.org)
 - [Blog: Using Raspberry Pi to Control a PWM Fan and Monitor its Speed](https://blog.driftking.tw/en/2019/11/Using-Raspberry-Pi-to-Control-a-PWM-Fan-and-Monitor-its-Speed/)
+
+- [Optional RPM feedback](docs/v1/tachometer.md): verify tach pulses per revolution for each fan model.
+- [v1.2 PWM probe measurements](docs/v1/pwm-probe.md): independent input, Prometheus NaN for unavailable measurements, and typed CR reasons.

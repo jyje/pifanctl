@@ -20,6 +20,7 @@ from pifanctl.topology.model import API, TopologyError, UniqueLoader, digest, no
 from pifanctl.topology.planner import plan as topology_plan
 from pifanctl.topology.telemetry import fan_reading
 from pifanctl.topology.tachometer import GpioTachometer, MockTachometer
+from pifanctl.topology.pwm_probe import GpioPwmProbe, MockPwmProbe, unavailable
 import yaml
 
 log = logging.getLogger(__name__)
@@ -61,12 +62,14 @@ def validate_plan(raw, node, uid=''):
 
 
 class Worker:
-    def __init__(self, node, uid='', thermal_path='/sys/class/thermal', mock=False, driver_factory=None, tachometer_factory=None):
+    def __init__(self, node, uid='', thermal_path='/sys/class/thermal', mock=False, driver_factory=None, tachometer_factory=None, pwm_probe_factory=None):
         self.node, self.uid, self.mock = node, uid, mock
         self.local = LocalSource(thermal_path)
         self.driver_factory = driver_factory or create_driver
         self.tachometer_factory = tachometer_factory or (MockTachometer if mock else GpioTachometer)
         self.tachometers, self.tachometer_errors = {}, {}
+        self.pwm_probe_factory = pwm_probe_factory or (MockPwmProbe if mock else GpioPwmProbe)
+        self.pwm_probes, self.pwm_errors = {}, {}
         self.plan = None
         self.drivers, self.controllers, self.specs = {}, {}, {}
         self.updated = {}
@@ -84,6 +87,12 @@ class Worker:
         self.tach_health = Gauge('pifanctl_worker_fan_tachometer_ready', 'Tachometer observation is available', ['node', 'fan'], registry=self.registry)
         self.tach_time = Gauge('pifanctl_worker_fan_rpm_observed_timestamp_seconds', 'Tachometer acquisition timestamp', ['node', 'fan'], registry=self.registry)
 
+        self.pwm_configured = Gauge('pifanctl_worker_fan_pwm_probe_configured', 'PWM probe input is configured', ['node', 'fan'], registry=self.registry)
+        self.pwm_frequency = Gauge('pifanctl_worker_fan_pwm_frequency_hz', 'Observed digital PWM frequency, not configured frequency', ['node', 'fan'], registry=self.registry)
+        self.pwm_duty = Gauge('pifanctl_worker_fan_pwm_duty_percent', 'Observed digital PWM HIGH duty, not commanded duty', ['node', 'fan'], registry=self.registry)
+        self.pwm_health = Gauge('pifanctl_worker_fan_pwm_probe_ready', 'PWM probe measurement is available', ['node', 'fan'], registry=self.registry)
+        self.pwm_time = Gauge('pifanctl_worker_fan_pwm_observed_timestamp_seconds', 'PWM probe acquisition timestamp', ['node', 'fan'], registry=self.registry)
+
     def apply(self, raw):
         with self.actuation:
             return self._apply(raw)
@@ -95,7 +104,8 @@ class Worker:
             cfg = spec['hardware'][family]
             claims = {(family, cfg.get('pin'), cfg.get('chip'), cfg.get('channel'))}
             if 'feedback' in spec:
-                claims.add(('rpigpio', spec['feedback']['tachometer']['gpio']['pin'], None, None))
+                for cfg in spec['feedback'].values():
+                    claims.add(('rpigpio', cfg['gpio']['pin'], None, None))
             return claims
         for name, spec in new['fans'].items():
             if any(old != name and claim(existing) & claim(spec) for old, existing in self.specs.items()):
@@ -115,16 +125,27 @@ class Worker:
                 self.drivers[name] = driver
                 driver.set_duty(100)
                 self.released.discard(name)
-            feedback = spec.get('feedback')
-            if (feedback != self.specs.get(name, {}).get('feedback') or 'HardwareConflict' in spec['issues']
+            feedback = spec.get('feedback', {}).get('tachometer')
+            if (feedback != self.specs.get(name, {}).get('feedback', {}).get('tachometer') or 'HardwareConflict' in spec['issues']
                     or (feedback and name not in self.tachometers and name not in self.tachometer_errors)):
                 self._close_tachometer(name)
                 if feedback and 'HardwareConflict' not in spec['issues']:
                     try:
-                        self.tachometers[name] = self.tachometer_factory(feedback['tachometer'])
+                        self.tachometers[name] = self.tachometer_factory(feedback)
                     except Exception:
                         self.tachometer_errors[name] = 'Unavailable'
                         log.warning('Tachometer unavailable for %s; PWM regulation remains independent', name)
+            probe = spec.get('feedback', {}).get('pwm')
+            if (probe != self.specs.get(name, {}).get('feedback', {}).get('pwm')
+                    or 'HardwareConflict' in spec['issues']
+                    or (probe and name not in self.pwm_probes and name not in self.pwm_errors)):
+                self._close_pwm_probe(name)
+                if probe and 'HardwareConflict' not in spec['issues']:
+                    try:
+                        self.pwm_probes[name] = self.pwm_probe_factory(probe)
+                    except Exception:
+                        self.pwm_errors[name] = 'Unavailable'
+                        log.warning('PWM probe unavailable for %s; regulation remains independent', name)
             c = spec['control']['curve']
             config = CurveConfig(c['temperatureLow'], c['temperatureHigh'], c['dutyIdle'], c['dutyStart'], c['dutyMax'], c['dutyDownStep'],
                                  c.get('temperatureHysteresis', 5.0))
@@ -134,6 +155,7 @@ class Worker:
         for name in list(self.drivers):
             if name not in new['fans']:
                 self._close_tachometer(name)
+                self._close_pwm_probe(name)
                 self.drivers[name].set_duty(100)
                 self.drivers[name].close()
                 del self.drivers[name]; del self.controllers[name]; del self.specs[name]
@@ -204,8 +226,9 @@ class Worker:
                     self.drivers[name].set_duty(duty)
             result['fans'][name] = {'dutyPercent': duty, 'temperatureCelsius': temperature, 'ready': not bool(failure),
                                     'reason': failure, 'zones': zone_values, 'nodes': nodes}
-            if 'feedback' in spec:
-                result['fans'][name]['feedback'] = self._feedback(name)
+            result['fans'][name]['feedback'] = {'pwm': self._pwm_feedback(name, spec)}
+            if 'tachometer' in spec.get('feedback', {}):
+                result['fans'][name]['feedback'].update(self._feedback(name))
             result['ready'] = result['ready'] and not failure
             self.duty.labels(self.node, name).set(duty)
             self.health.labels(self.node, name).set(0 if failure else 1)
@@ -217,6 +240,36 @@ class Worker:
             self.report = result
         self.progress = time.monotonic()
         return result
+
+    def _close_pwm_probe(self, name):
+        sensor = self.pwm_probes.get(name)
+        if sensor is not None:
+            sensor.close()
+            del self.pwm_probes[name]
+        self.pwm_errors.pop(name, None)
+        for metric in (self.pwm_frequency, self.pwm_duty, self.pwm_health, self.pwm_time, self.pwm_configured):
+            if (self.node, name) in metric._metrics:
+                metric.remove(self.node, name)
+
+    def _pwm_feedback(self, name, spec):
+        configured = 'pwm' in spec.get('feedback', {})
+        self.pwm_configured.labels(self.node, name).set(1 if configured else 0)
+        if not configured:
+            state = unavailable('NotConfigured')
+        else:
+            try:
+                sensor = self.pwm_probes.get(name)
+                state = sensor.snapshot() if sensor else unavailable(self.pwm_errors.get(name, 'Unavailable'))
+            except Exception:
+                state = unavailable('CollectorError')
+        self.pwm_health.labels(self.node, name).set(1 if state['ready'] else 0)
+        metrics = ((self.pwm_frequency, 'frequencyHz'), (self.pwm_duty, 'dutyPercent'), (self.pwm_time, 'observedTime'))
+        for metric, field in metrics:
+            if state['ready'] and field in state:
+                metric.labels(self.node, name).set(state[field])
+            else:
+                metric.labels(self.node, name).set(float('nan'))
+        return state
 
     def _close_tachometer(self, name):
         sensor = self.tachometers.get(name)
@@ -255,6 +308,9 @@ class Worker:
         errors = []
         for name in list(self.tachometers):
             try: self._close_tachometer(name)
+            except Exception as error: errors.append(error)
+        for name in list(self.pwm_probes):
+            try: self._close_pwm_probe(name)
             except Exception as error: errors.append(error)
         for driver in self.drivers.values():
             try: driver.set_duty(100)
