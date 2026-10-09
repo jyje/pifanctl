@@ -460,7 +460,9 @@ def run_operator(operator, stop=None, port=9104):
             try: operator.reconcile()
             except Exception as error:
                 operator.ready = False
-                log.error('Reconciliation failed (%s); worker heartbeat will expire', type(error).__name__)
+                # Documented API failures carry a safe, actionable reason; others log only the type.
+                detail = str(error) if isinstance(error, APIError) and error.code else type(error).__name__
+                log.error('Reconciliation failed (%s); worker heartbeat will expire', detail)
             if stop.is_set(): break
             wake.wait(5); wake.clear()
     finally:
