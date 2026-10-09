@@ -535,4 +535,12 @@ coverage badge metadata commit; it does not modify application or test code.
 - [x] Validate the corrected YAML with Codecov (Valid!), pass actionlint and git diff checks, and run 533 hardware-free tests (43 focused tests).
 - [x] Verify ce32062 in CI run 37865810767: Python 3.10-3.14, chart/workflow/version checks, coverage quality, Codecov upload and ARC image passed. Enforced codecov/project and codecov/patch both passed; the retained comment reports 100% patch and 94.46% project coverage.
 
-- [ ] After merge, verify a real main badge publication uploads freshly measured coverage for the generated commit and subsequent PR reports have a current base. The publisher is intentionally skipped in PR runs.
+- [x] Verify main CI run 37866477570 freshly measures badge commit 249128a64f6f819f70d316a355c44de84da7f117 and uploads its report. Both Codecov project/patch statuses passed on that generated commit.
+- [ ] Verify the release closeout PR uses the measured current main base without the historical one-commit lag warning.
+
+### v1.2.0 release closeout
+
+- [x] Publish app v1.2.0 and operator chart 1.2.0 from merged PR #74 (083f50e).
+- [x] Verify release workflows 37866477844 and 37866477722 succeeded and inspect both image digests plus the OCI chart version/appVersion.
+- [x] Publish English release notes covering upgrades, compatibility and deferred physical PWM verification.
+- [x] Update README/CHANGELOG and retain public artifact evidence in docs/releases/1.2.0/README.md.
