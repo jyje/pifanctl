@@ -147,3 +147,12 @@ using automated tests. It does not certify physical GPIO voltage, RPM accuracy,
 Pi 5 input support or Noctua PWM waveform compliance. Physical experiments remain
 tracked in [issue #69](https://github.com/jyje/pifanctl/issues/69) and broader
 release follow-up [#64](https://github.com/jyje/pifanctl/issues/64).
+
+
+## Per-fan RPM verification
+
+Users must confirm `pulsesPerRevolution` for each fan model and adapter path.
+The compatibility default of two is an assumption, not a universal fan contract.
+RPM varies with the fan, supply and load; it is not a measurement of airflow or
+PWM duty. See [optional independent PWM probe](pwm-probe.md) for the v1.2
+measurement availability contract and CRD upgrade/rollback boundary.

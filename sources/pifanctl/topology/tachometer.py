@@ -58,7 +58,7 @@ class PulseWindow:
             return result
 
 
-def request_input(config):
+def request_input(config, both_edges=False):
     """Linux GPIO v2 ABI: input only, falling edges, monotonic timestamps."""
     model = Path('/proc/device-tree/model').read_text().strip('\0')
     if 'Raspberry Pi 4' not in model:
@@ -79,12 +79,13 @@ def request_input(config):
                 continue
             request = bytearray(592)
             struct.pack_into('=I', request, 0, config['gpio']['pin'])
-            request[256:288] = b'pifanctl-tachometer'.ljust(32, b'\0')
+            consumer = b'pifanctl-pwm-probe' if both_edges else b'pifanctl-tachometer'
+            request[256:288] = consumer.ljust(32, b'\0')
             # gpio_v2_line_request: config occupies bytes 288-559;
             # num_lines/event_buffer_size follow it, before padding and fd.
-            struct.pack_into('=II', request, 560, 1, 128)
+            struct.pack_into('=II', request, 560, 1, 4096 if both_edges else 128)
             bias = {'up': 1 << 8, 'down': 1 << 9, 'off': 1 << 10}[config['gpio']['pull']]
-            struct.pack_into('=Q', request, 288, (1 << 2) | (1 << 5) | bias)
+            struct.pack_into('=Q', request, 288, (1 << 2) | (1 << 5) | ((1 << 4) if both_edges else 0) | bias)
             fcntl.ioctl(chip, 0xc250b407, request, True)
             fd = struct.unpack_from('=i', request, 588)[0]
             try:

@@ -283,11 +283,14 @@ class Operator:
                 if state:
                     status['dutyPercent'] = state['dutyPercent']
                     if state.get('temperatureCelsius') is not None: status['controlTemperatureCelsius'] = state['temperatureCelsius']
-                    if 'feedback' in spec and 'feedback' in state:
-                        feedback = copy.deepcopy(state['feedback'])
-                        tachometer = feedback['tachometer']
-                        if 'observedTime' in tachometer:
-                            tachometer['observedAt'] = timestamp(tachometer.pop('observedTime'))
+                    if 'feedback' in state:
+                        configured = spec.get('feedback', {})
+                        feedback = {key: copy.deepcopy(value) for key, value in state['feedback'].items() if key in configured}
+                        if 'pwm' not in configured:
+                            feedback['pwm'] = {'ready': False, 'reason': 'NotConfigured', 'sampleSeconds': 0, 'cycleCount': 0}
+                        for observation in feedback.values():
+                            if 'observedTime' in observation:
+                                observation['observedAt'] = timestamp(observation.pop('observedTime'))
                         status['feedback'] = feedback
                 if report: status['heartbeatTime'] = timestamp(report['heartbeatTime'])
             else:
@@ -394,11 +397,15 @@ class Operator:
             return
         # Merge patch nulls clear old temperature/duty fields during failures.
         patch = {k: None for k in item.get('status', {}) if k not in status}; patch.update(copy.deepcopy(status))
-        old_tach = item.get('status', {}).get('feedback', {}).get('tachometer', {})
-        new_tach = patch.get('feedback', {}).get('tachometer') if isinstance(patch.get('feedback'), dict) else None
-        if new_tach is not None:
-            for field in old_tach:
-                if field not in new_tach: new_tach[field] = None
+        old_feedback = item.get('status', {}).get('feedback', {})
+        new_feedback = patch.get('feedback')
+        if isinstance(new_feedback, dict):
+            for kind, old_state in old_feedback.items():
+                if kind not in new_feedback:
+                    new_feedback[kind] = None
+                elif isinstance(new_feedback[kind], dict):
+                    for field in old_state:
+                        if field not in new_feedback[kind]: new_feedback[kind][field] = None
         self.patch(resource(item['kind'], item['metadata']['name']) + '/status', {'status': patch})
         self.last_status[key] = (now, signature)
         if not last or last[1][:2] != signature[:2] or retry_event:

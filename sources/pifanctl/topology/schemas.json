@@ -323,12 +323,48 @@
               "gpio"
             ],
             "additionalProperties": false
+          },
+          "pwm": {
+            "type": "object",
+            "properties": {
+              "gpio": {
+                "type": "object",
+                "properties": {
+                  "pin": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 27
+                  },
+                  "pull": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "up",
+                      "down"
+                    ],
+                    "default": "off"
+                  }
+                },
+                "required": [
+                  "pin"
+                ],
+                "additionalProperties": false
+              },
+              "sampleSeconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5,
+                "default": 1
+              }
+            },
+            "required": [
+              "gpio"
+            ],
+            "additionalProperties": false
           }
         },
-        "required": [
-          "tachometer"
-        ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "minProperties": 1
       }
     },
     "required": [

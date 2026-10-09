@@ -36,8 +36,17 @@ serviceMonitor:
 #     gpio:
 #       pin: 23                    # BCM GPIO23, physical header pin 16
 #       pull: up                   # Internal 3.3 V bias: off (default), up, down
-#     pulsesPerRevolution: 2       # NF-A12x25 PWM tach output: two pulses/rev
+#     pulsesPerRevolution: 2       # Assumption: user MUST verify for each fan model
 #     sampleSeconds: 5             # Rolling observation window, 1-60 seconds
+#   pwm:                          # Optional independent digital timing probe
+#     gpio:
+#       pin: 24                    # EXAMPLE ONLY: separately wired Pi-safe input
+#       pull: off                  # Avoid biasing the observed PWM signal
+#     sampleSeconds: 1             # Complete rolling window, 1-5 seconds
+# Omitted PWM probe: CLI N/A, typed CR reason, Prometheus frequency/duty NaN.
+# Input must differ from the PWM output and tachometer pins. Never request the
+# output as an input. Probe high-duty is digital HIGH ratio, not RPM or airflow.
+# Confirm common ground and <=3.3 V signal at the probe before connecting.
 # Pi 4 / rpigpio only, Linux GPIO v2 required. Use a distinct input pin.
 # Verify an open-collector signal without a 5 V / 12 V pull-up before enabling.
 # RPM feedback is observational; PWM duty, frequency and failsafe stay unchanged.
