@@ -544,3 +544,13 @@ coverage badge metadata commit; it does not modify application or test code.
 - [x] Verify release workflows 37866477844 and 37866477722 succeeded and inspect both image digests plus the OCI chart version/appVersion.
 - [x] Publish English release notes covering upgrades, compatibility and deferred physical PWM verification.
 - [x] Update README/CHANGELOG and retain public artifact evidence in docs/releases/1.2.0/README.md.
+
+### Python 3.14-only support and CA diagnosis
+
+- [x] Reproduce strict Python 3.14 TLS failure code 92 and confirm the live CA lacks Key Usage; verify the actual Kubernetes client's read-only request also fails.
+- [x] Fix the support contract to Python 3.14: CI/coverage policy, both container bases, local .python-version and all image publishing workflows.
+- [x] Remove the compatibility build, runtime selection inputs and suffixed tag publishing; preserve historical release/rollback artifacts.
+- [x] Update English/localized documentation and replace the downgrade recommendation with a certificate maintenance plan.
+- [x] Run all 529 tests with Python 3.14, including the generated CA-chain regression, plus branch coverage, actionlint and git diff checks.
+- [ ] Publish the Python 3.14-only PR and verify remote CI.
+- [ ] Complete separately reviewed cluster CA maintenance, strict TLS acceptance and GitOps migration in jyje/cluster issue #157, as detailed in docs/v1/cluster-ca.md.

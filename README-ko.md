@@ -75,7 +75,7 @@ Prometheus가 각 agent endpoint를 노드별로 수집해야 합니다. Prometh
 
 ## 2. 개발과 검증
 
-전체 소프트웨어 검증에는 Python 3.10+와 Helm이 필요합니다. 프로젝트 가상 환경에 의존성을 설치하세요.
+전체 소프트웨어 검증에는 Python 3.14와 Helm이 필요합니다. 프로젝트 가상 환경에 의존성을 설치하세요.
 
 ```sh
 python3 -m venv .venv
@@ -96,7 +96,7 @@ CI/CD 환경은 [app.jyje.online#stack](https://app.jyje.online/#stack)에서 �
 
 | 워크플로 | 트리거 | 하는 일 |
 | --- | --- | --- |
-| `ci` | 모든 풀 리퀘스트 | 워크플로 lint, 정식 출시된 Python 마이너 버전 3.10-3.14 전체에서 테스트, 차트 lint와 스키마 검증(kubeconform, `promtool`), 클러스터 내 러너에서 ARM64 이미지를 푸시 없이 빌드 |
+| `ci` | 모든 풀 리퀘스트 | 워크플로 lint, 지원 런타임인 Python 3.14에서 테스트, 차트 lint와 스키마 검증(kubeconform, `promtool`), 클러스터 내 러너에서 ARM64 이미지를 푸시 없이 빌드 |
 | `build-image-main` | `main` push | 커밋 SHA 태그와 `v<version>`(버전당 한 번) 발행. 정식 버전만 `latest` 갱신 |
 | `build-image-develop` | `develop` push | `ghcr.io/jyje/pifanctl-dev:latest`와 SHA 태그 발행 |
 | `build-image-issue` | `issue-**` push | 임시 테스트용 `ghcr.io/jyje/pifanctl-issue:<sha>` 발행 |
@@ -186,4 +186,4 @@ operator heartbeat가 만료되면 영향을 받은 모든 worker가 팬을 100%
 
 ### 레거시 CA 런타임 호환성
 
-Python 3.14 기본 이미지와 별도로 정식 Python 3.12 호환 이미지 `v1.0.0-py312`를 게시합니다. 앱 버전은 동일한 1.0.0이며, `-py312`는 이미지 런타임 표기입니다. 오래된 클러스터 CA에서는 차트의 `image.tag`로 호환 이미지를 명시하고 인증서·호스트명 검증을 유지하세요. 실제 후보 런타임 검증과 롤백 준비 후 배포합니다. [호환 절차](docs/v1/runtime.md#runtime-compatibility-with-legacy-cluster-cas)를 참고하세요.
+지원 런타임은 Python 3.14 하나로 고정합니다. 이후 릴리즈는 단일 런타임 이미지를 게시하며, 기존 `-py312` 이미지는 과거 롤백 기록으로 유지됩니다. 호환되지 않는 클러스터 CA 인증서는 배포 전에 바로잡아야 합니다. [CA 유지보수 절차](docs/v1/cluster-ca.md)를 참고하세요.

@@ -1,6 +1,8 @@
 {
   "schema_version": 1,
-  "python_versions": ["3.10", "3.11", "3.12", "3.13", "3.14"],
+  "python_versions": [
+    "3.14"
+  ],
   "canonical_python": "3.14",
   "line_floor_percent": 90,
   "branch_floor_percent": null

@@ -184,7 +184,7 @@ def test_ci_matrix_matches_policy_and_keeps_line_gate_separate():
     workflow = yaml.safe_load((ROOT / ".github/workflows/ci.yaml").read_text())
     policy = coverage.load_policy()
     test_job = workflow["jobs"]["test"]
-    assert test_job["strategy"]["matrix"]["python"] == policy["python_versions"]
+    assert test_job["strategy"]["matrix"]["python"] == policy["python_versions"] == ["3.14"]
     run_commands = "\n".join(step.get("run", "") for step in test_job["steps"])
     assert "--cov-branch" in run_commands
     assert "--cov-fail-under" not in run_commands

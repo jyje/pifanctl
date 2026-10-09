@@ -23,7 +23,7 @@ proposal does not depend on self-hosting Codecov. See
 
 ```mermaid
 flowchart TD
-    PR[Pull request or main push] --> Matrix[Tests on Python 3.10 through 3.14]
+    PR[Pull request or main push] --> Matrix[Tests on Python 3.14]
     Matrix --> Reports[XML, JSON, HTML and report metadata]
     Reports --> Gate[Coverage quality: validate all five reports]
     Gate --> Summary[GitHub summary: line and branch metrics by version]
@@ -40,7 +40,7 @@ views provide useful information.
 
 ## 2. Current repository and migration constraints
 
-The current workflow tests Python 3.10, 3.11, 3.12, 3.13 and 3.14. Its command is:
+The current workflow tests Python 3.14 only. Older matrix observations below are historical. Its command is:
 
 ```sh
 python -m pytest --cov=sources --cov-report=term-missing --cov-fail-under=90

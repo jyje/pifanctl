@@ -1,12 +1,11 @@
 # Python coverage
 
-The CI matrix measures the application in `sources/` on Python 3.10 through
-3.14. It collects line and branch data in one test run, then reports both
+The CI measures the application in `sources/` on Python 3.14 only. It collects line and branch data in one test run, then reports both
 metrics separately. The existing 90% line floor remains required for each
-Python version. Branch thresholds are not enabled until the first matrix results
-have been reviewed.
+supported runtime. Branch coverage is reported; no branch threshold is currently
+configured.
 
-An initial local macOS run passed all 255 tests on Python 3.10-3.14. Python
+Historical baseline: an initial local macOS run passed all 255 tests on Python 3.10-3.14. Python
 3.10-3.13 measured 95.71% line and 88.9734% branch coverage; Python 3.14
 measured 95.69% line and 88.0228% branch coverage. The first GitHub Actions
 matrix on PR #43 passed all 259 tests and measured 95.75-95.77% line and
