@@ -200,14 +200,14 @@ class Worker:
         except (TemperatureUnavailable, OSError, ValueError):
             local = None
         for name, spec in (self.plan or {}).get('fans', {}).items():
-            temperature, nodes, zone_values = None, {}, {}
+            temperature, nodes, zone_values, members = None, {}, {}, {}
             failure = self.safety_error or (reason if not healthy else '')
             try:
                 if failure:
                     raise TemperatureUnavailable(failure)
                 if local is None:
                     raise TemperatureUnavailable('LocalSensorUnavailable')
-                temperature, zone_values, nodes = fan_reading(spec, local, sample_now)
+                temperature, zone_values, nodes = fan_reading(spec, local, sample_now, members)
             except (TemperatureUnavailable, OSError, ValueError) as error:
                 failure = str(error)
             if name not in self.drivers:
@@ -229,7 +229,8 @@ class Worker:
                         duty = control.force(max(control.duty, curve_target(temperature, control.config)))
                     self.drivers[name].set_duty(duty)
             result['fans'][name] = {'dutyPercent': duty, 'temperatureCelsius': temperature, 'ready': not bool(failure),
-                                    'reason': failure, 'zones': zone_values, 'nodes': nodes}
+                                    'reason': failure, 'zones': zone_values, 'nodes': nodes,
+                                    'members': members}
             result['fans'][name]['feedback'] = {'pwm': self._pwm_feedback(name, spec)}
             if 'tachometer' in spec.get('feedback', {}):
                 result['fans'][name]['feedback'].update(self._feedback(name))

@@ -180,6 +180,19 @@ Metrics contain node/fan/zone labels, never a stream of config-hash labels.
 Duty is requested PWM, not RPM. The system does not detect a mechanically stuck
 fan or guarantee power-loss cooling.
 
+### Per-node temperatures in CoolingZone status
+
+`CoolingZone.status.nodeTemperatures` lists every resolved member, sorted and keyed by `nodeName`, so `kubectl get coolingzone NAME -o yaml` and `kubectl describe coolingzone NAME` show the member-level view without a Prometheus query. Each entry carries `ready`, `reason` and, when a sample exists, `temperatureCelsius` and the sample time `observedAt`.
+
+| `reason` | Meaning |
+| --- | --- |
+| `Fresh` | Sample is within `maxSampleAgeSeconds`; `ready: true`. |
+| `Stale` | A sample exists but is too old (or ahead of the clock). The old value and its time are kept, with `ready: false`. |
+| `Missing` | Prometheus returned no usable sample for the node. |
+| `Unavailable` | The actuator worker reported nothing for this node (no fresh heartbeat, failsafe before reading, or query failure). |
+
+The worker collects all members with one query pair per zone and derives the zone maximum from the same observations. `temperatureCelsius`, `temperatureObservedAt`, `missingNodeNames` and the `Ready` condition keep their previous meaning. When a zone has several fans, the freshest usable entry per node is shown. Members selected by names or labels are listed alike.
+
 ### Scrape safety state
 
 Enable the chart's `serviceMonitor.enabled` and configure its selector labels

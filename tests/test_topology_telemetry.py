@@ -92,3 +92,34 @@ def test_latency_counts_toward_sample_age(monkeypatch):
     monkeypatch.setattr(t.time, 'time', lambda: clock[0])
     with pytest.raises(TemperatureUnavailable, match='Stale'):
         t.read_members({'source': 'prometheus', 'prometheusURL': 'http://p', 'maxSampleAgeSeconds': 30}, ['pi-a'], 55)
+
+
+def test_member_observations_distinguish_fresh_stale_and_missing(monkeypatch):
+    series = {(('node', 'pi-a'),): 62.0, (('node', 'pi-b'),): 70.0, (('node', 'pi-c'),): 50.0}
+    stamps = {(('node', 'pi-a'),): 95, (('node', 'pi-b'),): 10}
+    queries = []
+    def query(url, expr):
+        queries.append(expr)
+        return stamps if 'timestamp' in expr else series
+    monkeypatch.setattr(t, 'query', query)
+    spec = {'source': 'prometheus', 'prometheusURL': 'http://p', 'maxSampleAgeSeconds': 30}
+    seen = t.observe_members(spec, ['pi-a', 'pi-b', 'pi-c', 'pi-d'], 55, now=100)
+    assert len(queries) == 2
+    assert seen['pi-a'] == {'nodeName': 'pi-a', 'ready': True, 'reason': 'Fresh', 'temperatureCelsius': 62.0, 'observedTime': 95}
+    assert seen['pi-b']['reason'] == 'Stale' and not seen['pi-b']['ready'] and seen['pi-b']['observedTime'] == 10
+    assert seen['pi-c'] == {'nodeName': 'pi-c', 'ready': False, 'reason': 'Missing'}
+    assert seen['pi-d']['reason'] == 'Missing'
+    with pytest.raises(TemperatureUnavailable, match='pi-b,pi-c,pi-d'):
+        t.read_members(spec, ['pi-a', 'pi-b', 'pi-c', 'pi-d'], 55, now=100)
+
+
+def test_fan_reading_reports_members_before_failing(monkeypatch):
+    f = plan([fan(), zone(telemetry={'source': 'local'})])['fans']['fan-a']
+    seen = {}
+    assert t.fan_reading(f, 80, now=5, observations=seen)[0] == 80
+    assert seen[f['zones'][0]['name']][0]['observedTime'] == 5
+    f['zones'][0]['telemetry'] = {'source': 'prometheus', 'prometheusURL': 'http://p', 'maxSampleAgeSeconds': 30}
+    monkeypatch.setattr(t, 'query', lambda url, expr: {})
+    seen = {}
+    with pytest.raises(TemperatureUnavailable): t.fan_reading(f, 80, now=5, observations=seen)
+    assert {o['reason'] for o in seen[f['zones'][0]['name']]} == {'Missing'}

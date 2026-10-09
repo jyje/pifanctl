@@ -38,32 +38,50 @@ def query(url, expression, timeout=3):
         raise TemperatureUnavailable('Prometheus query failed') from error
 
 
-def read_members(telemetry, members, local, now=None):
+def observe_members(telemetry, members, local, now=None):
+    """Return one observation per member: Fresh, Stale or Missing, from a single query pair."""
     if not members:
         raise TemperatureUnavailable('EmptySelection')
     if telemetry['source'] == 'local':
-        return {members[0]: local}
+        now = time.time() if now is None else now
+        return {members[0]: {'nodeName': members[0], 'ready': True, 'reason': 'Fresh',
+                             'temperatureCelsius': local, 'observedTime': now}}
     expression = '|'.join(re.escape(n) for n in sorted(members))
     selector = '{node=~' + json.dumps(expression) + '}'
     temperatures = query(telemetry['prometheusURL'], 'pifanctl_temperature_celsius' + selector)
     timestamps = query(telemetry['prometheusURL'], 'pifanctl_temperature_observed_timestamp_seconds' + selector)
     # Account for time spent in both requests, not the start of the whole cycle.
     now = time.time() if now is None else now
-    nodes = {}
     age = telemetry['maxSampleAgeSeconds']
+    fresh, stale = {}, {}
     for key, value in temperatures.items():
         node = dict(key).get('node')
         timestamp = timestamps.get(key)
-        if node not in members or timestamp is None or not -5 <= now - timestamp <= age:
+        if node not in members or timestamp is None: continue
+        group = fresh if -5 <= now - timestamp <= age else stale
+        if node not in group or value > group[node][0]: group[node] = (value, timestamp)
+    observations = {}
+    for node in members:
+        if node in fresh: value, timestamp, reason = *fresh[node], 'Fresh'
+        elif node in stale: value, timestamp, reason = *stale[node], 'Stale'
+        else:
+            observations[node] = {'nodeName': node, 'ready': False, 'reason': 'Missing'}
             continue
-        nodes[node] = max(value, nodes.get(node, value))
-    missing = set(members) - nodes.keys()
+        observations[node] = {'nodeName': node, 'ready': reason == 'Fresh', 'reason': reason,
+                              'temperatureCelsius': value, 'observedTime': timestamp}
+    return observations
+
+
+def read_members(telemetry, members, local, now=None):
+    observations = observe_members(telemetry, members, local, now)
+    missing = sorted(n for n, o in observations.items() if not o['ready'])
     if missing:
-        raise TemperatureUnavailable('MissingOrStaleTemperature: ' + ','.join(sorted(missing)))
-    return nodes
+        raise TemperatureUnavailable('MissingOrStaleTemperature: ' + ','.join(missing))
+    return {n: o['temperatureCelsius'] for n, o in observations.items()}
 
 
-def fan_reading(fan, local, now=None):
+def fan_reading(fan, local, now=None, observations=None):
+    """Read every zone; fill `observations` (zone -> member list) even when a zone fails."""
     if fan['issues']:
         raise TemperatureUnavailable(','.join(fan['issues']))
     all_nodes = {fan['nodeName']: local}
@@ -71,7 +89,12 @@ def fan_reading(fan, local, now=None):
     for zone in fan['zones']:
         if zone['issues']:
             raise TemperatureUnavailable(f"{zone['name']}: " + ','.join(zone['issues']))
-        nodes = read_members(zone['telemetry'], zone['members'], local, now)
+        seen = observe_members(zone['telemetry'], zone['members'], local, now)
+        if observations is not None: observations[zone['name']] = sorted(seen.values(), key=lambda o: o['nodeName'])
+        missing = sorted(n for n, o in seen.items() if not o['ready'])
+        if missing:
+            raise TemperatureUnavailable('MissingOrStaleTemperature: ' + ','.join(missing))
+        nodes = {n: o['temperatureCelsius'] for n, o in seen.items()}
         zone_readings[zone['name']] = max(nodes.values())
         for node, value in nodes.items(): all_nodes[node] = max(value, all_nodes.get(node, value))
     return max(all_nodes.values()), zone_readings, all_nodes

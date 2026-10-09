@@ -27,6 +27,29 @@ RELEASE_NODES = 'pifanctl.jyje.online/release-nodes'
 app = typer.Typer(help='Reconcile topology into node-bound worker plans')
 
 
+def node_temperatures(zone, members, refs, states):
+    """One entry per resolved member, keyed and sorted by node name, merged across the zone's fans."""
+    best = {}
+    for fan, state in zip(refs, states):
+        for entry in state.get('fans', {}).get(fan, {}).get('members', {}).get(zone, []):
+            node = entry.get('nodeName')
+            if node not in members: continue
+            current = best.get(node)
+            if not current or (entry.get('ready') and not current.get('ready')) or (
+                    entry.get('ready') == current.get('ready') and entry.get('observedTime', 0) > current.get('observedTime', 0)):
+                best[node] = entry
+    result = []
+    for node in sorted(members):
+        entry = best.get(node)
+        if not entry:
+            result.append({'nodeName': node, 'ready': False, 'reason': 'Unavailable'}); continue
+        item = {'nodeName': node, 'ready': bool(entry.get('ready')), 'reason': str(entry.get('reason', 'Unavailable'))}
+        if entry.get('temperatureCelsius') is not None: item['temperatureCelsius'] = entry['temperatureCelsius']
+        if entry.get('observedTime') is not None: item['observedAt'] = timestamp(entry['observedTime'])
+        result.append(item)
+    return result
+
+
 def timestamp(now):
     return datetime.fromtimestamp(now, timezone.utc).isoformat().replace('+00:00', 'Z')
 
@@ -308,6 +331,7 @@ class Operator:
                           if resource_name in s.get('fans', {}).get(f, {}).get('zones', {})]
                 if ready and values:
                     status['temperatureCelsius'] = max(values); status['temperatureObservedAt'] = timestamp(now)
+                status['nodeTemperatures'] = node_temperatures(resource_name, members, refs, states)
             if m.get('deletionTimestamp') or source and source['metadata'].get('deletionTimestamp'):
                 ready, reason = False, 'Releasing'
             previous = item.get('status', {}).get('conditions', [])
@@ -390,7 +414,8 @@ class Operator:
 
     def write_status(self, item, status, now):
         key = item['metadata']['uid']; condition = status['conditions'][0]
-        signature = (condition['status'], condition['reason'], status['topologyHash'], status['observedGeneration'])
+        signature = (condition['status'], condition['reason'], status['topologyHash'], status['observedGeneration'],
+                     tuple((n['nodeName'], n['reason']) for n in status.get('nodeTemperatures', [])))
         last = self.last_status.get(key)
         retry_event = (key, condition['reason']) in self.failed_events
         if last and now - last[0] < 30 and last[1] == signature:
