@@ -553,5 +553,6 @@ coverage badge metadata commit; it does not modify application or test code.
 - [x] Update English/localized documentation and replace the downgrade recommendation with a certificate maintenance plan.
 - [x] Run all 529 tests with Python 3.14, including the generated CA-chain regression, plus branch coverage, actionlint and git diff checks.
 - [x] Publish Python 3.14-only PR #76; local coverage matches the previous canonical main report exactly: 1893/1952 lines and 614/672 branch destinations.
+- [x] Fix the Coverage quality failure in run 37868306208: a pattern download of a single artifact is flattened, so the matrix validator found no report. The job now downloads `coverage-3.14` into `coverage-artifacts/coverage-3.14`, with a regression test. Thresholds and missing-report validation are unchanged. 530 tests pass locally.
 - [ ] Verify PR #76 remote Python 3.14 CI, Codecov and ARC build/smoke.
 - [ ] Complete separately reviewed cluster CA maintenance, strict TLS acceptance and GitOps migration in jyje/cluster issue #157, as detailed in docs/v1/cluster-ca.md.

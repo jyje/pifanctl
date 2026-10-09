@@ -191,6 +191,23 @@ def test_ci_matrix_matches_policy_and_keeps_line_gate_separate():
     assert policy["line_floor_percent"] == 90
 
 
+def test_coverage_job_downloads_each_report_into_its_own_directory():
+    workflow = yaml.safe_load((ROOT / ".github/workflows/ci.yaml").read_text())
+    policy = coverage.load_policy()
+    downloads = [
+        step["with"]
+        for step in workflow["jobs"]["coverage"]["steps"]
+        if "download-artifact" in step.get("uses", "")
+    ]
+    # A pattern download of a single artifact is flattened into the target
+    # directory, which hides the report from the matrix validator.
+    assert all("pattern" not in download for download in downloads)
+    assert {download["name"]: download["path"] for download in downloads} == {
+        f"coverage-{version}": f"coverage-artifacts/coverage-{version}"
+        for version in policy["python_versions"]
+    }
+
+
 def test_coverage_actions_remain_outside_the_arm_runner():
     workflow = yaml.safe_load((ROOT / ".github/workflows/ci.yaml").read_text())
     assert workflow["jobs"]["test"]["runs-on"] == "ubuntu-26.04"
