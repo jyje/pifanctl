@@ -19,6 +19,7 @@ Kubernetes client 36.0.3 with urllib3 2.8.0 also failed a read-only `/version`
 request on Python 3.14. All four cluster nodes remained Ready during inspection.
 No certificates or running workloads were changed by this investigation.
 The infrastructure work is tracked in [cluster issue #157](https://github.com/jyje/cluster/issues/157).
+The runtime/build simplification is [pifanctl PR #76](https://github.com/jyje/pifanctl/pull/76).
 
 Python and urllib3 enable strict X.509 validation on Python 3.13 and later.
 The observed rejection is a certificate structure defect exposed by those

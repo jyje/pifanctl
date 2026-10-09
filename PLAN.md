@@ -552,5 +552,6 @@ coverage badge metadata commit; it does not modify application or test code.
 - [x] Remove the compatibility build, runtime selection inputs and suffixed tag publishing; preserve historical release/rollback artifacts.
 - [x] Update English/localized documentation and replace the downgrade recommendation with a certificate maintenance plan.
 - [x] Run all 529 tests with Python 3.14, including the generated CA-chain regression, plus branch coverage, actionlint and git diff checks.
-- [ ] Publish the Python 3.14-only PR and verify remote CI.
+- [x] Publish Python 3.14-only PR #76; local coverage matches the previous canonical main report exactly: 1893/1952 lines and 614/672 branch destinations.
+- [ ] Verify PR #76 remote Python 3.14 CI, Codecov and ARC build/smoke.
 - [ ] Complete separately reviewed cluster CA maintenance, strict TLS acceptance and GitOps migration in jyje/cluster issue #157, as detailed in docs/v1/cluster-ca.md.
