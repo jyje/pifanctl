@@ -342,3 +342,17 @@ def test_feedback_explicit_null_removes_previous_measurement(setup, kind):
     patch = next(body['status'] for method, path, body in reversed(k.calls)
                  if method == 'PATCH' and path == resource('Fan', 'fan-a') + '/status')
     assert patch['feedback'][kind] is None
+
+
+def test_node_temperatures_merge_fans_and_ignore_unresolved_nodes():
+    from pifanctl.topology.operator import node_temperatures
+    def entry(node, ready, at, value=50):
+        return {'nodeName': node, 'ready': ready, 'reason': 'Fresh' if ready else 'Stale',
+                'temperatureCelsius': value, 'observedTime': at}
+    states = [{'fans': {'a': {'members': {'rack': [entry('pi-a', False, 90), entry('pi-x', True, 90)]}}}},
+              {'fans': {'b': {'members': {'rack': [entry('pi-a', True, 80, 61)]}}}},
+              {'fans': {'c': {'members': {'rack': [entry('pi-a', True, 95, 62)]}}}}, {}]
+    result = node_temperatures('rack', ['pi-b', 'pi-a'], ['a', 'b', 'c', 'd'], states)
+    assert [n['nodeName'] for n in result] == ['pi-a', 'pi-b']
+    assert result[0]['temperatureCelsius'] == 62 and result[0]['ready']
+    assert result[1] == {'nodeName': 'pi-b', 'ready': False, 'reason': 'Unavailable'}
