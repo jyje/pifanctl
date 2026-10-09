@@ -122,7 +122,7 @@ jobs:
           disable_search: true
           flags: python314
           token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
+          fail_ci_if_error: true
 
   publish-badges:
     name: Publish main coverage badges

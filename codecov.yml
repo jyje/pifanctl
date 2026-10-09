@@ -1,3 +1,5 @@
+# Native status checks define pass/fail; detailed results remain in Codecov.
+# Avoid summary comments that flag any partial line or badge-only base lag.
 coverage:
   status:
     project:
@@ -6,10 +8,18 @@ coverage:
         threshold: 0.1%
         flags:
           - python314
-        informational: true
+        informational: false
+        if_not_found: failure
+        if_ci_failed: error
     patch:
       default:
         target: 95%
         flags:
           - python314
-        informational: true
+        informational: false
+        if_not_found: failure
+        if_ci_failed: error
+comment: false
+flags:
+  python314:
+    carryforward: false

@@ -215,3 +215,21 @@ def test_coverage_actions_remain_outside_the_arm_runner():
     codecov_step = codecov_job["steps"][-1]
     assert codecov_step["with"]["token"] == "${{ secrets.CODECOV_TOKEN }}"
     assert codecov_step["uses"] == "codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5"
+
+
+def test_codecov_uses_enforced_native_statuses_without_noisy_summary():
+    config = yaml.safe_load((ROOT / 'codecov.yml').read_text())
+    assert config['comment'] is False
+    assert config['flags']['python314']['carryforward'] is False
+    project = config['coverage']['status']['project']['default']
+    patch = config['coverage']['status']['patch']['default']
+    assert project['target'] == 'auto' and project['threshold'] == '0.1%'
+    assert patch['target'] == '95%'
+    for rule in (project, patch):
+        assert rule['informational'] is False
+        assert rule['if_not_found'] == 'failure'
+        assert rule['if_ci_failed'] == 'error'
+        assert rule['flags'] == ['python314']
+    workflow = yaml.safe_load((ROOT / '.github/workflows/ci.yaml').read_text())
+    upload = workflow['jobs']['codecov']['steps'][-1]
+    assert upload['with']['fail_ci_if_error'] is True

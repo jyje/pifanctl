@@ -518,9 +518,18 @@ Local v1.2 verification: 529 tests passed; line coverage 96.99%, branch coverage
 
 - [x] Identify Codecov's sole changed partial line: operator.py's nested feedback type guard, with the explicit-null removal path untested.
 - [x] Add PWM and tachometer null-removal regression cases, verify merge-patch deletion clears prior measurements and preserves thermal conditions, and run 531 tests. The previously missing branch is covered.
-- [ ] Confirm the updated canonical Python 3.14 Codecov report reaches 100% patch coverage and all final-head CI checks pass.
+- [x] Confirm the canonical Python 3.14 Codecov report reaches 100% patch coverage with project coverage 94.46%; all checks passed for 9dae016 in run 37865247189.
 
 The previous Codecov project report improved from 93.91% to 94.41%. Its comment
 reported partial coverage despite passing configured status checks (95% patch
 threshold, informational status). The one-commit main lag is the generated
 coverage badge metadata commit; it does not modify application or test code.
+
+### Enforced Codecov statuses and quieter reports
+
+- [x] Review historical PR #66/#70/#72/#73 and current #74: recurring main lag is badge metadata-only publication; the sole current changed partial branch is now tested.
+- [x] Disable the redundant Codecov summary comment while retaining native project/patch checks and detailed reports.
+- [x] Enforce the existing 95% patch target and auto-project baseline with 0.1-point tolerance; missing reports fail, carryforward is disabled, and authorized upload errors fail CI.
+- [x] Add configuration regression tests and document metric definitions, badge source revisions and intentionally excluded upload contexts.
+- [x] Validate the updated YAML with Codecov (Valid!) and pass 42 focused policy/operator tests.
+- [ ] Verify the enforced policy on final-head CI and native Codecov statuses.

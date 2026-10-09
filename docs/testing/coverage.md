@@ -46,8 +46,10 @@ the coverage.py combined total.
 
 Python 3.14 is the canonical Codecov report because the default runtime image
 uses Python 3.14. Codecov receives this report once per workflow run. Its project
-and 95% patch statuses are informational during bootstrap. An unavailable
-Codecov service cannot pass or bypass the local CI quality check.
+and 95% patch statuses enforce the configured policy. Project coverage may drop
+by at most 0.1 percentage points from the comparison base. Missing head reports
+fail; uploads do not carry forward old flag data. Codecov upload errors fail the
+authorized upload job, and local matrix quality checks remain mandatory.
 
 Repository owners must enable the pifanctl repository in Codecov for PR
 annotations and Codecov's native project view. Main and same-repository PR
@@ -81,3 +83,31 @@ exclusions only with a specific reviewed reason.
 The per-version branch baseline is intentionally measured before a threshold is
 chosen. Update `coverage-policy.json` in a reviewed change after checking the
 report artifacts. Never infer branch coverage from an earlier line-only result.
+
+## Normal results and repeated warnings
+
+Codecov summary comments are disabled. Native `codecov/project` and
+`codecov/patch` checks provide policy-based pass/fail and link to the detailed
+file/branch report. This avoids a summary comment showing a red partial-line
+warning even when patch coverage exceeds the actual 95% target. It does not
+remove partial-branch data, weaken thresholds or make failures informational.
+A 95%-covered patch can pass this policy; passing does not mean 100% coverage.
+
+The project score uses Codecov hit/partial/miss classifications and differs from
+coverage.py's separately calculated line and branch percentages. Always label
+these metrics explicitly. Fix meaningful missing scenarios when reviewing them;
+never exclude a line merely to improve the displayed percentage.
+
+Reports compare tested source revisions. Automatic main coverage-badge commits
+only update `assets/coverage`, are excluded from the workflow triggers and have
+no new source report. Their absence explains historical one-commit main lag
+warnings without implying stale application tests. Do not upload an old XML with
+a badge commit's SHA to hide that lag.
+
+Fork and Dependabot uploads remain intentionally excluded from secret-bearing
+upload jobs. Their local test/matrix checks still run; never treat an absent
+Codecov check as affirmative coverage evidence. Required checks in GitHub branch
+protection are a separate repository setting.
+
+References: [Codecov status configuration](https://docs.codecov.com/docs/commit-status)
+and [disabling summary comments](https://docs.codecov.com/docs/pull-request-comments#disable-comment).
