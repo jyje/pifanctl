@@ -1,18 +1,18 @@
 {
-  "commit_sha": "9bcbfc202241dea95ffb31e0e92346140b287bf2",
+  "commit_sha": "03557f72e0e84f3cc7a40dc42cf57548b74c30a4",
   "coverage_version": "7.16.2",
   "event_name": "push",
-  "measured_at": "2026-10-09T06:01:33.387690+00:00",
+  "measured_at": "2026-10-09T14:17:27.353506+00:00",
   "metrics": {
     "branch_percent": 100.0,
-    "covered_branches": 682,
-    "covered_lines": 1987,
+    "covered_branches": 702,
+    "covered_lines": 2023,
     "line_percent": 100.0,
-    "num_branches": 682,
-    "num_statements": 1987
+    "num_branches": 702,
+    "num_statements": 2023
   },
   "python_version": "3.14",
   "schema_version": 1,
   "workflow_run_attempt": "1",
-  "workflow_run_id": "37891317055"
+  "workflow_run_id": "37942953332"
 }
