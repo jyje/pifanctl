@@ -84,13 +84,22 @@ Do not set `verify_ssl=False`, clear `VERIFY_X509_STRICT`, patch urllib3 default
 or use `-py312` as the new supported deployment. Historical images remain
 available for the existing rollback archive; this change does not delete them.
 
+## Outcome
+
+The CA certificate was reissued with the same key, subject, serial number and expiry,
+adding Key Usage (`keyCertSign`, `cRLSign`), and replaced on every node one at a time.
+The serial number must be preserved because leaf certificates pin the issuer serial in
+their Authority Key Identifier. No leaf certificate was reissued, no node left the
+cluster and no workload was stopped. A detailed write-up is in the cluster repository:
+`docs/operations/cluster-ca-key-usage.md`.
+
 ## Acceptance checklist
 
 - [x] Reproduce Python 3.14 strict rejection and inspect the CA extensions.
 - [x] Confirm the actual Python 3.14 Kubernetes client also fails.
-- [ ] Archive infrastructure state and review a compliant candidate chain.
-- [ ] Perform cluster certificate maintenance and verify trust propagation.
-- [ ] Pass strict external and in-pod API checks with Python 3.14.
+- [x] Archive infrastructure state and review a compliant candidate chain.
+- [x] Perform cluster certificate maintenance and verify trust propagation.
+- [x] Pass strict external and in-pod API checks with Python 3.14.
 - [ ] Switch GitOps and verify the complete pifanctl runtime.
 
 References: [Python SSL strict verification](https://docs.python.org/3.14/library/ssl.html),

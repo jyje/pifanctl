@@ -554,5 +554,6 @@ coverage badge metadata commit; it does not modify application or test code.
 - [x] Run all 529 tests with Python 3.14, including the generated CA-chain regression, plus branch coverage, actionlint and git diff checks.
 - [x] Publish Python 3.14-only PR #76; local coverage matches the previous canonical main report exactly: 1893/1952 lines and 614/672 branch destinations.
 - [x] Fix the Coverage quality failure in run 37868306208: a pattern download of a single artifact is flattened, so the matrix validator found no report. The job now downloads `coverage-3.14` into `coverage-artifacts/coverage-3.14`, with a regression test. Thresholds and missing-report validation are unchanged. 530 tests pass locally.
-- [ ] Verify PR #76 remote Python 3.14 CI, Codecov and ARC build/smoke.
-- [ ] Complete separately reviewed cluster CA maintenance, strict TLS acceptance and GitOps migration in jyje/cluster issue #157, as detailed in docs/v1/cluster-ca.md.
+- [x] Verify PR #76 remote Python 3.14 CI, Codecov and ARC build/smoke. Run 37870357144 passed tests, chart, workflow, version checks, coverage quality, Codecov upload with native project and patch statuses, and the ARC ARM64 image.
+- [x] Complete the cluster CA maintenance in jyje/cluster issue #157: the CA certificate was reissued with the same key, subject, serial and expiry plus Key Usage, and replaced on all four nodes without leave/rejoin or workload stop. Strict Python 3.14 TLS passes from outside the cluster and from inside a pod.
+- [ ] Migrate cluster GitOps to the Python 3.14 release (1.2.0) and verify the Argo revision, operator, agents, worker, Fan regulation and fresh temperature/RPM telemetry.
