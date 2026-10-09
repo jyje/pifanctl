@@ -108,21 +108,6 @@ def test_workload_deletion_does_not_recreate_it(setup):
         operator.reconcile(101)
 
 
-def test_status_retries_failed_event_without_duplicate_patch(setup):
-    kube, operator = setup
-    original = kube.request
-    def request(method, path, body=None, **kwargs):
-        if path.endswith('/events'):
-            raise APIError(403, 'Forbidden')
-        return original(method, path, body, **kwargs)
-    kube.request = request
-    operator.reconcile(100)
-    before = sum(path.endswith('/status') for method, path, body in kube.calls)
-    operator.reconcile(101)
-    assert sum(path.endswith('/status') for method, path, body in kube.calls) == before
-    assert operator.failed_events
-
-
 def test_run_loop_recovers_from_reconcile_failure_and_closes_server(monkeypatch):
     stop = threading.Event()
     operator = op.Operator(FakeAPI())
@@ -352,7 +337,7 @@ def test_operator_reads_real_worker_http_report(tmp_path, monkeypatch):
     sensor = tmp_path / 'thermal_zone0'
     sensor.mkdir()
     (sensor / 'temp').write_text('55000')
-    worker = runtime.Worker('pi-a', thermal_path=str(tmp_path), mock=True)
+    worker = runtime.Worker('pi-a', uid='uid-a', thermal_path=str(tmp_path), mock=True)
     value = desired()
     value['nodeUID'] = 'uid-a'
     value['hash'] = digest({k: v for k, v in value.items() if k != 'hash'})

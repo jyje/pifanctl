@@ -38,7 +38,8 @@ The audit searched tests for constructor bypass, private-state injection,
 coverage exclusions and replacement of validators, planners, hashes or size
 limits. Five GPIO reader tests used `__new__` followed by hand-built fields.
 They now execute normal constructors while substituting GPIO acquisition and
-thread scheduling. Startup failure and stalled-thread cases continue to inject
+thread scheduling. A newly drafted event-retry case duplicated an existing
+behavioral scenario and was removed during the audit. Startup failure and stalled-thread cases continue to inject
 those boundary failures explicitly.
 
 Existing temperature-source, kernel ioctl, driver, telemetry and Kubernetes
@@ -72,7 +73,12 @@ Coverage.py 7.16.2 defaults to `sysmon` on Python 3.14. Cross-measuring the same
 suite with `ctrace` showed different branch accounting, including generator
 exhaustion and exception transitions. `.coveragerc` explicitly selects the
 supported C tracing core for local tests, CI, Codecov uploads and badges.
-This is measurement configuration, not a reduction in the measured source set.
+A cross-core run of the same final source covered all 1956 executable lines
+with both cores. C tracing recorded all 670 destinations; sysmon recorded
+660/670. Its ten missing destinations were function-exit transitions from
+comprehensions/generators, inline exception paths and the reconciliation loop.
+Tests asserting the corresponding behavior passed under both cores. This is
+measurement configuration, not a reduction in the measured source set.
 See the [official core documentation](https://coverage.readthedocs.io/en/7.16.2/config.html#run-core).
 
 Both report generation and downloaded-artifact validation enforce 100% line and

@@ -1,4 +1,4 @@
-"""Public input contracts and real software behavior without test doubles."""
+"""Public contracts and real software behavior with only boundary wrappers."""
 import runpy
 import sys
 from pathlib import Path
