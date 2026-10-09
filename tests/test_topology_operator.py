@@ -165,6 +165,9 @@ def reporter(k, o, ready=True):
                     f: {'ready': ready, 'reason': '' if ready else 'MissingOrStaleTemperature: pi-b',
                         'dutyPercent': 60 if ready else 100, 'temperatureCelsius': 60 if ready else None,
                         'nodes': {'pi-a': 60} if ready else {},
+                        'members': {z['name']: [{'nodeName': 'pi-a', 'ready': True, 'reason': 'Fresh',
+                                                 'temperatureCelsius': 60, 'observedTime': now - 2}]
+                                    for z in spec['zones']} if ready else {},
                         'zones': {z['name']: 60 for z in spec['zones']} if ready else {}}
                     for f, spec in p['fans'].items()}}
     return read
@@ -175,6 +178,11 @@ def test_status_rate_and_failure_clears_temperature(setup):
     o.reconcile(100)
     status = k.get(resource('Fan', 'fan-a'))['status']
     assert status['conditions'][0]['status'] == 'True' and status['controlTemperatureCelsius'] == 60
+    zone_status = k.get(resource('CoolingZone', 'rack'))['status']
+    assert zone_status['temperatureCelsius'] == 60
+    assert zone_status['nodeTemperatures'][0] == {'nodeName': 'pi-a', 'ready': True, 'reason': 'Fresh',
+        'temperatureCelsius': 60, 'observedAt': '1970-01-01T00:01:38Z'}
+    assert [n['nodeName'] for n in zone_status['nodeTemperatures']] == sorted(zone_status['resolvedNodeNames'])
     count = len([c for c in k.calls if c[1].endswith('/status')])
     o.reconcile(110)
     assert len([c for c in k.calls if c[1].endswith('/status')]) == count
@@ -184,6 +192,9 @@ def test_status_rate_and_failure_clears_temperature(setup):
     assert status['conditions'][0]['reason'] == 'MissingOrStaleTemperature'
     zone_status = k.get(resource('CoolingZone', 'rack'))['status']
     assert zone_status['missingNodeNames'] == ['pi-a']
+    assert 'temperatureCelsius' not in zone_status
+    assert {n['reason'] for n in zone_status['nodeTemperatures']} == {'Unavailable'}
+    assert all(not n['ready'] and 'temperatureCelsius' not in n for n in zone_status['nodeTemperatures'])
 
 
 def test_deletion_waits_for_ack(setup):

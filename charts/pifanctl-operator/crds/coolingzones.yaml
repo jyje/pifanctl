@@ -209,6 +209,33 @@ spec:
               temperatureObservedAt:
                 type: string
                 format: date-time
+              nodeTemperatures:
+                type: array
+                maxItems: 1024
+                x-kubernetes-list-type: map
+                x-kubernetes-list-map-keys:
+                - nodeName
+                items:
+                  type: object
+                  required:
+                  - nodeName
+                  - ready
+                  - reason
+                  properties:
+                    nodeName:
+                      type: string
+                      minLength: 1
+                      maxLength: 253
+                    temperatureCelsius:
+                      type: number
+                    observedAt:
+                      type: string
+                      format: date-time
+                    ready:
+                      type: boolean
+                    reason:
+                      type: string
+                      maxLength: 128
               fanNames:
                 type: array
                 maxItems: 64
@@ -420,6 +447,33 @@ spec:
               temperatureObservedAt:
                 type: string
                 format: date-time
+              nodeTemperatures:
+                type: array
+                maxItems: 1024
+                x-kubernetes-list-type: map
+                x-kubernetes-list-map-keys:
+                - nodeName
+                items:
+                  type: object
+                  required:
+                  - nodeName
+                  - ready
+                  - reason
+                  properties:
+                    nodeName:
+                      type: string
+                      minLength: 1
+                      maxLength: 253
+                    temperatureCelsius:
+                      type: number
+                    observedAt:
+                      type: string
+                      format: date-time
+                    ready:
+                      type: boolean
+                    reason:
+                      type: string
+                      maxLength: 128
               fanNames:
                 type: array
                 maxItems: 64
