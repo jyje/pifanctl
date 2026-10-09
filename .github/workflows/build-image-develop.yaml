@@ -27,5 +27,6 @@ jobs:
       packages: write
     with:
       image-suffix: "-dev"
-      tag-latest: true
+      # Development artifacts are addressed by their commit SHA, never latest.
+      tag-latest: false
       tag-release: false

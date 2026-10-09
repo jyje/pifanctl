@@ -6,16 +6,16 @@
 
 🥧 One board or a rack. Declare the fans. Follow the hottest member.
 
-[![Python Typer](https://img.shields.io/badge/Typer-3776AB?style=flat&logo=Python&logoColor=white&label=Python)](https://typer.tiangolo.com/)
+[![Python 3.14](https://img.shields.io/badge/Python-3.14-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![GitHub ARC](https://img.shields.io/badge/GitHub%20ARC-2088FF?style=flat&logo=GitHub%20Actions&logoColor=white&label=CI)](https://github.com/actions/actions-runner-controller)
-[![CLI](https://img.shields.io/badge/CLI-orange?style=flat&logo=Typer&logoColor=white)](https://typer.tiangolo.com/)
+[![CLI](https://img.shields.io/badge/CLI-orange?style=flat)](docs/v1/runtime.md)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=Docker&logoColor=white)](https://docker.io)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat&logo=Kubernetes&logoColor=white)](https://kubernetes.io)<br/>
 [![CI status for pull requests](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml/badge.svg)](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml)
 [![CI status for main branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml/badge.svg?branch=main)](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml)
 [![CI status for develop branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml)
 [![Codecov coverage](https://codecov.io/gh/jyje/pifanctl/branch/main/graph/badge.svg)](https://app.codecov.io/gh/jyje/pifanctl)
-[![GitHub Repo stars](https://img.shields.io/github/stars/jyje/pifanctl?style=flat&color=yellow&label=%F0%9F%8C%9F%20Stars)](https://github.com/jyje/pifanctl)
+[![GitHub Repo stars](https://img.shields.io/github/stars/jyje/pifanctl?style=flat&color=yellow&label=Stars&cacheSeconds=300)](https://github.com/jyje/pifanctl)
 
 **English** | [Korean](README-ko.md)
 
@@ -101,7 +101,7 @@ You can check the environment of CI/CD pipeline in [app.jyje.online#stack](https
 | --- | --- | --- |
 | `ci` | every pull request | Lints the workflows, runs tests on the supported Python 3.14 runtime, lints and schema-validates the chart (kubeconform, `promtool`), and builds the ARM64 image on the in-cluster runner without pushing |
 | `build-image-main` | push to `main` | Publishes the commit SHA tag and `v<version>` (once per version); stable versions also update `latest` |
-| `build-image-develop` | push to `develop` | Publishes `ghcr.io/jyje/pifanctl-dev:latest` and the SHA tag |
+| `build-image-develop` | push to `develop` | Publishes `ghcr.io/jyje/pifanctl-dev:<commit-sha>` only (seven-character Git SHA); rebase `develop` onto `main` before validating changes |
 | `build-image-issue` | push to `issue-**` | Publishes `ghcr.io/jyje/pifanctl-issue:<sha>` for temporary testing |
 | `release-chart` | push to `main` touching `charts/pifanctl-operator/` | Publishes the supported v1 operator chart to `oci://ghcr.io/jyje/charts/pifanctl-operator` |
 
