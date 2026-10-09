@@ -533,6 +533,6 @@ coverage badge metadata commit; it does not modify application or test code.
 - [x] Enforce the existing 95% patch target and auto-project baseline with 0.1-point tolerance; missing reports fail, carryforward is disabled, and authorized upload errors fail CI.
 - [x] Add configuration regression tests and document metric definitions, badge source revisions and intentionally excluded upload contexts.
 - [x] Validate the corrected YAML with Codecov (Valid!), pass actionlint and git diff checks, and run 533 hardware-free tests (43 focused tests).
-- [ ] Verify the enforced policy on final-head CI and native Codecov statuses.
+- [x] Verify ce32062 in CI run 37865810767: Python 3.10-3.14, chart/workflow/version checks, coverage quality, Codecov upload and ARC image passed. Enforced codecov/project and codecov/patch both passed; the retained comment reports 100% patch and 94.46% project coverage.
 
 - [ ] After merge, verify a real main badge publication uploads freshly measured coverage for the generated commit and subsequent PR reports have a current base. The publisher is intentionally skipped in PR runs.
