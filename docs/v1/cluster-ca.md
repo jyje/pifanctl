@@ -100,7 +100,7 @@ cluster and no workload was stopped. A detailed write-up is in the cluster repos
 - [x] Archive infrastructure state and review a compliant candidate chain.
 - [x] Perform cluster certificate maintenance and verify trust propagation.
 - [x] Pass strict external and in-pod API checks with Python 3.14.
-- [ ] Switch GitOps and verify the complete pifanctl runtime.
+- [x] Switch GitOps and verify the complete pifanctl runtime.
 
 References: [Python SSL strict verification](https://docs.python.org/3.14/library/ssl.html),
 [urllib3 context implementation](https://github.com/urllib3/urllib3/blob/main/src/urllib3/util/ssl_.py),
