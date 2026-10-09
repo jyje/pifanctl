@@ -259,9 +259,10 @@ def test_reader_decodes_kernel_events_and_closes(monkeypatch):
 @pytest.mark.parametrize('data', [b'', b'x', struct.pack('=QIIII6I', 0, 1, 23, 1, 1, *([0]*6))])
 def test_reader_errors_are_observable(monkeypatch, data):
     import threading
-    sensor = t.GpioTachometer.__new__(t.GpioTachometer)
-    sensor.window = t.PulseWindow(feedback()['tachometer']); sensor.pin = 23; sensor.fd = 11
-    sensor.stop = threading.Event()
+    from gpio_reader_support import DeferredReaderThread
+    monkeypatch.setattr(t, 'request_input', lambda config: 11)
+    monkeypatch.setattr(t.threading, 'Thread', DeferredReaderThread)
+    sensor = t.GpioTachometer(feedback()['tachometer'])
     monkeypatch.setattr(t.select, 'select', lambda *args: ([11], [], []))
     monkeypatch.setattr(t.os, 'read', lambda *args: data)
     sensor._read()
@@ -270,9 +271,10 @@ def test_reader_errors_are_observable(monkeypatch, data):
 
 def test_idle_reader_progress_and_start_failure(monkeypatch):
     import threading
-    sensor = t.GpioTachometer.__new__(t.GpioTachometer)
-    sensor.window = t.PulseWindow(feedback()['tachometer']); sensor.pin = 23; sensor.fd = 11
-    sensor.stop = threading.Event()
+    from gpio_reader_support import DeferredReaderThread
+    monkeypatch.setattr(t, 'request_input', lambda config: 11)
+    monkeypatch.setattr(t.threading, 'Thread', DeferredReaderThread)
+    sensor = t.GpioTachometer(feedback()['tachometer'])
     def idle(*args): sensor.stop.set(); return ([], [], [])
     monkeypatch.setattr(t.select, 'select', idle)
     sensor._read(); assert not sensor.window.error
@@ -283,10 +285,13 @@ def test_idle_reader_progress_and_start_failure(monkeypatch):
     assert closed == [11]
 
 
-def test_close_refuses_to_release_a_running_reader():
-    import threading
-    sensor = t.GpioTachometer.__new__(t.GpioTachometer); sensor.stop = threading.Event()
-    sensor.thread = types.SimpleNamespace(join=lambda **kw: None, is_alive=lambda: True)
+def test_close_refuses_to_release_a_running_reader(monkeypatch):
+    from gpio_reader_support import DeferredReaderThread
+    class StalledReaderThread(DeferredReaderThread):
+        def is_alive(self): return True
+    monkeypatch.setattr(t, 'request_input', lambda config: 11)
+    monkeypatch.setattr(t.threading, 'Thread', StalledReaderThread)
+    sensor = t.GpioTachometer(feedback()['tachometer'])
     with pytest.raises(RuntimeError, match='did not stop'): sensor.close()
 
 

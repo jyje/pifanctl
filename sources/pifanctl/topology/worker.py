@@ -46,7 +46,8 @@ def validate_plan(raw, node, uid=''):
         if fan['nodeName'] != node or not isinstance(fan.get('zones'), list) or not isinstance(fan.get('issues'), list):
             raise TopologyError('fan does not belong to this worker')
         for zone in fan['zones']:
-            if not isinstance(zone, dict): raise TopologyError('zone must be an object')
+            if not isinstance(zone, dict):
+                raise TopologyError('zone must be an object')
             normalize([{'apiVersion': API, 'kind': 'CoolingZone', 'metadata': {'name': zone['name']},
                         'spec': {'nodeNames': zone['members'] or ['unresolved'], 'fanRefs': zone['fanRefs'], 'telemetry': zone['telemetry']}}])
             if not isinstance(zone.get('issues'), list) or (not zone['members'] and not zone['issues']):
@@ -194,15 +195,18 @@ class Worker:
         self.zone_temp.clear()
         try:
             local = self.local.read()
-            if not math.isfinite(local): raise TemperatureUnavailable('invalid local sensor')
+            if not math.isfinite(local):
+                raise TemperatureUnavailable('invalid local sensor')
         except (TemperatureUnavailable, OSError, ValueError):
             local = None
         for name, spec in (self.plan or {}).get('fans', {}).items():
             temperature, nodes, zone_values = None, {}, {}
             failure = self.safety_error or (reason if not healthy else '')
             try:
-                if failure: raise TemperatureUnavailable(failure)
-                if local is None: raise TemperatureUnavailable('LocalSensorUnavailable')
+                if failure:
+                    raise TemperatureUnavailable(failure)
+                if local is None:
+                    raise TemperatureUnavailable('LocalSensorUnavailable')
                 temperature, zone_values, nodes = fan_reading(spec, local, sample_now)
             except (TemperatureUnavailable, OSError, ValueError) as error:
                 failure = str(error)
@@ -377,7 +381,8 @@ def run(plan_path, node, uid='', thermal_path='/sys/class/thermal', lock_dir='/v
                 try:
                     text = Path(plan_path).read_text()
                     if text != last:
-                        if len(text.encode()) > 900_000: raise TopologyError('worker plan too large')
+                        if len(text.encode()) > 900_000:
+                            raise TopologyError('worker plan too large')
                         worker.apply(loader(text) if loader else yaml.load(text, Loader=UniqueLoader))
                         last = text
                     error = ''

@@ -4,6 +4,6 @@
     "3.14"
   ],
   "canonical_python": "3.14",
-  "line_floor_percent": 90,
-  "branch_floor_percent": null
+  "line_floor_percent": 100,
+  "branch_floor_percent": 100
 }

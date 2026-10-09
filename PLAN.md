@@ -557,3 +557,14 @@ coverage badge metadata commit; it does not modify application or test code.
 - [x] Verify PR #76 remote Python 3.14 CI, Codecov and ARC build/smoke. Run 37870357144 passed tests, chart, workflow, version checks, coverage quality, Codecov upload with native project and patch statuses, and the ARC ARM64 image.
 - [x] Complete the cluster CA maintenance in jyje/cluster issue #157: the CA certificate was reissued with the same key, subject, serial and expiry plus Key Usage, and replaced on all four nodes without leave/rejoin or workload stop. Strict Python 3.14 TLS passes from outside the cluster and from inside a pod.
 - [ ] Migrate cluster GitOps to the Python 3.14 release (1.2.0) and verify the Argo revision, operator, agents, worker, Fan regulation and fresh temperature/RPM telemetry.
+
+### Meaningful full software coverage
+
+- [x] Isolate coverage work from the other agent's in-progress PR #76 CI/CA work.
+- [x] Cover real Operator API/lease/report/lifecycle failures and ownership guarantees.
+- [x] Cover Worker validation, shutdown and watchdog behavior with hardware-free inputs.
+- [x] Cover remaining model, CLI, API, control and metrics boundaries.
+- [x] Audit unreachable branches, unnecessary test doubles and tests lacking behavioral assertions; do not fabricate invalid internal state just for coverage.
+- [x] Verify local Python 3.14 coverage: all 1956 lines and 670 branch destinations covered; add independent exact-count floors and an audit of test-double boundaries.
+- [x] Publish PR #78 and verify runtime candidate 17c4e6b in CI run 37871758675: 613 tests passed, 1956/1956 lines and 670/670 branch destinations covered, chart/workflow/version checks and ARC ARM64 build/smoke passed, and native Codecov project/patch statuses passed at 100%.
+

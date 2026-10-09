@@ -91,6 +91,20 @@ def check_line_floor(metrics: dict[str, int | float | None], floor: float) -> No
         raise CoverageError(f"line coverage {line_percent}% is below {floor}%")
 
 
+def check_branch_floor(metrics: dict[str, int | float | None], floor: float) -> None:
+    covered, total = metrics.get("covered_branches"), metrics.get("num_branches")
+    if (isinstance(covered, bool) or not isinstance(covered, int)
+            or isinstance(total, bool) or not isinstance(total, int) or total <= 0
+            or covered * 100 + 1e-9 < floor * total):
+        raise CoverageError(f"branch coverage {metrics.get('branch_percent')}% is below {floor}%")
+
+
+def check_floors(metrics: dict[str, int | float | None], policy: dict[str, Any]) -> None:
+    check_line_floor(metrics, policy["line_floor_percent"])
+    if policy.get("branch_floor_percent") is not None:
+        check_branch_floor(metrics, policy["branch_floor_percent"])
+
+
 def load_json(path: Path) -> Any:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -180,7 +194,7 @@ def validate_matrix(directory: Path, expected_sha: str, *, policy: dict[str, Any
             raise CoverageError(f"Python {version} manifest does not match its coverage report")
         coverage_versions.add(manifest["coverage_version"])
         try:
-            check_line_floor(metrics, policy["line_floor_percent"])
+            check_floors(metrics, policy)
         except CoverageError as exc:
             raise CoverageError(f"Python {version}: {exc}") from exc
         manifests[version] = manifest
@@ -257,8 +271,7 @@ def _command_report(args: argparse.Namespace) -> int:
     report = load_json(args.report)
     manifest = make_manifest(report, args.python, args.sha)
     policy = load_policy()
-    floor = policy["line_floor_percent"]
-    check_line_floor(manifest["metrics"], floor)
+    check_floors(manifest["metrics"], policy)
     args.manifest.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     if args.summary:
         write_github_summary([manifest], args.summary)

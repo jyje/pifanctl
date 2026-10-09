@@ -168,7 +168,8 @@ def normalize(items):
             else:
                 try:
                     url = urlsplit(telemetry.get('prometheusURL', ''))
-                    if url.port is not None and url.port <= 0: raise ValueError('invalid port')
+                    if url.port is not None and url.port <= 0:
+                        raise ValueError('invalid port')
                 except ValueError as error:
                     raise TopologyError('invalid prometheusURL') from error
                 if url.scheme not in ('http', 'https') or not url.hostname or url.username or url.password or url.fragment:
