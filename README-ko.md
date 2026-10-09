@@ -6,16 +6,16 @@
 
 🥧 단일 보드부터 랙까지, 팬을 선언하고 가장 뜨거운 멤버를 따릅니다.
 
-[![Python Typer](https://img.shields.io/badge/Typer-3776AB?style=flat&logo=Python&logoColor=white&label=Python)](https://typer.tiangolo.com/)
+[![Python 3.14](https://img.shields.io/badge/Python-3.14-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/downloads/)
 [![GitHub ARC](https://img.shields.io/badge/GitHub%20ARC-2088FF?style=flat&logo=GitHub%20Actions&logoColor=white&label=CI)](https://github.com/actions/actions-runner-controller)
-[![CLI](https://img.shields.io/badge/CLI-orange?style=flat&logo=Typer&logoColor=white)](https://typer.tiangolo.com/)
+[![CLI](https://img.shields.io/badge/CLI-orange?style=flat)](docs/v1/runtime.md)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=Docker&logoColor=white)](https://docker.io)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat&logo=Kubernetes&logoColor=white)](https://kubernetes.io)<br/>
 [![CI status for pull requests](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml/badge.svg)](https://github.com/jyje/pifanctl/actions/workflows/ci.yaml)
 [![CI status for main branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml/badge.svg?branch=main)](https://github.com/jyje/pifanctl/actions/workflows/build-image-main.yaml)
 [![CI status for develop branch](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml/badge.svg?branch=develop)](https://github.com/jyje/pifanctl/actions/workflows/build-image-develop.yaml)
 [![Codecov 커버리지](https://codecov.io/gh/jyje/pifanctl/branch/main/graph/badge.svg)](https://app.codecov.io/gh/jyje/pifanctl)
-[![GitHub Repo stars](https://img.shields.io/github/stars/jyje/pifanctl?style=flat&color=yellow&label=%F0%9F%8C%9F%20Stars)](https://github.com/jyje/pifanctl)
+[![GitHub Repo stars](https://img.shields.io/github/stars/jyje/pifanctl?style=flat&color=yellow&label=Stars&cacheSeconds=300)](https://github.com/jyje/pifanctl)
 
 [English](README.md) | **한국어**
 
@@ -98,7 +98,7 @@ CI/CD 환경은 [app.jyje.online#stack](https://app.jyje.online/#stack)에서 �
 | --- | --- | --- |
 | `ci` | 모든 풀 리퀘스트 | 워크플로 lint, 지원 런타임인 Python 3.14에서 테스트, 차트 lint와 스키마 검증(kubeconform, `promtool`), 클러스터 내 러너에서 ARM64 이미지를 푸시 없이 빌드 |
 | `build-image-main` | `main` push | 커밋 SHA 태그와 `v<version>`(버전당 한 번) 발행. 정식 버전만 `latest` 갱신 |
-| `build-image-develop` | `develop` push | `ghcr.io/jyje/pifanctl-dev:latest`와 SHA 태그 발행 |
+| `build-image-develop` | `develop` push | `ghcr.io/jyje/pifanctl-dev:<commit-sha>`만 발행(7자리 Git SHA). 변경 검증 전 `develop`을 `main` 위로 rebase |
 | `build-image-issue` | `issue-**` push | 임시 테스트용 `ghcr.io/jyje/pifanctl-issue:<sha>` 발행 |
 | `release-chart` | 두 차트 중 하나를 바꾼 `main` push | 새 `pifanctl`, `pifanctl-operator` 차트를 `oci://ghcr.io/jyje/charts/`에 발행 |
 
