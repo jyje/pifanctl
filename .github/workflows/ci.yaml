@@ -45,8 +45,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Test every stable Python minor release from the minimum supported version.
-        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        # Python 3.14 is the single supported runtime.
+        python: ["3.14"]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -87,12 +87,11 @@ jobs:
     runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
-      - name: Download every Python coverage report
+      - name: Download the Python 3.14 coverage report
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          pattern: coverage-*
-          path: coverage-artifacts
-          merge-multiple: false
+          name: coverage-3.14
+          path: coverage-artifacts/coverage-3.14
       - name: Check report identities, matrix completeness, and line floor
         run: python scripts/coverage_metrics.py matrix --directory coverage-artifacts --sha "${{ github.sha }}" --summary "$GITHUB_STEP_SUMMARY"
 

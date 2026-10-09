@@ -184,11 +184,29 @@ def test_ci_matrix_matches_policy_and_keeps_line_gate_separate():
     workflow = yaml.safe_load((ROOT / ".github/workflows/ci.yaml").read_text())
     policy = coverage.load_policy()
     test_job = workflow["jobs"]["test"]
-    assert test_job["strategy"]["matrix"]["python"] == policy["python_versions"]
+    assert test_job["strategy"]["matrix"]["python"] == policy["python_versions"] == ["3.14"]
     run_commands = "\n".join(step.get("run", "") for step in test_job["steps"])
     assert "--cov-branch" in run_commands
     assert "--cov-fail-under" not in run_commands
-    assert policy["line_floor_percent"] == 90
+    assert policy["line_floor_percent"] == 100
+    assert policy["branch_floor_percent"] == 100
+
+
+def test_coverage_job_downloads_each_report_into_its_own_directory():
+    workflow = yaml.safe_load((ROOT / ".github/workflows/ci.yaml").read_text())
+    policy = coverage.load_policy()
+    downloads = [
+        step["with"]
+        for step in workflow["jobs"]["coverage"]["steps"]
+        if "download-artifact" in step.get("uses", "")
+    ]
+    # A pattern download of a single artifact is flattened into the target
+    # directory, which hides the report from the matrix validator.
+    assert all("pattern" not in download for download in downloads)
+    assert {download["name"]: download["path"] for download in downloads} == {
+        f"coverage-{version}": f"coverage-artifacts/coverage-{version}"
+        for version in policy["python_versions"]
+    }
 
 
 def test_coverage_actions_remain_outside_the_arm_runner():
@@ -229,8 +247,8 @@ def test_codecov_keeps_complete_reports_and_enforces_native_statuses():
     assert config['flags']['python314']['carryforward'] is False
     project = config['coverage']['status']['project']['default']
     patch = config['coverage']['status']['patch']['default']
-    assert project['target'] == 'auto' and project['threshold'] == '0.1%'
-    assert patch['target'] == '95%'
+    assert project['target'] == '100%' and project['threshold'] == '0%'
+    assert patch['target'] == '100%'
     for rule in (project, patch):
         assert rule['informational'] is False
         assert rule['if_not_found'] == 'failure'
@@ -256,3 +274,28 @@ def test_badge_commit_gets_a_fresh_coverage_measurement():
     assert upload['with']['fail_ci_if_error'] is True
     for step in steps[steps.index(publisher) + 1:]:
         assert step['if'] == "steps.publish.outputs.commit_sha != ''"
+
+
+@pytest.mark.parametrize("covered, total, succeeds", [(4, 4, True), (3, 4, False), (0, 0, False), (999999, 1000000, False)])
+def test_branch_floor_requires_exact_counts(covered, total, succeeds):
+    metrics = {"covered_branches": covered, "num_branches": total, "branch_percent": 100.0}
+    if succeeds:
+        coverage.check_branch_floor(metrics, 100)
+    else:
+        with pytest.raises(coverage.CoverageError, match="branch coverage"):
+            coverage.check_branch_floor(metrics, 100)
+
+
+def test_matrix_enforces_branch_floor_even_with_full_lines(tmp_path):
+    write_artifact(tmp_path, "3.14")
+    with pytest.raises(coverage.CoverageError, match="Python 3.14: branch coverage"):
+        coverage.validate_matrix(tmp_path, SHA, policy={"python_versions": ["3.14"], "line_floor_percent": 90, "branch_floor_percent": 100})
+
+
+def test_report_command_enforces_branch_floor(tmp_path, monkeypatch, capsys):
+    path = tmp_path / "coverage.json"
+    path.write_text(json.dumps(report(covered=10)))
+    monkeypatch.setattr(coverage, 'load_policy', lambda: {'line_floor_percent': 100, 'branch_floor_percent': 100})
+    assert coverage.main(['report', '--report', str(path), '--python', '3.14', '--manifest', str(tmp_path / 'manifest.json')]) == 1
+    assert 'branch coverage' in capsys.readouterr().err
+    assert not (tmp_path / 'manifest.json').exists()

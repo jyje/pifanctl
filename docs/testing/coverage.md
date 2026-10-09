@@ -1,17 +1,17 @@
 # Python coverage
 
-The CI matrix measures the application in `sources/` on Python 3.10 through
-3.14. It collects line and branch data in one test run, then reports both
-metrics separately. The existing 90% line floor remains required for each
-Python version. Branch thresholds are not enabled until the first matrix results
-have been reviewed.
+CI measures every application file in `sources/` on Python 3.14. Line and
+branch floors are both 100%, checked independently using exact counts. A missing
+report or branch denominator cannot pass the gate. Coverage includes the legacy
+software paths still shipped in the application.
 
-An initial local macOS run passed all 255 tests on Python 3.10-3.14. Python
-3.10-3.13 measured 95.71% line and 88.9734% branch coverage; Python 3.14
-measured 95.69% line and 88.0228% branch coverage. The first GitHub Actions
-matrix on PR #43 passed all 259 tests and measured 95.75-95.77% line and
-88.2129-89.1635% branch coverage. This PR is the first CI baseline. Keep the
-branch floor unset until a successful main baseline and missing-path review.
+The measurement core is explicitly `ctrace` in `.coveragerc`. Coverage.py defaults
+to `sysmon` on Python 3.14. Cross-measuring the same suite showed different
+branch accounting for generator exhaustion and exception transitions. Pinning
+one supported core keeps local, CI and badge measurements consistent without
+changing the source set or adding coverage exclusions. See the
+[coverage.py core documentation](https://coverage.readthedocs.io/en/7.16.2/config.html#run-core)
+and the [meaningful coverage audit](coverage-audit.md).
 
 ## Run locally
 
@@ -41,13 +41,12 @@ consumes an entry.
 Every matrix job saves its JSON, XML, HTML and a manifest containing the tested
 revision, Python version, coverage.py version, counts and timestamp. The
 `Coverage quality` check requires one valid report from every supported Python
-version at the same revision. It applies the 90% line floor independently of
+version at the same revision. It applies the 100% line and branch floors independently of
 the coverage.py combined total.
 
 Python 3.14 is the canonical Codecov report because the default runtime image
 uses Python 3.14. Codecov receives this report once per workflow run. Its project
-and 95% patch statuses enforce the configured policy. Project coverage may drop
-by at most 0.1 percentage points from the comparison base. Missing head reports
+and patch statuses require 100% coverage with zero tolerance. Missing head reports
 fail; uploads do not carry forward old flag data. Codecov upload errors fail the
 authorized upload job, and local matrix quality checks remain mandatory.
 
@@ -55,7 +54,7 @@ Repository owners must enable the pifanctl repository in Codecov for PR
 annotations and Codecov's native project view. Main and same-repository PR
 uploads use the repository-scoped `CODECOV_TOKEN` Actions secret. Fork and
 Dependabot PRs do not upload because GitHub withholds repository secrets.
-Upload errors remain non-blocking; the local coverage gates stay authoritative.
+Upload errors fail the upload job; the local coverage gates also remain required.
 The first OIDC upload in PR #43 returned `Repository not found`. The workflow
 now uses the configured repository upload token instead.
 
@@ -77,8 +76,9 @@ available as detailed coverage assets.
 Branch coverage counts source-to-destination paths for conditional code. It is
 not complete Boolean condition coverage, MC/DC, concurrency proof or physical
 fan validation. Keep selected safety scenarios explicit in tests and validate
-hardware and fail-open behavior separately. Add `no cover` or `no branch`
-exclusions only with a specific reviewed reason.
+hardware and fail-open behavior separately. Do not add coverage exclusions to obtain a green result. Mock only hardware,
+remote IO, unavailable faults or scheduling that cannot be tested safely and
+deterministically. Pure model/planner/control functions must run unchanged.
 
 The per-version branch baseline is intentionally measured before a threshold is
 chosen. Update `coverage-policy.json` in a reviewed change after checking the

@@ -50,7 +50,7 @@ kubectl --context lab get fans,coolingzones
 kubectl --context lab wait --for=condition=Ready fan/rack-fan-01 --timeout=120s
 ```
 
-For a legacy cluster CA, the stable Python 3.12 compatibility image uses `image.tag: v1.0.0-py312`; the default is canonical Python 3.14. Keep TLS verification enabled and follow the [runtime compatibility procedure](docs/v1/runtime.md#runtime-compatibility-with-legacy-cluster-cas).
+Python 3.14 is the only supported runtime. Future releases publish one runtime image. Existing `-py312` artifacts remain historical rollback references. Correct incompatible cluster CA certificates before deployment; follow the [CA maintenance procedure](docs/v1/cluster-ca.md).
 
 The operator chart version and default `appVersion` follow the application release. An explicit `image.tag` still overrides that default. Verify image availability before installation. Helm installs CRDs on first install; review and explicitly apply schema upgrades as described in the [runtime manual](docs/v1/runtime.md). Argo CD users keep the chart values and `extraResources` in their Application, as in [jyje/cluster](https://github.com/jyje/cluster/blob/main/clusters/r4spi/apps/pifanctl.yaml).
 
@@ -78,7 +78,7 @@ Historical standalone commands and the old chart belong to the [v0 usage archive
 
 ## 2. Develop and verify
 
-Python 3.10+ and Helm are required for the full software suite. Install dependencies into a project virtual environment:
+Python 3.14 and Helm are required for the full software suite. Install dependencies into a project virtual environment:
 
 ```sh
 python3 -m venv .venv
@@ -99,7 +99,7 @@ You can check the environment of CI/CD pipeline in [app.jyje.online#stack](https
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
-| `ci` | every pull request | Lints the workflows, runs tests on every stable Python minor release from 3.10 through 3.14, lints and schema-validates the chart (kubeconform, `promtool`), and builds the ARM64 image on the in-cluster runner without pushing |
+| `ci` | every pull request | Lints the workflows, runs tests on the supported Python 3.14 runtime, lints and schema-validates the chart (kubeconform, `promtool`), and builds the ARM64 image on the in-cluster runner without pushing |
 | `build-image-main` | push to `main` | Publishes the commit SHA tag and `v<version>` (once per version); stable versions also update `latest` |
 | `build-image-develop` | push to `develop` | Publishes `ghcr.io/jyje/pifanctl-dev:latest` and the SHA tag |
 | `build-image-issue` | push to `issue-**` | Publishes `ghcr.io/jyje/pifanctl-issue:<sha>` for temporary testing |

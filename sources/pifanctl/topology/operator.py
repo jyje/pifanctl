@@ -232,9 +232,10 @@ class Operator:
             plans[node] = desired
             if node in owners:
                 owner = self.owner(owners[node])
-            elif old:
+            else:
+                # Every iterated node belongs to active or configs. A node
+                # absent from owners therefore has an existing owned plan.
                 owner = old['metadata']['ownerReferences'][0]
-            else: continue
             worker = worker_name(node); config = worker + '-plan'
             plan_text = json.dumps(desired, sort_keys=True)
             if len(plan_text.encode()) > MAX_BYTES:

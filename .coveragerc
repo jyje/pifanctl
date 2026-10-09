@@ -1,4 +1,5 @@
 [run]
+core = ctrace
 branch = True
 source = sources
 relative_files = True

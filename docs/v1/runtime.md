@@ -221,36 +221,19 @@ remain acceptance gates in PLAN.md. Live deployment requires an explicitly autho
 
 ## Runtime compatibility with legacy cluster CAs
 
-Python 3.13+ enables stricter X.509 validation that can reject a legacy cluster
-CA missing required extensions. Keep certificate and hostname verification
-enabled. A stable compatibility image can use Python 3.12 while CA modernization is
-planned separately. For app 1.0.0, explicitly select:
+Python 3.14 is the only supported runtime for development, CI and new image
+publication. Existing Python 3.12 images are historical rollback artifacts and
+are not a remedy for malformed CA certificates.
 
-```yaml
-image:
-  repository: ghcr.io/jyje/pifanctl
-  tag: v1.0.0-py312
-```
+The current cluster CA was checked on 2026-10-09. Python 3.14 strict verification
+failed with code 92: `CA cert does not include key usage extension`. The official
+Kubernetes client's read-only version request also failed. The CA has critical
+Basic Constraints with CA:TRUE but lacks Key Usage.
 
-The application version is still 1.0.0; `-py312` identifies the image runtime,
-not a separate prerelease. Both version tags are immutable. Python 3.14 remains
-the canonical image and the only runtime that updates `latest`. Publication
-waits for both runtime builds before creating the application GitHub release.
-Keep CA and hostname verification enabled in both variants. This compatibility
-image does not repair the certificate extensions; modernize the cluster CA in a
-separate, archived cluster-maintenance operation.
+Correct the certificate and propagate the resulting trust bundle before switching
+existing workloads to Python 3.14. Keep certificate-chain, hostname and strict
+X.509 verification enabled. Follow the [CA maintenance plan](cluster-ca.md).
 
-For pre-publication candidate testing, build an isolated image:
-
-```sh
-gh workflow run build-image-issue.yaml --ref YOUR_BRANCH -f python-version=3.12
-```
-
-That image uses `ghcr.io/jyje/pifanctl-issue:<sha>-py312`; this experimental workflow does not publish
-`latest` or release tags. Set the operator chart's image repository/tag to the
-published variant and verify operator readiness before assigning a physical Fan.
-The default image remains Python 3.14, and CI still tests Python 3.10-3.14.
-See the [Python SSL documentation](https://docs.python.org/3/library/ssl.html#ssl.create_default_context).
 
 ## CRD API versions
 

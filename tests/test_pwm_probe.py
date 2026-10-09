@@ -141,13 +141,19 @@ def test_reader_decodes_both_edges_and_releases(monkeypatch):
 
 @pytest.mark.parametrize('data',[b'',b'x',struct.pack('=QIIII6I',0,1,23,1,1,*([0]*6))])
 def test_reader_error_is_na(monkeypatch,data):
-    sensor=p.GpioPwmProbe.__new__(p.GpioPwmProbe);sensor.window=p.PwmWindow(feedback()['pwm']);sensor.pin=24;sensor.fd=11;sensor.stop=threading.Event()
+    from gpio_reader_support import DeferredReaderThread
+    monkeypatch.setattr(p, 'request_input', lambda *args, **kwargs: 11)
+    monkeypatch.setattr(p.threading, 'Thread', DeferredReaderThread)
+    sensor = p.GpioPwmProbe(feedback()['pwm'])
     monkeypatch.setattr(p.select,'select',lambda *a:([11],[],[]));monkeypatch.setattr(p.os,'read',lambda *a:data)
     sensor._read();assert sensor.snapshot()['reason']=='CollectorError'
 
 
 def test_reader_idle_and_start_failure(monkeypatch):
-    sensor=p.GpioPwmProbe.__new__(p.GpioPwmProbe);sensor.window=p.PwmWindow(feedback()['pwm']);sensor.pin=24;sensor.fd=11;sensor.stop=threading.Event()
+    from gpio_reader_support import DeferredReaderThread
+    monkeypatch.setattr(p, 'request_input', lambda *args, **kwargs: 11)
+    monkeypatch.setattr(p.threading, 'Thread', DeferredReaderThread)
+    sensor = p.GpioPwmProbe(feedback()['pwm'])
     def idle(*a):sensor.stop.set();return([],[],[])
     monkeypatch.setattr(p.select,'select',idle);sensor._read();assert not sensor.window.error
     monkeypatch.setattr(p,'request_input',lambda *a,**kw:11)

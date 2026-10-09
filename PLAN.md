@@ -544,3 +544,27 @@ coverage badge metadata commit; it does not modify application or test code.
 - [x] Verify release workflows 37866477844 and 37866477722 succeeded and inspect both image digests plus the OCI chart version/appVersion.
 - [x] Publish English release notes covering upgrades, compatibility and deferred physical PWM verification.
 - [x] Update README/CHANGELOG and retain public artifact evidence in docs/releases/1.2.0/README.md.
+
+### Python 3.14-only support and CA diagnosis
+
+- [x] Reproduce strict Python 3.14 TLS failure code 92 and confirm the live CA lacks Key Usage; verify the actual Kubernetes client's read-only request also fails.
+- [x] Fix the support contract to Python 3.14: CI/coverage policy, both container bases, local .python-version and all image publishing workflows.
+- [x] Remove the compatibility build, runtime selection inputs and suffixed tag publishing; preserve historical release/rollback artifacts.
+- [x] Update English/localized documentation and replace the downgrade recommendation with a certificate maintenance plan.
+- [x] Run all 529 tests with Python 3.14, including the generated CA-chain regression, plus branch coverage, actionlint and git diff checks.
+- [x] Publish Python 3.14-only PR #76; local coverage matches the previous canonical main report exactly: 1893/1952 lines and 614/672 branch destinations.
+- [x] Fix the Coverage quality failure in run 37868306208: a pattern download of a single artifact is flattened, so the matrix validator found no report. The job now downloads `coverage-3.14` into `coverage-artifacts/coverage-3.14`, with a regression test. Thresholds and missing-report validation are unchanged. 530 tests pass locally.
+- [x] Verify PR #76 remote Python 3.14 CI, Codecov and ARC build/smoke. Run 37870357144 passed tests, chart, workflow, version checks, coverage quality, Codecov upload with native project and patch statuses, and the ARC ARM64 image.
+- [x] Complete the cluster CA maintenance in jyje/cluster issue #157: the CA certificate was reissued with the same key, subject, serial and expiry plus Key Usage, and replaced on all four nodes without leave/rejoin or workload stop. Strict Python 3.14 TLS passes from outside the cluster and from inside a pod.
+- [ ] Migrate cluster GitOps to the Python 3.14 release (1.2.0) and verify the Argo revision, operator, agents, worker, Fan regulation and fresh temperature/RPM telemetry.
+
+### Meaningful full software coverage
+
+- [x] Isolate coverage work from the other agent's in-progress PR #76 CI/CA work.
+- [x] Cover real Operator API/lease/report/lifecycle failures and ownership guarantees.
+- [x] Cover Worker validation, shutdown and watchdog behavior with hardware-free inputs.
+- [x] Cover remaining model, CLI, API, control and metrics boundaries.
+- [x] Audit unreachable branches, unnecessary test doubles and tests lacking behavioral assertions; do not fabricate invalid internal state just for coverage.
+- [x] Verify local Python 3.14 coverage: all 1956 lines and 670 branch destinations covered; add independent exact-count floors and an audit of test-double boundaries.
+- [x] Publish PR #78 and verify runtime candidate 17c4e6b in CI run 37871758675: 613 tests passed, 1956/1956 lines and 670/670 branch destinations covered, chart/workflow/version checks and ARC ARM64 build/smoke passed, and native Codecov project/patch statuses passed at 100%.
+

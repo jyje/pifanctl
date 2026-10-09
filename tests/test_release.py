@@ -248,13 +248,11 @@ def test_versions_are_read_from_the_files():
     assert bump.chart_version("version: '0.4.0'\n") == "0.4.0"
 
 
-@pytest.mark.parametrize('python_version,release,expected', [
-    ('3.14', 'false', 'abc1234'), ('3.12', 'false', 'abc1234-py312'),
-    ('3.12', 'true', 'abc1234-py312'), ('3.13', 'true', None), ('4.0', 'false', None),
-])
-def test_python_variant_tags(tmp_path, python_version, release, expected):
+@pytest.mark.parametrize('release', ['false', 'true'])
+def test_single_runtime_image_tags(tmp_path, release):
     import yaml
     workflow = yaml.safe_load((ROOT / '.github/workflows/_build-image.yaml').read_text())
+    assert 'python-version' not in workflow.get('on', workflow.get(True))['workflow_call']['inputs']
     job = workflow['jobs']['build-and-testing']
     script = next(s['run'] for s in job['steps'] if s.get('id') == 'tags')
     (tmp_path / 'sources/pifanctl').mkdir(parents=True)
@@ -262,45 +260,34 @@ def test_python_variant_tags(tmp_path, python_version, release, expected):
     (tmp_path / 'scripts').mkdir()
     shim(tmp_path / 'scripts', 'image-tags.sh', 'echo "${IMAGE}:${SHORT_SHA}"\necho "${IMAGE}:v${VERSION}"\n')
     output = tmp_path / 'output'
-    env = {**os.environ, 'PYTHON_VERSION': python_version, 'TAG_LATEST': 'false',
-           'TAG_RELEASE': release, 'GITHUB_SHA': 'abc123456789', 'GITHUB_OUTPUT': str(output),
+    env = {**os.environ, 'TAG_LATEST': 'false', 'TAG_RELEASE': release,
+           'GITHUB_SHA': 'abc123456789', 'GITHUB_OUTPUT': str(output),
            'IMAGE': 'ghcr.io/jyje/pifanctl-issue'}
     result = subprocess.run(['bash', '-c', script], env=env, cwd=tmp_path, capture_output=True, text=True)
-    if expected is None:
-        assert result.returncode != 0
-        assert not output.exists()
-    else:
-        assert result.returncode == 0, result.stderr
-        assert (tmp_path / 'sources/version').read_text().strip() == expected
-        assert 'short_sha=' + expected in output.read_text()
-        assert 'ghcr.io/jyje/pifanctl-issue:' + expected in output.read_text()
-        variant = '' if python_version == '3.14' else '-py' + python_version.replace('.', '')
-        assert 'v1.0.0-alpha.1' + variant in output.read_text()
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / 'sources/version').read_text().strip() == 'abc1234'
+    assert 'short_sha=abc1234' in output.read_text()
+    assert 'ghcr.io/jyje/pifanctl-issue:abc1234' in output.read_text()
+    assert 'ghcr.io/jyje/pifanctl-issue:v1.0.0-alpha.1' in output.read_text()
     build = next(s for s in job['steps'] if s.get('uses', '').startswith('docker/build-push-action@'))
-    assert build['with']['build-args'] == 'PYTHON_VERSION=${{ inputs.python-version }}'
+    assert 'build-args' not in build['with']
 
 
-def test_main_release_requires_canonical_and_compatibility_images():
+def test_main_release_requires_only_the_supported_runtime():
     import yaml
     workflow = yaml.safe_load((ROOT / '.github/workflows/build-image-main.yaml').read_text())
     jobs = workflow['jobs']
-    assert jobs['build-compatibility']['with']['python-version'] == '3.12'
-    assert jobs['build-compatibility']['with']['tag-release'] is True
-    assert jobs['build-compatibility']['with']['tag-latest'] is False
-    assert set(jobs['release']['needs']) == {'build', 'build-compatibility'}
-    assert "needs.build-compatibility.result == 'success'" in jobs['release']['if']
-
-
-@pytest.mark.parametrize('exists', [False, True])
-def test_compatibility_release_tag_is_immutable_and_never_latest(bin_dir, exists):
-    result = image_tags(bin_dir, exists=exists, TAG_LATEST='false',
-                        TAG_RELEASE='true', VERSION='1.0.0-py312')
-    assert result.returncode == 0
-    expected = ['ghcr.io/jyje/pifanctl:abc1234']
-    if not exists:
-        expected.append('ghcr.io/jyje/pifanctl:v1.0.0-py312')
-    assert result.stdout.splitlines() == expected
-    assert ':latest' not in result.stdout
+    assert set(jobs) == {'build', 'release'}
+    assert jobs['release']['needs'] == ['build']
+    assert "needs.build.result == 'success'" in jobs['release']['if']
+    for name in ('all', 'raspi'):
+        dockerfile = (ROOT / f'docker/{name}.dockerfile').read_text()
+        assert dockerfile.count('FROM python:3.14-slim') == 2
+        assert 'PYTHON_VERSION' not in dockerfile
+    issue = yaml.safe_load((ROOT / '.github/workflows/build-image-issue.yaml').read_text())
+    assert issue.get('on', issue.get(True))['workflow_dispatch'] is None
+    assert 'python-version' not in issue['jobs']['build']['with']
+    assert (ROOT / '.python-version').read_text().strip() == '3.14'
 
 
 @pytest.mark.parametrize('chart_version,pinned,expected', [

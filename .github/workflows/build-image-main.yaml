@@ -30,23 +30,11 @@ jobs:
       tag-latest: true
       tag-release: true
 
-  build-compatibility:
-    if: ${{ !contains(github.event.head_commit.message, '--no-ci') }}
-    uses: ./.github/workflows/_build-image.yaml
-    permissions:
-      contents: read
-      packages: write
-    with:
-      image-suffix: ""
-      python-version: '3.12'
-      tag-latest: false
-      tag-release: true
-
   # Tag and release the version this commit carries, after its image exists.
   # Idempotent: it does nothing when the release is already there.
   release:
-    needs: [build, build-compatibility]
-    if: ${{ !cancelled() && needs.build.result == 'success' && needs.build-compatibility.result == 'success' }}
+    needs: [build]
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
     runs-on: ubuntu-26.04
     permissions:
       contents: write

@@ -181,3 +181,23 @@ def test_detect_model_reads_the_device_tree(tmp_path):
     model.write_bytes(b"Raspberry Pi 5 Model B Rev 1.0\x00")
     assert detect_model(str(model)) == "Raspberry Pi 5 Model B Rev 1.0"
     assert detect_model(str(tmp_path / "missing")) == ""
+
+
+def test_explicit_rpigpio_uses_requested_pin(fake_gpio):
+    driver = create_driver(Drivers.RPIGPIO, 12, 25000, 40)
+    assert ('PWM', 12, 25000) in fake_gpio.calls
+    assert ('start', 40) in fake_gpio.calls
+    driver.close()
+
+
+def test_explicit_sysfs_uses_real_file_driver(tmp_path, monkeypatch):
+    import pifanctl.drivers as module
+    real_driver = SysfsDriver
+    channel = fake_pwm(tmp_path, chip=1, channel=0)
+    # Route the hardware filesystem root into a temporary directory. Retain
+    # the actual driver's calculations, writes and close behavior.
+    monkeypatch.setattr(module, 'SysfsDriver', lambda *args: real_driver(*args, base_path=str(tmp_path)))
+    driver = create_driver(Drivers.SYSFS, 18, 1000, 40, pwm_chip=1, pwm_channel=0)
+    assert (channel / 'period').read_text() == '1000000'
+    assert (channel / 'duty_cycle').read_text() == '400000'
+    driver.close()

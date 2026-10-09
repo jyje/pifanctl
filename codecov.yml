@@ -4,8 +4,8 @@ coverage:
   status:
     project:
       default:
-        target: auto
-        threshold: 0.1%
+        target: 100%
+        threshold: 0%
         flags:
           - python314
         informational: false
@@ -13,7 +13,8 @@ coverage:
         if_ci_failed: error
     patch:
       default:
-        target: 95%
+        target: 100%
+        threshold: 0%
         flags:
           - python314
         informational: false
