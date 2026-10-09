@@ -82,7 +82,9 @@ minimum startup-duty acceptance remain open.
 The original thermal curve, refresh interval, failsafe and exit duty were
 restored with feedback retained. The guardian acknowledged cancellation and
 trial annotations were removed. [Cluster PR #156](https://github.com/jyje/cluster/pull/156) restored GitOps
-self-heal; Argo is Synced/Healthy and all six v1.1 pods are Ready. No test load Pod or additional GPIO writer was introduced.
+self-heal; Argo is Synced/Healthy and all six v1.1 pods are Ready. A further
+64.5-second source-matched healthy hold passed with unchanged resource identities,
+normal policy, exact released image digest and fresh four-member telemetry. No test load Pod or additional GPIO writer was introduced.
 
 ## Read the deployed evidence
 

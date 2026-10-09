@@ -495,7 +495,7 @@ This approval changes the measurement policy, not the deployed control curve.
 - [x] Enable feedback through cluster PR #154 and verify actual CR status plus Prometheus RPM and source-clock samples.
 - [x] Complete the source-aware 62.24-second baseline and four guarded duty stages on the existing single Pi 4 worker with four Pi 4/Pi 5 members.
 - [x] Preserve interrupted attempts, self-test the in-cluster deadline guardian, restore the original thermal policy and cancel/remove trial state.
-- [x] Confirm cluster PR #156 restored automatic self-heal: Argo Synced/Healthy and all six v1.1 pods Ready. Final source-matched healthy hold is tracked in the measured report.
+- [x] Confirm cluster PR #156 restored automatic self-heal: Argo Synced/Healthy and all six v1.1 pods Ready. A final 64.5-second source-matched healthy hold passed with fresh member telemetry and unchanged resource identities.
 - [ ] Complete deliberate stop/restart under its below-50-C precondition. The current run skipped this at 50.7 C; naturally observed idle/restart is separate evidence.
 - [x] Run 498 local tests: line coverage 96.69%, branch coverage 91.36%, including seven anonymous-report validation tests.
 
