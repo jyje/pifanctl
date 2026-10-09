@@ -308,3 +308,25 @@ def test_pwm_probe_status_clears_numbers_and_removed_configuration(setup):
     o.reconcile(162)
     probe = k.get(resource('Fan', 'fan-a'))['status']['feedback']['pwm']
     assert not probe['ready'] and probe['reason'] == 'NotConfigured'
+
+
+@pytest.mark.parametrize('kind', ['pwm', 'tachometer'])
+def test_feedback_explicit_null_removes_previous_measurement(setup, kind):
+    """A null nested merge patch removes the collector, including stale numbers."""
+    k, o = setup
+    o.reconcile(100)
+    item = k.get(resource('Fan', 'fan-a'))
+    item['status']['feedback'] = {kind: {'ready': True, 'reason': '', 'observedAt': '2026-10-09T00:00:00Z',
+                                        'sampleSeconds': 1, 'rpm': 1200} if kind == 'tachometer' else
+                                       {'ready': True, 'reason': '', 'sampleSeconds': 1,
+                                        'cycleCount': 999, 'frequencyHz': 1000, 'dutyPercent': 25}}
+    k.put(resource('Fan', 'fan-a'), item)
+    status = copy.deepcopy(item['status'])
+    status['feedback'] = {kind: None}
+    o.write_status(item, status, 131)
+    updated = k.get(resource('Fan', 'fan-a'))['status']
+    assert kind not in updated['feedback']
+    assert updated['conditions'] == item['status']['conditions']
+    patch = next(body['status'] for method, path, body in reversed(k.calls)
+                 if method == 'PATCH' and path == resource('Fan', 'fan-a') + '/status')
+    assert patch['feedback'][kind] is None

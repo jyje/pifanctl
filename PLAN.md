@@ -513,3 +513,14 @@ open in #69/#64. The interim PDF is historical and does not include this campaig
 - [x] Run hardware-free regression/branch coverage and chart/schema checks, then publish PR #74 and monitor CI. Run 37864022218 passed Python 3.10-3.14, chart/workflow/version checks, coverage quality/Codecov upload and ARC ARM64 build/smoke. Production probe remains disabled until wiring is verified.
 
 Local v1.2 verification: 529 tests passed; line coverage 96.99%, branch coverage 92.11%, PWM probe module line/branch 100%. Helm fixture lint/render, schema parity, Changeset checks and live API CRD server dry-run passed. Physical PWM probe accuracy remains unmeasured.
+
+### PR #74 partial-branch coverage follow-up
+
+- [x] Identify Codecov's sole changed partial line: operator.py's nested feedback type guard, with the explicit-null removal path untested.
+- [x] Add PWM and tachometer null-removal regression cases, verify merge-patch deletion clears prior measurements and preserves thermal conditions, and run 531 tests. The previously missing branch is covered.
+- [ ] Confirm the updated canonical Python 3.14 Codecov report reaches 100% patch coverage and all final-head CI checks pass.
+
+The previous Codecov project report improved from 93.91% to 94.41%. Its comment
+reported partial coverage despite passing configured status checks (95% patch
+threshold, informational status). The one-commit main lag is the generated
+coverage badge metadata commit; it does not modify application or test code.
