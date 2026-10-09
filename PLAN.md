@@ -483,7 +483,22 @@ This approval changes the measurement policy, not the deployed control curve.
 - [ ] Confirm actual wiring, Pi-safe signal voltage, supply/ground and available physical instruments with the maintainer.
 - [ ] Verify a conforming connector-level 25 kHz PWM path and controlled immutable-hardware handoff before a formal sweep.
 - [ ] Enable verified tach input and collect a 60-second baseline with independent physical observation.
-- [ ] Run guarded 100/75/50/30% duty stages, publish actual RPM/temperature plots and verify restoration.
+- [x] Run the separately authorized actual-5-V 100/75/50/30% duty campaign on the existing 1 kHz path: measured means 1826/1524/1178.77/817.38 RPM, restored normal control, and published anonymous samples/graphs. This does not close the conforming connector-level PWM gate.
 - [ ] Execute the remaining physical fault, Pi 5, thermal, rollback and expanded-fleet checks where the required hardware is available. Missing hardware evidence stays unpassed in #69/#64.
 
 - [x] Run 491 full local regression tests (Python 3.13): line 96.69%, branch 91.36%; 14 new observation-tool tests passed. Validate the two-page interim PDF by rendering and visually reviewing every page.
+
+
+### v1.1 permanent GitOps RPM adoption (2026-10-09)
+
+- [x] Confirm maintainer-reported 5 V supply and physical pin 16 / BCM23 tach wiring; enable the explicitly authorized internal pull-up. Connector voltage remains unmeasured.
+- [x] Enable feedback through cluster PR #154 and verify actual CR status plus Prometheus RPM and source-clock samples.
+- [x] Complete the source-aware 62.24-second baseline and four guarded duty stages on the existing single Pi 4 worker with four Pi 4/Pi 5 members.
+- [x] Preserve interrupted attempts, self-test the in-cluster deadline guardian, restore the original thermal policy and cancel/remove trial state.
+- [x] Confirm cluster PR #156 restored automatic self-heal: Argo Synced/Healthy and all six v1.1 pods Ready. A final 64.5-second source-matched healthy hold passed with fresh member telemetry and unchanged resource identities.
+- [ ] Complete deliberate stop/restart under its below-50-C precondition. The current run skipped this at 50.7 C; naturally observed idle/restart is separate evidence.
+- [x] Run 498 local tests: line coverage 96.69%, branch coverage 91.36%, including seven anonymous-report validation tests.
+
+See `docs/v1/hardware-verification/rpm-5v/README.md`. Electrical waveform,
+independent RPM calibration, Pi 5 actuation and expanded fleet acceptance remain
+open in #69/#64. The interim PDF is historical and does not include this campaign.

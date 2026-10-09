@@ -1,8 +1,13 @@
 # Hardware verification campaign: NF-A12x25 PWM
 
-Status: **in progress, physical acceptance not achieved**. App/chart 1.1.0 is
+Status: **RPM collection and actual-5-V duty response verified; full electrical
+and hardware acceptance remain open**. App/chart 1.1.0 is
 installed. The existing Pi 4 actuator serves a four-member mixed Pi 4/Pi 5 rack.
 Pi 5 fan actuation and a larger physical fleet are separate unverified scope.
+
+The [2026-10-09 RPM campaign](rpm-5v/README.md) records permanent v1.1 GitOps
+feedback, actual CR/Prometheus samples and four guarded duty stages. The passive
+observation and PDF below are earlier historical evidence.
 
 ## 01: Signal identification
 

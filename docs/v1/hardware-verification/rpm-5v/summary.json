@@ -1,0 +1,66 @@
+{
+  "runtime": "v1.1.0-py312",
+  "chartVersion": "1.1.0",
+  "supply": "Pi 5 V pin, maintainer-reported; not instrument-measured",
+  "fanModel": "NF-A12x25 PWM (12 V rated)",
+  "pwmFrequencyConfiguredHz": 1000,
+  "tachBCMPin": 23,
+  "tachBias": "internal pull-up",
+  "pulsesPerRevolution": 2,
+  "rpmWindowSeconds": 5,
+  "rpmResolutionPerPulse": 6,
+  "baseline": {
+    "passed": true,
+    "durationSeconds": 62.23635162494611,
+    "samples": 12,
+    "minimumRPM": 966.0,
+    "maximumRPM": 972.0,
+    "commandedDuty": 38.12
+  },
+  "stages": [
+    {
+      "commandedDuty": 100,
+      "elapsed": 60.7411473330576,
+      "samples": 12,
+      "meanRPM": 1826.0,
+      "minRPM": 1818.0,
+      "maxRPM": 1830.0,
+      "maximumTemperature": 47.4
+    },
+    {
+      "commandedDuty": 75,
+      "elapsed": 64.62462208303623,
+      "samples": 13,
+      "meanRPM": 1524.0,
+      "minRPM": 1518.0,
+      "maxRPM": 1530.0,
+      "maximumTemperature": 43.55
+    },
+    {
+      "commandedDuty": 50,
+      "elapsed": 64.36437145899981,
+      "samples": 13,
+      "meanRPM": 1178.7692307692307,
+      "minRPM": 1176.0,
+      "maxRPM": 1182.0,
+      "maximumTemperature": 45.2
+    },
+    {
+      "commandedDuty": 30,
+      "elapsed": 64.42184825008735,
+      "samples": 13,
+      "meanRPM": 817.3846153846154,
+      "minRPM": 810.0,
+      "maxRPM": 834.0,
+      "maximumTemperature": 50.7
+    }
+  ],
+  "restart": {
+    "performed": false,
+    "reason": "No deliberate stop above 50 C; retain observed normal-policy stop/restart"
+  },
+  "normalControlRestored": true,
+  "measuredConnectorVoltage": false,
+  "measuredConnectorPWM": false,
+  "independentRPMCalibration": false
+}
