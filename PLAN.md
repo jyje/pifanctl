@@ -556,7 +556,7 @@ coverage badge metadata commit; it does not modify application or test code.
 - [x] Fix the Coverage quality failure in run 37868306208: a pattern download of a single artifact is flattened, so the matrix validator found no report. The job now downloads `coverage-3.14` into `coverage-artifacts/coverage-3.14`, with a regression test. Thresholds and missing-report validation are unchanged. 530 tests pass locally.
 - [x] Verify PR #76 remote Python 3.14 CI, Codecov and ARC build/smoke. Run 37870357144 passed tests, chart, workflow, version checks, coverage quality, Codecov upload with native project and patch statuses, and the ARC ARM64 image.
 - [x] Complete the cluster CA maintenance in jyje/cluster issue #157: the CA certificate was reissued with the same key, subject, serial and expiry plus Key Usage, and replaced on all four nodes without leave/rejoin or workload stop. Strict Python 3.14 TLS passes from outside the cluster and from inside a pod.
-- [ ] Migrate cluster GitOps to the Python 3.14 release (1.2.0) and verify the Argo revision, operator, agents, worker, Fan regulation and fresh temperature/RPM telemetry.
+- [x] Migrate cluster GitOps to the Python 3.14 release (1.2.0) through jyje/cluster#160. Argo CD synced the v1.2.0 revision, and the operator, four agents and worker run image v1.2.0 on Python 3.14.8 with no restarts and no TLS errors. The Fan stayed Regulating with fresh temperature and RPM telemetry. After the restart, duty fell from the 100 percent failsafe back to normal regulation within about two minutes. The PWM probe remains disabled.
 
 ### Meaningful full software coverage
 
