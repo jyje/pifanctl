@@ -186,3 +186,25 @@ def test_watch_reports_strict_tls_rejection_and_stops_the_stream(monkeypatch):
         list(Kube(client=kclient.ApiClient()).events('Fan'))
     assert caught.value.code == STRICT_TLS_REASON
     stream.stop.assert_called_once()
+
+
+@pytest.mark.parametrize('status,reason', [(403, 'Forbidden'), (0, 'SSLError\nconnection reset')])
+def test_other_api_failures_keep_their_status_and_have_no_typed_reason(status, reason):
+    from kubernetes.client.exceptions import ApiException
+    client = Mock()
+    client.call_api.side_effect = ApiException(status=status, reason=reason)
+    with pytest.raises(APIError) as caught:
+        Kube(client=client).get('/version')
+    assert caught.value.status == status and caught.value.code is None
+
+
+def test_request_classifies_the_flattened_client_message():
+    from kubernetes.client.exceptions import ApiException
+    client = Mock()
+    client.call_api.side_effect = ApiException(status=0, reason=(
+        "SSLError\nMax retries exceeded (Caused by SSLError(SSLCertVerificationError(1, "
+        "'[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Missing Authority Key Identifier "
+        "(_ssl.c:1032)')))"))
+    with pytest.raises(APIError) as caught:
+        Kube(client=client).get('/version')
+    assert caught.value.code == STRICT_TLS_REASON and 'Missing Authority Key Identifier' in str(caught.value)
