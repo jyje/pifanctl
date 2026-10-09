@@ -316,10 +316,11 @@ def test_feedback_explicit_null_removes_previous_measurement(setup, kind):
     k, o = setup
     o.reconcile(100)
     item = k.get(resource('Fan', 'fan-a'))
-    item['status']['feedback'] = {kind: {'ready': True, 'reason': '', 'observedAt': '2026-10-09T00:00:00Z',
-                                        'sampleSeconds': 1, 'rpm': 1200} if kind == 'tachometer' else
-                                       {'ready': True, 'reason': '', 'sampleSeconds': 1,
-                                        'cycleCount': 999, 'frequencyHz': 1000, 'dutyPercent': 25}}
+    measurement = {'ready': True, 'reason': '', 'observedAt': '2026-10-09T00:00:00Z',
+                   'sampleSeconds': 1}
+    measurement.update({'rpm': 1200, 'pulseCount': 40} if kind == 'tachometer' else
+                       {'cycleCount': 999, 'frequencyHz': 1000, 'dutyPercent': 25})
+    item['status']['feedback'] = {kind: measurement}
     k.put(resource('Fan', 'fan-a'), item)
     status = copy.deepcopy(item['status'])
     status['feedback'] = {kind: None}
