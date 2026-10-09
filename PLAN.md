@@ -510,6 +510,6 @@ open in #69/#64. The interim PDF is historical and does not include this campaig
 - [x] Integrate worker lifecycle, CR status, Prometheus metrics and CLI observation; never substitute commanded duty for measured duty.
 - [x] Document Pi-safe probe wiring, digital timing limitations and per-fan user verification of RPM pulses per revolution.
 - [x] Add app/operator-chart 1.2.0 and a minor Changeset; retain CR API v1 with additive fields.
-- [ ] Run hardware-free regression/branch coverage and chart/schema checks, then publish the PR and monitor CI. Keep production probe disabled until wiring is verified.
+- [x] Run hardware-free regression/branch coverage and chart/schema checks, then publish PR #74 and monitor CI. Run 37864022218 passed Python 3.10-3.14, chart/workflow/version checks, coverage quality/Codecov upload and ARC ARM64 build/smoke. Production probe remains disabled until wiring is verified.
 
 Local v1.2 verification: 529 tests passed; line coverage 96.99%, branch coverage 92.11%, PWM probe module line/branch 100%. Helm fixture lint/render, schema parity, Changeset checks and live API CRD server dry-run passed. Physical PWM probe accuracy remains unmeasured.
