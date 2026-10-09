@@ -2,12 +2,14 @@
 
 App and operator chart 1.0.0 were published from release commit `0b37ed93e28095d0973ff5d171cdaba1ce17a8f0`. Starting with 1.1.0, the supported operator chart version and appVersion follow the application version. Explicit image overrides remain available. The historical legacy chart is not part of this release.
 
-## Application and operator chart 1.2.0 (proposed)
+## Application and operator chart 1.2.0
 
 - Add optional `Fan.spec.feedback.pwm` with an independent Pi 4 GPIO input and a rolling digital timing window.
 - Report measured frequency and HIGH duty in CR status and Prometheus only for valid complete windows. Unconfigured, stale, static and invalid inputs use Prometheus NaN, typed CR reasons and CLI N/A; commanded duty is never substituted.
 - Add `fan measurements` for explicit observation summaries and require users to verify tach pulses per revolution for each fan model.
 - Preserve legacy values and thermal control. Apply additive CRD updates before enabling a probe; production probe wiring and physical accuracy remain unverified.
+- Fix explicit-null feedback removal branch coverage and retain complete Codecov reports with enforced targets. Measure badge publication commits afresh so main coverage has the correct revision.
+- Publish both ARM64 runtime images and the operator OCI chart from `083f50ed5865384f8238fe62d480344ff3bb5d66`. See the [artifact verification record](docs/releases/1.2.0/README.md).
 
 ## Application and operator chart 1.1.0
 
