@@ -502,3 +502,12 @@ This approval changes the measurement policy, not the deployed control curve.
 See `docs/v1/hardware-verification/rpm-5v/README.md`. Electrical waveform,
 independent RPM calibration, Pi 5 actuation and expanded fleet acceptance remain
 open in #69/#64. The interim PDF is historical and does not include this campaign.
+
+### v1.2 optional PWM probe feedback
+
+- [ ] Define an optional independent GPIO probe with backward-compatible Fan/Helm schemas and exclusive input/output claims.
+- [ ] Collect both-edge digital timing and publish measured frequency/HIGH duty only for valid complete windows; report NaN in Prometheus, typed CR reasons and CLI N/A for unconfigured, stale, static or invalid signals.
+- [ ] Integrate worker lifecycle, CR status, Prometheus metrics and CLI observation; never substitute commanded duty for measured duty.
+- [ ] Document Pi-safe probe wiring, digital timing limitations and per-fan user verification of RPM pulses per revolution.
+- [ ] Add app/operator-chart 1.2.0 and a minor Changeset; retain CR API v1 with additive fields.
+- [ ] Run hardware-free regression/branch coverage and chart/schema checks, then publish the PR and monitor CI. Keep production probe disabled until wiring is verified.
