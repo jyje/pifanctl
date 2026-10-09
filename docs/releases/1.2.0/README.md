@@ -31,6 +31,11 @@ the badge revision. The earlier source XML was not reassigned to a different SHA
 Complete PR comments remain enabled; project coverage is 94.46%, while PR #74's
 patch coverage is 100%. These are different metrics.
 
+The complete Codecov report on release closeout PR #75 compares against the
+measured main badge commit 249128a with unchanged 94.46% project coverage. Both
+native statuses passed and the historical one-commit main lag warning is absent.
+CI run 37866848731 passed. This verifies the correction without hiding comments.
+
 ## Upgrade and operational boundary
 
 Review and explicitly apply the additive CRD schema before enabling

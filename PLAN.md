@@ -536,7 +536,7 @@ coverage badge metadata commit; it does not modify application or test code.
 - [x] Verify ce32062 in CI run 37865810767: Python 3.10-3.14, chart/workflow/version checks, coverage quality, Codecov upload and ARC image passed. Enforced codecov/project and codecov/patch both passed; the retained comment reports 100% patch and 94.46% project coverage.
 
 - [x] Verify main CI run 37866477570 freshly measures badge commit 249128a64f6f819f70d316a355c44de84da7f117 and uploads its report. Both Codecov project/patch statuses passed on that generated commit.
-- [ ] Verify the release closeout PR uses the measured current main base without the historical one-commit lag warning.
+- [x] Verify PR #75 uses measured main base 249128a, retains the complete report, reports unchanged project coverage 94.46%, and has no historical one-commit lag warning. CI run 37866848731 and native Codecov statuses passed.
 
 ### v1.2.0 release closeout
 
