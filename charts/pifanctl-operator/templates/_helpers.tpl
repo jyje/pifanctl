@@ -9,3 +9,9 @@ app.kubernetes.io/name: pifanctl-operator
 app.kubernetes.io/instance: {{ .Release.Name }}
 pifanctl.jyje.online/operator: {{ .Values.operatorId | quote }}
 {{- end -}}
+{{- define "pifanctl.workerNamespace" -}}
+{{ default .Release.Namespace .Values.workerNamespace }}
+{{- end -}}
+{{- define "pifanctl.separateWorkers" -}}
+{{- if ne (include "pifanctl.workerNamespace" .) .Release.Namespace -}}true{{- end -}}
+{{- end -}}

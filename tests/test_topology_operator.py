@@ -356,3 +356,52 @@ def test_node_temperatures_merge_fans_and_ignore_unresolved_nodes():
     assert [n['nodeName'] for n in result] == ['pi-a', 'pi-b']
     assert result[0]['temperatureCelsius'] == 62 and result[0]['ready']
     assert result[1] == {'nodeName': 'pi-b', 'ready': False, 'reason': 'Unavailable'}
+
+
+def test_workers_live_in_their_own_namespace_but_owned_by_the_operator():
+    k = FakeAPI()
+    for item in [fan(), zone()]: k.put(resource(item['kind'], item['metadata']['name']), item)
+    k.put('/api/v1/nodes/pi-a', node(labels={'kubernetes.io/hostname': 'pi-host'}))
+    o = Operator(k, namespace='ops', worker_namespace='workers', report_reader=lambda worker, now: None)
+    assert o.reconcile()
+    worker = worker_name('pi-a')
+    deployment = k.get('/apis/apps/v1/namespaces/workers/deployments/' + worker)
+    assert deployment['metadata']['namespace'] == 'workers'
+    assert deployment['metadata']['annotations'][OWNER] == 'ops/' + o.id
+    config = k.get('/api/v1/namespaces/workers/configmaps/' + worker + '-plan')
+    assert config['metadata']['namespace'] == 'workers'
+    assert not any('/namespaces/ops/deployments' in path or '/namespaces/ops/configmaps' in path for path in k.objects)
+    assert o.lease.path.startswith('/apis/coordination.k8s.io/v1/namespaces/ops/')
+    assert o.reconcile()  # a second pass adopts its own objects instead of refusing them
+
+
+def test_worker_namespace_defaults_to_the_operator_namespace(setup):
+    k, o = setup
+    assert o.worker_namespace == o.namespace
+    from pifanctl.topology.operator import worker_deployment
+    deployment = worker_deployment('a', 'op', 'pi-a', 'uid', 'host', 'cfg', 'img', {})
+    assert deployment['metadata']['annotations'][OWNER] == 'a/op'
+
+
+def test_operator_command_accepts_a_worker_namespace(monkeypatch):
+    import pifanctl.topology.cli as topology_cli
+    import pifanctl.topology.operator as operator_module
+    created = []
+    monkeypatch.setattr(topology_cli, 'api', lambda ctx: object())
+    monkeypatch.setattr(operator_module, 'run_operator', created.append)
+    assert CliRunner().invoke(operator_app, ['--namespace', 'ops', '--worker-namespace', 'workers']).exit_code == 0
+    assert created[0].namespace == 'ops' and created[0].worker_namespace == 'workers'
+
+
+def test_deletion_waits_for_ack_in_a_separate_worker_namespace():
+    k = FakeAPI()
+    for item in [fan(), zone()]: k.put(resource(item['kind'], item['metadata']['name']), item)
+    k.put('/api/v1/nodes/pi-a', node(labels={'kubernetes.io/hostname': 'pi-host'}))
+    o = Operator(k, namespace='ops', worker_namespace='workers', report_reader=lambda worker, now: None)
+    o.reconcile()
+    k.objects[resource('Fan', 'fan-a')]['metadata']['deletionTimestamp'] = 'now'
+    o.reconcile()
+    assert FINALIZER in k.get(resource('Fan', 'fan-a'))['metadata']['finalizers']
+    o.report_reader = reporter(k, o); o.reconcile()
+    assert FINALIZER not in k.get(resource('Fan', 'fan-a'))['metadata']['finalizers']
+    assert k.optional('/apis/apps/v1/namespaces/workers/deployments/' + worker_name('pi-a')) is None

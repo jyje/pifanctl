@@ -1,0 +1,51 @@
+{{- if .Values.workerAdmission.enabled }}
+{{- $operatorUser := printf "system:serviceaccount:%s:%s" .Release.Namespace (include "pifanctl.operatorName" .) }}
+{{- $policy := printf "%s-%s-workers" .Release.Namespace (include "pifanctl.operatorName" .) }}
+# Limits what the operator can create in the worker namespace to the known worker shape.
+# Without it, the right to create Deployments there is the right to create any privileged Pod.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: {{ $policy }}
+spec:
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [apps]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [deployments]
+  matchConditions:
+    - name: created-by-this-operator
+      expression: request.userInfo.username == {{ $operatorUser | quote }}
+  variables:
+    - name: pod
+      expression: object.spec.template.spec
+  validations:
+    - expression: variables.pod.containers.size() == 1
+      message: a worker Deployment must have exactly one container
+    - expression: "!has(variables.pod.initContainers) || variables.pod.initContainers.size() == 0"
+      message: a worker Deployment must not have init containers
+    - expression: "(!has(variables.pod.hostNetwork) || !variables.pod.hostNetwork) && (!has(variables.pod.hostPID) || !variables.pod.hostPID) && (!has(variables.pod.hostIPC) || !variables.pod.hostIPC)"
+      message: a worker must not share the host network, PID or IPC namespace
+    - expression: "has(variables.pod.automountServiceAccountToken) && !variables.pod.automountServiceAccountToken"
+      message: a worker must not receive a ServiceAccount token
+    - expression: "!has(variables.pod.volumes) || variables.pod.volumes.all(v, has(v.configMap) || (has(v.hostPath) && v.hostPath.path in ['/sys', '/dev', '/var/lock/pifanctl']))"
+      message: a worker may mount only its ConfigMap and the /sys, /dev and /var/lock/pifanctl host paths
+    - expression: variables.pod.containers[0].image.startsWith({{ printf "%s:" .Values.image.repository | quote }})
+      message: a worker must use the configured pifanctl image repository
+    - expression: "variables.pod.containers[0].command.size() >= 4 && variables.pod.containers[0].command[0] == 'python' && variables.pod.containers[0].command[1] == 'main.py' && variables.pod.containers[0].command[2] == 'worker' && variables.pod.containers[0].command[3] == 'run'"
+      message: a worker must run the pifanctl worker command
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: {{ $policy }}
+spec:
+  policyName: {{ $policy }}
+  validationActions: [Deny]
+  matchResources:
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: {{ include "pifanctl.workerNamespace" . | quote }}
+{{- end }}

@@ -249,3 +249,68 @@ def test_worker_egress_rejects_selectors_that_would_widen_access(flag):
     result = subprocess.run(['helm', 'template', 'test', str(CHART), '-n', 'system',
                              '--set', 'networkPolicy.workerEgress.enabled=true', *flag], capture_output=True, text=True)
     assert result.returncode != 0 and 'networkPolicy.workerEgress' in result.stderr
+
+
+def roles(objects):
+    return {(o['metadata'].get('namespace', 'system'), o['metadata']['name']): o for o in objects if o['kind'] == 'Role'}
+
+
+def test_default_keeps_workers_in_the_release_namespace():
+    objects = render()
+    operator = next(o for o in objects if o['kind'] == 'Deployment' and o['metadata']['name'] == 'test-operator')
+    args = operator['spec']['template']['spec']['containers'][0]['args']
+    assert args[args.index('--worker-namespace') + 1] == 'system'
+    role = roles(objects)[('system', 'test-operator')]
+    assert {'deployments', 'configmaps', 'pods'} <= {r for rule in role['rules'] for r in rule['resources']}
+    assert not any(k[1].endswith('-workers') for k in roles(objects))
+
+
+def test_separate_worker_namespace_splits_the_operator_role():
+    objects = render('--set', 'workerNamespace=workers')
+    operator = next(o for o in objects if o['kind'] == 'Deployment' and o['metadata']['name'] == 'test-operator')
+    args = operator['spec']['template']['spec']['containers'][0]['args']
+    assert args[args.index('--worker-namespace') + 1] == 'workers'
+    own = {r for rule in roles(objects)[('system', 'test-operator')]['rules'] for r in rule['resources']}
+    assert own == {'events', 'leases'}
+    workers = roles(objects)[('workers', 'system-test-operator-workers')]
+    assert {r for rule in workers['rules'] for r in rule['resources']} == {'deployments', 'pods', 'configmaps'}
+    binding = next(o for o in objects if o['kind'] == 'RoleBinding' and o['metadata'].get('namespace') == 'workers')
+    assert binding['subjects'][0]['namespace'] == 'system'
+    for kind in ('Service', 'NetworkPolicy'):
+        worker_objects = [o for o in objects if o['kind'] == kind and o['metadata']['name'].endswith('-worker')]
+        assert worker_objects and all(o['metadata']['namespace'] == 'workers' for o in worker_objects)
+    policy = next(o for o in objects if o['kind'] == 'NetworkPolicy' and o['metadata']['name'] == 'test-operator-worker')
+    peer = policy['spec']['ingress'][0]['from'][0]
+    assert peer['namespaceSelector']['matchLabels'] == {'kubernetes.io/metadata.name': 'system'}
+    assert 'namespaceSelector' not in next(o for o in render() if o['kind'] == 'NetworkPolicy')['spec']['ingress'][0]['from'][0]
+
+
+@pytest.mark.parametrize('bad', ['Workers', 'a_b', '-x', 'x' * 64])
+def test_worker_namespace_must_be_a_dns_label(bad):
+    result = subprocess.run(['helm', 'template', 'test', str(CHART), '-n', 'system', '--set', 'workerNamespace=' + bad],
+                            capture_output=True, text=True)
+    assert result.returncode != 0 and 'workerNamespace' in result.stderr
+
+
+def test_agents_follow_the_hardware_namespace():
+    # Agents mount hostPath, which both baseline and restricted Pod Security reject.
+    # Keeping them with the workers leaves only the operator in the restricted namespace.
+    for flags, expected in (([], 'system'), (['--set', 'workerNamespace=workers'], 'workers')):
+        objects = render('--set', 'serviceMonitor.enabled=true', *flags)
+        agent_objects = [o for o in objects if o['metadata']['name'] == 'test-operator-agent']
+        assert {o['kind'] for o in agent_objects} == {'DaemonSet', 'Service', 'ServiceMonitor'}
+        assert {o['metadata'].get('namespace', 'system') for o in agent_objects} == {expected}
+
+
+def test_admission_policy_is_opt_in_and_bound_to_the_operator():
+    assert not any(o['kind'].startswith('ValidatingAdmission') for o in render())
+    objects = render('--set', 'workerNamespace=workers', '--set', 'workerAdmission.enabled=true')
+    policy = next(o for o in objects if o['kind'] == 'ValidatingAdmissionPolicy')
+    binding = next(o for o in objects if o['kind'] == 'ValidatingAdmissionPolicyBinding')
+    assert policy['spec']['failurePolicy'] == 'Fail'
+    assert policy['spec']['matchConditions'][0]['expression'] == 'request.userInfo.username == "system:serviceaccount:system:test-operator"'
+    assert binding['spec']['validationActions'] == ['Deny']
+    assert binding['spec']['matchResources']['namespaceSelector']['matchLabels'] == {'kubernetes.io/metadata.name': 'workers'}
+    expressions = ' '.join(v['expression'] for v in policy['spec']['validations'])
+    for required in ('hostNetwork', 'hostPID', 'hostIPC', "'/var/lock/pifanctl'", 'startsWith("ghcr.io/jyje/pifanctl:")', "command[3] == 'run'"):
+        assert required in expressions

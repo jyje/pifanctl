@@ -18,6 +18,15 @@
       "minimum": 1,
       "maximum": 5
     },
+    "workerAdmission": {
+      "type": "object",
+      "properties": {"enabled": {"type": "boolean"}}
+    },
+    "workerNamespace": {
+      "type": "string",
+      "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$",
+      "maxLength": 63
+    },
     "networkPolicy": {
       "type": "object",
       "properties": {

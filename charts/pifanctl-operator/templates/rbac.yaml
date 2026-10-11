@@ -54,6 +54,7 @@ kind: Role
 metadata:
   name: {{ include "pifanctl.operatorName" . }}
 rules:
+{{- if not (include "pifanctl.separateWorkers" .) }}
   - apiGroups: [apps]
     resources: [deployments]
     verbs: [get, list, create, patch, delete]
@@ -63,6 +64,7 @@ rules:
   - apiGroups: [""]
     resources: [configmaps]
     verbs: [get, list, create, patch, delete]
+{{- end }}
   - apiGroups: [""]
     resources: [events]
     verbs: [create]
@@ -82,3 +84,36 @@ subjects:
   - kind: ServiceAccount
     name: {{ include "pifanctl.operatorName" . }}
     namespace: {{ .Release.Namespace }}
+{{- if include "pifanctl.separateWorkers" . }}
+---
+# Worker objects live in their own privileged namespace. Only this Role can manage them.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ .Release.Namespace }}-{{ include "pifanctl.operatorName" . }}-workers
+  namespace: {{ include "pifanctl.workerNamespace" . }}
+rules:
+  - apiGroups: [apps]
+    resources: [deployments]
+    verbs: [get, list, create, patch, delete]
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list]
+  - apiGroups: [""]
+    resources: [configmaps]
+    verbs: [get, list, create, patch, delete]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ .Release.Namespace }}-{{ include "pifanctl.operatorName" . }}-workers
+  namespace: {{ include "pifanctl.workerNamespace" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ .Release.Namespace }}-{{ include "pifanctl.operatorName" . }}-workers
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "pifanctl.operatorName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

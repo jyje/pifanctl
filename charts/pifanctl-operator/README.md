@@ -26,6 +26,8 @@ helm upgrade --install pifanctl charts/pifanctl-operator \
 | `image.tag` | Defaults to pinned `v1.1.0`; never `latest` |
 | `extraResources` | Kubernetes resources submitted with the release; use `Fan` and `CoolingZone` CRs for the cooling topology |
 | `networkPolicy.monitoringNamespaceSelector` | Namespaces allowed to read worker metrics/status |
+| `workerNamespace` | Namespace for workers, plans, the worker Service and agents. It must exist and allow privileged Pods. Empty keeps them in the release namespace |
+| `workerAdmission.enabled` | Opt in to a ValidatingAdmissionPolicy that limits operator-created Deployments to the worker shape (Kubernetes 1.30+) |
 | `networkPolicy.workerEgress.enabled` | Opt in to a worker egress policy allowing only DNS and Prometheus (default `false`) |
 | `networkPolicy.workerEgress.*Selector`, `prometheusPort` | Where DNS and Prometheus run. They must match every CoolingZone `telemetry.prometheusURL` |
 | `serviceMonitor.enabled` | Create worker and managed-agent ServiceMonitors if Prometheus Operator is installed |

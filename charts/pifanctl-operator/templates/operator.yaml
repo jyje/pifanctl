@@ -40,6 +40,8 @@ spec:
           args:
             - --namespace
             - {{ .Release.Namespace | quote }}
+            - --worker-namespace
+            - {{ include "pifanctl.workerNamespace" . | quote }}
             - --operator-id
             - {{ .Values.operatorId | quote }}
             - --image
