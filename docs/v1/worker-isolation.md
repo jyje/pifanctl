@@ -45,6 +45,10 @@ Use a `ValidatingAdmissionPolicy` (GA in Kubernetes 1.30, the declared minimum) 
 
 This turns "operator can create any privileged Pod" into "operator can create only a worker". Residual risk: a compromised operator can still start a worker with other flags or a different plan. The plan is validated by Node UID checks and hashes, but that is not a security boundary. Policy and binding are cluster-scoped, so the chart installer needs permission to create them. This should be opt-in at first.
 
+## Toleration scope
+
+Worker Deployments tolerate every taint (`operator: Exists`) so a cooling worker still runs on a tainted control-plane or dedicated Node. Placement is still pinned to one Node by required node affinity on the hostname and Node name, and the plan carries the Node UID. A worker therefore cannot move to another Node, and the toleration does not widen where it runs. It does mean an operator-created worker can land on a Node that other workloads avoid, which is why the admission policy checks the worker shape.
+
 ## Phase C: device access without `privileged`
 
 Deferred until A and B are done. Options from the #86 findings: a device plugin, CDI or DRA, or hardware PWM through sysfs. Each needs its own hardware test. None is claimed here.
