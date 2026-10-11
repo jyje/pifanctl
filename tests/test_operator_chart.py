@@ -236,3 +236,16 @@ def test_worker_egress_allows_only_dns_and_prometheus():
     assert prometheus['ports'] == [{'protocol': 'TCP', 'port': 9091}]
     assert prometheus['to'][0]['namespaceSelector']['matchLabels'] == {'kubernetes.io/metadata.name': 'observability'}
     assert all('ipBlock' not in peer for rule in spec['egress'] for peer in rule['to'])
+
+
+@pytest.mark.parametrize('flag', [
+    ['--set', 'networkPolicy.workerEgress.prometheusNamespaceSelector=null'],
+    ['--set', 'networkPolicy.workerEgress.dnsPodSelector=null'],
+    ['--set', 'networkPolicy.workerEgress.prometheusPort=abc'],
+    ['--set', 'networkPolicy.workerEgress.prometheusPort=0'],
+    ['--set-json', 'networkPolicy.workerEgress.prometheusPodSelector={"a":1}'],
+])
+def test_worker_egress_rejects_selectors_that_would_widen_access(flag):
+    result = subprocess.run(['helm', 'template', 'test', str(CHART), '-n', 'system',
+                             '--set', 'networkPolicy.workerEgress.enabled=true', *flag], capture_output=True, text=True)
+    assert result.returncode != 0 and 'networkPolicy.workerEgress' in result.stderr

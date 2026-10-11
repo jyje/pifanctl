@@ -99,6 +99,10 @@ Pod Security policy. NetworkPolicy requires a CNI that enforces it. Ingress is
 restricted; worker egress must reach DNS and the configured Prometheus endpoint.
 Set `networkPolicy.workerEgress.enabled` to enforce that. A wrong selector blocks telemetry and
 workers then request failsafe duty, so verify it on one Node first.
+The DNS rule matches the cluster DNS Pods; clusters that resolve through NodeLocal DNSCache
+need a matching rule. Selectors cannot be empty, so the policy never widens to all namespaces.
+While workers stay privileged, a host escape bypasses any Pod NetworkPolicy, so treat this as
+defense in depth and not as a security boundary (see issue 86).
 Specify image digests via `image.tag` is not supported: use an immutable version
 tag here; digest-based image configuration is a future packaging enhancement.
 
