@@ -90,7 +90,7 @@ def worker_name(node):
     return 'pifanctl-worker-' + hashlib.sha256(node.encode()).hexdigest()[:16]
 
 
-def worker_deployment(namespace, operator_id, node, uid, hostname, config, image, owner):
+def worker_deployment(namespace, operator_id, node, uid, hostname, config, image, owner, operator_namespace=None):
     # Keep the host lock shared with legacy writers. Use a direct container
     # path instead of relying on the image's /var/lock symlink.
     worker = worker_name(node)
@@ -98,7 +98,7 @@ def worker_deployment(namespace, operator_id, node, uid, hostname, config, image
               'app.kubernetes.io/component': 'worker'}
     return {'apiVersion': 'apps/v1', 'kind': 'Deployment',
         'metadata': {'name': worker, 'namespace': namespace, 'labels': labels,
-                     'annotations': {OWNER: namespace + '/' + operator_id}, 'ownerReferences': [owner]},
+                     'annotations': {OWNER: (operator_namespace or namespace) + '/' + operator_id}, 'ownerReferences': [owner]},
         'spec': {'replicas': 1, 'strategy': {'type': 'Recreate'},
             'selector': {'matchLabels': {'pifanctl.jyje.online/node': worker}},
             'template': {'metadata': {'labels': labels}, 'spec': {
@@ -128,13 +128,15 @@ def worker_deployment(namespace, operator_id, node, uid, hostname, config, image
 
 class Operator:
     def __init__(self, kube, namespace='pifanctl', operator_id='pifanctl', input_configmap=None,
-                 image=None, report_reader=None):
+                 image=None, report_reader=None, worker_namespace=None):
         self.kube, self.namespace, self.id = kube, namespace, operator_id
+        # Leases stay with the operator. Workers, plans and status maps live in the worker namespace.
+        self.worker_namespace = worker_namespace or namespace
         self.identity = namespace + '/' + operator_id
         self.input_configmap = input_configmap
         self.image = image or f'ghcr.io/jyje/pifanctl:v{__version__}'
-        self.core = f'/api/v1/namespaces/{name(namespace)}'
-        self.apps = f'/apis/apps/v1/namespaces/{name(namespace)}'
+        self.core = f'/api/v1/namespaces/{name(self.worker_namespace)}'
+        self.apps = f'/apis/apps/v1/namespaces/{name(self.worker_namespace)}'
         self.lease = Lease(kube, namespace, operator_id)
         self.report_reader = report_reader or self.read_report
         self.last_status, self.events = {}, {}
@@ -263,7 +265,7 @@ class Operator:
             plan_text = json.dumps(desired, sort_keys=True)
             if len(plan_text.encode()) > MAX_BYTES:
                 raise TopologyError('worker plan exceeds 900 KB; split the actuator topology')
-            cm = {'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': config, 'namespace': self.namespace,
+            cm = {'apiVersion': 'v1', 'kind': 'ConfigMap', 'metadata': {'name': config, 'namespace': self.worker_namespace,
                   'labels': {'pifanctl.jyje.online/node': worker}, 'annotations': {OWNER: self.identity, 'pifanctl.jyje.online/nodeName': node}, 'ownerReferences': [owner]},
                   'data': {'plan.json': plan_text,
                            'heartbeat.json': json.dumps({'time': now, 'healthy': True, 'planHash': desired['hash'], 'nodeUID': desired['nodeUID']})}}
@@ -276,7 +278,7 @@ class Operator:
                 continue
             hostname = node_map[node]['metadata'].get('labels', {}).get('kubernetes.io/hostname')
             if not hostname: raise TopologyError('actuator Node requires kubernetes.io/hostname label')
-            deployment = worker_deployment(self.namespace, self.id, node, desired['nodeUID'], hostname, config, self.image, owner)
+            deployment = worker_deployment(self.worker_namespace, self.id, node, desired['nodeUID'], hostname, config, self.image, owner, self.namespace)
             self.managed(self.apps + '/deployments', deployment)
             report = self.report_reader(worker, now)
             if not report or report.get('nodeName') != node or report.get('nodeUID') != desired['nodeUID'] or report.get('appliedTopologyHash') != desired['hash']:
@@ -349,7 +351,7 @@ class Operator:
             if not last or now - last[0] >= 30 or last[1] != signature:
                 status_name = 'pifanctl-status-' + digest(source['metadata']['name'])[:16]
                 self.managed(self.core + '/configmaps', {'apiVersion': 'v1', 'kind': 'ConfigMap',
-                'metadata': {'name': status_name, 'namespace': self.namespace,
+                'metadata': {'name': status_name, 'namespace': self.worker_namespace,
                              'annotations': {OWNER: self.identity}, 'ownerReferences': [owner]},
                 'data': {'status.json': json.dumps(statuses, sort_keys=True)}})
                 self.last_status[key] = (now, signature)
@@ -496,6 +498,7 @@ def run_operator(operator, stop=None, port=9104):
 
 @app.command('run')
 def command(ctx: typer.Context, namespace: str = 'pifanctl', operator_id: str = 'pifanctl',
-            image: str = ''):
+            image: str = '', worker_namespace: str = ''):
     from pifanctl.topology.cli import api
-    run_operator(Operator(api(ctx), namespace, operator_id, image=image or None))
+    run_operator(Operator(api(ctx), namespace, operator_id, image=image or None,
+                          worker_namespace=worker_namespace or None))

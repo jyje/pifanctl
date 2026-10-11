@@ -18,6 +18,32 @@
       "minimum": 1,
       "maximum": 5
     },
+    "workerAdmission": {
+      "type": "object",
+      "properties": {"enabled": {"type": "boolean"}}
+    },
+    "workerNamespace": {
+      "type": "string",
+      "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?)?$",
+      "maxLength": 63
+    },
+    "networkPolicy": {
+      "type": "object",
+      "properties": {
+        "workerEgress": {
+          "type": "object",
+          "required": ["dnsNamespaceSelector", "dnsPodSelector", "prometheusNamespaceSelector", "prometheusPodSelector", "prometheusPort"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "dnsNamespaceSelector": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}},
+            "dnsPodSelector": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}},
+            "prometheusNamespaceSelector": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}},
+            "prometheusPodSelector": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}},
+            "prometheusPort": {"type": "integer", "minimum": 1, "maximum": 65535}
+          }
+        }
+      }
+    },
     "agent": {
       "type": "object",
       "properties": {

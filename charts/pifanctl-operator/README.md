@@ -26,6 +26,8 @@ helm upgrade --install pifanctl charts/pifanctl-operator \
 | `image.tag` | Defaults to pinned `v1.1.0`; never `latest` |
 | `extraResources` | Kubernetes resources submitted with the release; use `Fan` and `CoolingZone` CRs for the cooling topology |
 | `networkPolicy.monitoringNamespaceSelector` | Namespaces allowed to read worker metrics/status |
+| `workerNamespace` | Namespace for workers, plans, the worker Service and agents. It must exist and allow privileged Pods. Empty keeps them in the release namespace |
+| `workerAdmission.enabled` | Opt in to a ValidatingAdmissionPolicy that limits operator-created Deployments to the worker shape (Kubernetes 1.30+) |
 | `networkPolicy.workerEgress.enabled` | Opt in to a worker egress policy allowing only DNS and Prometheus (default `false`) |
 | `networkPolicy.workerEgress.*Selector`, `prometheusPort` | Where DNS and Prometheus run. They must match every CoolingZone `telemetry.prometheusURL` |
 | `serviceMonitor.enabled` | Create worker and managed-agent ServiceMonitors if Prometheus Operator is installed |
@@ -99,6 +101,10 @@ Pod Security policy. NetworkPolicy requires a CNI that enforces it. Ingress is
 restricted; worker egress must reach DNS and the configured Prometheus endpoint.
 Set `networkPolicy.workerEgress.enabled` to enforce that. A wrong selector blocks telemetry and
 workers then request failsafe duty, so verify it on one Node first.
+The DNS rule matches the cluster DNS Pods; clusters that resolve through NodeLocal DNSCache
+need a matching rule. Selectors cannot be empty, so the policy never widens to all namespaces.
+While workers stay privileged, a host escape bypasses any Pod NetworkPolicy, so treat this as
+defense in depth and not as a security boundary (see issue 86).
 Specify image digests via `image.tag` is not supported: use an immutable version
 tag here; digest-based image configuration is a future packaging enhancement.
 

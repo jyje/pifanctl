@@ -197,6 +197,22 @@ The worker collects all members with one query pair per zone and derives the zon
 
 Workers need only cluster DNS and Prometheus. With a CNI that enforces NetworkPolicy, set `networkPolicy.workerEgress.enabled=true` and point `dnsNamespaceSelector`, `dnsPodSelector`, `prometheusNamespaceSelector`, `prometheusPodSelector` and `prometheusPort` at your installation. They must match the `telemetry.prometheusURL` of every CoolingZone. If they do not, telemetry is blocked and workers request failsafe duty, so enable it on one Node first and confirm that `kubectl get coolingzone -o yaml` still reports fresh `nodeTemperatures`. Hardening that requires dropping `privileged` is tracked in [#86](https://github.com/jyje/pifanctl/issues/86).
 
+### Separate worker namespace and admission policy
+
+Hardware workers and temperature agents need host paths, so their namespace must allow them (`pod-security.kubernetes.io/enforce: privileged`). Both `baseline` and `restricted` reject hostPath volumes, including the unprivileged agent. Set `workerNamespace` to move workers, plans, the worker Service and agents into a namespace you create and label. The release namespace then holds only the operator and can be `restricted`.
+
+```sh
+kubectl create namespace pifanctl-workers
+kubectl label namespace pifanctl-workers pod-security.kubernetes.io/enforce=privileged
+helm upgrade --install pifanctl charts/pifanctl-operator -n pifanctl-system --set workerNamespace=pifanctl-workers
+```
+
+The operator Role in the release namespace then holds only Leases and Events. A second Role in the worker namespace manages Deployments, ConfigMaps and Pods. The ownership annotation keeps the operator's own namespace.
+
+Moving an existing installation: workers in the old namespace are not removed automatically, because that would need broader RBAC. Delete the old worker Deployments after switching. The shared host lock keeps two workers from driving one Node at once, but plan a window, since the fan follows failsafe duty while no worker holds a fresh heartbeat. This procedure is verified only in a disposable cluster, not on the live rack.
+
+`workerAdmission.enabled=true` adds a `ValidatingAdmissionPolicy` (Kubernetes 1.30+) for the operator ServiceAccount in the worker namespace. It rejects Deployments that are not the known worker shape: one container, the configured image repository, the `python main.py worker run` command, no init containers or host network, PID or IPC, no ServiceAccount token, and only the ConfigMap and `/sys`, `/dev`, `/var/lock/pifanctl` host paths. It does not stop a compromised operator from starting a worker with different arguments, and it needs cluster-scoped permission to install.
+
 ### Scrape safety state
 
 Enable the chart's `serviceMonitor.enabled` and configure its selector labels

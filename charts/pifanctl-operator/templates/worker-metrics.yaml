@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "pifanctl.operatorName" . }}-worker
+  namespace: {{ include "pifanctl.workerNamespace" . }}
   labels:
     {{- include "pifanctl.operatorLabels" . | nindent 4 }}
     app.kubernetes.io/component: worker
@@ -20,6 +21,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ include "pifanctl.operatorName" . }}-worker
+  namespace: {{ include "pifanctl.workerNamespace" . }}
   labels:
     {{- toYaml .Values.serviceMonitor.labels | nindent 4 }}
 spec:

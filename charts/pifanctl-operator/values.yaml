@@ -2,6 +2,14 @@
 operatorId: pifanctl
 # Leader-only readiness: one operator is the supported deployment shape.
 replicas: 1
+# Namespace for hardware workers, plans and the worker Service. Empty keeps them in the
+# release namespace. A separate namespace must already exist and allow privileged Pods
+# (pod-security.kubernetes.io/enforce: privileged) so the release namespace can be restricted.
+workerNamespace: ""
+workerAdmission:
+  # Opt-in ValidatingAdmissionPolicy (Kubernetes 1.30+) that restricts the Deployments this
+  # operator may create in the worker namespace to the known worker shape.
+  enabled: false
 image:
   repository: ghcr.io/jyje/pifanctl
   # Empty uses v<appVersion>; chart version and appVersion follow the app release.
