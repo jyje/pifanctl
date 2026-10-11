@@ -22,3 +22,37 @@ spec:
               {{- toYaml .Values.networkPolicy.monitoringNamespaceSelector | nindent 14 }}
       ports: [{protocol: TCP, port: 9103}]
 {{- end }}
+{{- if and .Values.networkPolicy.enabled .Values.networkPolicy.workerEgress.enabled }}
+{{- $egress := .Values.networkPolicy.workerEgress }}
+---
+# Workers read Prometheus and resolve DNS. They have no Kubernetes API access.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "pifanctl.operatorName" . }}-worker-egress
+spec:
+  podSelector:
+    matchLabels:
+      pifanctl.jyje.online/operator: {{ .Values.operatorId | quote }}
+      app.kubernetes.io/component: worker
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml $egress.dnsNamespaceSelector | nindent 14 }}
+          podSelector:
+            matchLabels:
+              {{- toYaml $egress.dnsPodSelector | nindent 14 }}
+      ports:
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 53}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              {{- toYaml $egress.prometheusNamespaceSelector | nindent 14 }}
+          podSelector:
+            matchLabels:
+              {{- toYaml $egress.prometheusPodSelector | nindent 14 }}
+      ports: [{protocol: TCP, port: {{ $egress.prometheusPort }}}]
+{{- end }}

@@ -22,6 +22,19 @@ networkPolicy:
   # Set to the namespace labels of your Prometheus installation.
   monitoringNamespaceSelector:
     kubernetes.io/metadata.name: monitoring
+  # Opt-in egress limit for hardware workers: DNS and Prometheus only. It must match
+  # the Prometheus URL of every CoolingZone, or workers lose telemetry and fail safe.
+  workerEgress:
+    enabled: false
+    dnsNamespaceSelector:
+      kubernetes.io/metadata.name: kube-system
+    dnsPodSelector:
+      k8s-app: kube-dns
+    prometheusNamespaceSelector:
+      kubernetes.io/metadata.name: observability
+    prometheusPodSelector:
+      app.kubernetes.io/name: prometheus
+    prometheusPort: 9090
 serviceMonitor:
   enabled: false
   labels: {}
