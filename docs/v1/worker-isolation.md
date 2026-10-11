@@ -1,6 +1,6 @@
 # Worker isolation design
 
-Status: proposal for [issue #86](https://github.com/jyje/pifanctl/issues/86). Nothing here is implemented or verified on a cluster unless a section says so.
+Status: Phases A and B are implemented in [PR #89](https://github.com/jyje/pifanctl/pull/89) and verified in a disposable Kubernetes 1.30 cluster. They are not verified on the live rack. Phase C is not started. Tracks [issue #86](https://github.com/jyje/pifanctl/issues/86).
 
 ## Why
 
@@ -19,16 +19,18 @@ So the practical goal is to limit what a compromised operator or worker can do w
 
 ## Correction to an earlier claim
 
-Moving workers to their own namespace does not remove the operator path. The operator must still create worker Deployments, so it needs that right in the worker namespace. Separation only keeps the operator and agents out of a privileged namespace and shrinks the operator Role in its own namespace. Closing the operator path needs an admission policy (phase B).
+Moving workers to their own namespace does not remove the operator path. The operator must still create worker Deployments, so it needs that right in the worker namespace. Separation only keeps the operator out of a privileged namespace and shrinks its Role in its own namespace. Narrowing the operator path needs an admission policy (phase B).
+
+A second correction came from testing: the temperature agents are unprivileged but mount hostPath, which both `baseline` and `restricted` Pod Security reject. Agents therefore move to the worker namespace with the workers, and only the operator stays in the release namespace.
 
 ## Phase A: separate worker namespace
 
 - Add `--worker-namespace` to the operator and `workerNamespace` to the chart. Default: the operator's namespace, so behavior does not change.
-- Worker Deployments, plan ConfigMaps, status ConfigMaps and the worker Service move to the worker namespace. The Lease stays in the operator namespace.
+- Worker Deployments, plan ConfigMaps, status ConfigMaps, the worker Service and the agents move to the worker namespace. The Lease stays in the operator namespace.
 - Keep the ownership annotation `operatorNamespace/operatorId`. `worker_deployment` currently uses one `namespace` argument for both the object namespace and the annotation. Split them, or an operator in another namespace would refuse its own objects.
 - Owner references point to cluster-scoped Fan and CoolingZone objects, which is valid across namespaces.
 - RBAC: a Role and RoleBinding in the worker namespace for Deployments, ConfigMaps and Pods. The operator namespace keeps only Leases and Events.
-- Pod Security labels: worker namespace `privileged`, operator namespace `restricted`.
+- Pod Security labels: worker namespace `privileged`, operator namespace `restricted`. Agents cannot run in a `restricted` or `baseline` namespace.
 - NetworkPolicies and ServiceMonitor follow the worker Service. The operator-to-worker ingress rule needs a `namespaceSelector` for the operator namespace.
 - Migration: existing workers live in the operator namespace. Only one process may drive a GPIO pin, so retire the old worker before the new one starts. The expected effect is a short heartbeat gap, which already requests failsafe duty. Needs a live test with a rollback plan.
 
@@ -47,19 +49,27 @@ This turns "operator can create any privileged Pod" into "operator can create on
 
 Deferred until A and B are done. Options from the #86 findings: a device plugin, CDI or DRA, or hardware PWM through sysfs. Each needs its own hardware test. None is claimed here.
 
-## Verification plan
+## Verification
 
-| Step | How | Status |
-| --- | --- | --- |
-| Phase A rendering and unit tests | Chart and operator tests with a separate worker namespace | Not run |
-| Phase A lifecycle | Disposable cluster with simulated GPIO, including migration from the old namespace | Not run |
-| Phase B policy | Disposable cluster: allowed worker shape passes, extra mounts, images and `hostNetwork` are rejected | Not run |
-| Live migration | One Node with an archived rollback plan and a maintainer-approved window | Not run |
+Disposable kind cluster on Kubernetes 1.30.0 (the declared minimum), with the real operator code running under the operator ServiceAccount token. No hardware and no live cluster.
+
+| Step | Result |
+| --- | --- |
+| Policy compiles on 1.30 | Failed first: `slice` is missing from the 1.30 CEL library. Fixed with element comparisons |
+| Real worker Deployment | Admitted |
+| 12 tampered Deployments | All denied |
+| Same tampered object as cluster admin | Admitted, so only the operator is constrained |
+| Operator Role split | No Deployment or ConfigMap rights in the release namespace, Lease rights there, worker rights only in the worker namespace |
+| Two reconcile passes | Objects in the worker namespace, Lease in the release namespace, own objects adopted on the second pass |
+| Pod Security | Privileged Pod rejected in `restricted`. Worker and agent run in `privileged`. Operator Pod admitted in `restricted` |
+| Deletion with a worker acknowledgement | Unit test only. The kind worker has no GPIO and cannot acknowledge |
+| Migration of the live rack | Not run |
+| NetworkPolicy rule on a CNI that enforces it | Not run |
 
 Any real fan behavior during migration stays Not measured until observed on hardware.
 
-## Open questions
+## Decisions
 
-- Should the worker namespace be created by the chart or by the installer? Creating namespaces from a chart conflicts with the current "no namespace creation" RBAC stance.
-- Should Phase B be on by default for new installs?
-- Is a short failsafe window during migration acceptable for the existing rack?
+- The installer creates and labels the worker namespace. The chart does not create namespaces, which keeps its "no namespace creation" RBAC stance. The README and runtime manual show the commands.
+- Phase B stays opt-in until it has run on the live rack. It needs cluster-scoped permission to install.
+- Old worker Deployments are removed by hand after a move, which avoids giving the operator delete rights in its own namespace. A short failsafe window on the live rack needs a maintainer-approved time and a rollback plan.
