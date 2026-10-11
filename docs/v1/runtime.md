@@ -193,6 +193,10 @@ fan or guarantee power-loss cooling.
 
 The worker collects all members with one query pair per zone and derives the zone maximum from the same observations. `temperatureCelsius`, `temperatureObservedAt`, `missingNodeNames` and the `Ready` condition keep their previous meaning. When a zone has several fans, the freshest usable entry per node is shown. Members selected by names or labels are listed alike.
 
+### Worker egress limit
+
+Workers need only cluster DNS and Prometheus. With a CNI that enforces NetworkPolicy, set `networkPolicy.workerEgress.enabled=true` and point `dnsNamespaceSelector`, `dnsPodSelector`, `prometheusNamespaceSelector`, `prometheusPodSelector` and `prometheusPort` at your installation. They must match the `telemetry.prometheusURL` of every CoolingZone. If they do not, telemetry is blocked and workers request failsafe duty, so enable it on one Node first and confirm that `kubectl get coolingzone -o yaml` still reports fresh `nodeTemperatures`. Hardening that requires dropping `privileged` is tracked in [#86](https://github.com/jyje/pifanctl/issues/86).
+
 ### Scrape safety state
 
 Enable the chart's `serviceMonitor.enabled` and configure its selector labels

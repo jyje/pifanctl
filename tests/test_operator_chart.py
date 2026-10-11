@@ -213,3 +213,26 @@ def test_optional_pwm_probe_extra_resources():
     cfg = normalize([item])[0]['spec']['feedback']
     assert cfg['pwm']['gpio'] == {'pin': 24, 'pull': 'off'}
     assert cfg['tachometer']['pulsesPerRevolution'] == 2
+
+
+def worker_egress_policy(objects):
+    return next((o for o in objects if o['kind'] == 'NetworkPolicy' and o['metadata']['name'].endswith('-worker-egress')), None)
+
+
+def test_worker_egress_policy_is_opt_in():
+    assert worker_egress_policy(render()) is None
+    assert worker_egress_policy(render('--set', 'networkPolicy.enabled=false', '--set', 'networkPolicy.workerEgress.enabled=true')) is None
+
+
+def test_worker_egress_allows_only_dns_and_prometheus():
+    policy = worker_egress_policy(render('--set', 'networkPolicy.workerEgress.enabled=true',
+                                         '--set', 'networkPolicy.workerEgress.prometheusPort=9091'))
+    spec = policy['spec']
+    assert spec['policyTypes'] == ['Egress'] and 'ingress' not in spec
+    assert spec['podSelector']['matchLabels']['app.kubernetes.io/component'] == 'worker'
+    dns, prometheus = spec['egress']
+    assert {(p['protocol'], p['port']) for p in dns['ports']} == {('UDP', 53), ('TCP', 53)}
+    assert dns['to'][0]['podSelector']['matchLabels'] == {'k8s-app': 'kube-dns'}
+    assert prometheus['ports'] == [{'protocol': 'TCP', 'port': 9091}]
+    assert prometheus['to'][0]['namespaceSelector']['matchLabels'] == {'kubernetes.io/metadata.name': 'observability'}
+    assert all('ipBlock' not in peer for rule in spec['egress'] for peer in rule['to'])

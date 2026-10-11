@@ -26,6 +26,8 @@ helm upgrade --install pifanctl charts/pifanctl-operator \
 | `image.tag` | Defaults to pinned `v1.1.0`; never `latest` |
 | `extraResources` | Kubernetes resources submitted with the release; use `Fan` and `CoolingZone` CRs for the cooling topology |
 | `networkPolicy.monitoringNamespaceSelector` | Namespaces allowed to read worker metrics/status |
+| `networkPolicy.workerEgress.enabled` | Opt in to a worker egress policy allowing only DNS and Prometheus (default `false`) |
+| `networkPolicy.workerEgress.*Selector`, `prometheusPort` | Where DNS and Prometheus run. They must match every CoolingZone `telemetry.prometheusURL` |
 | `serviceMonitor.enabled` | Create worker and managed-agent ServiceMonitors if Prometheus Operator is installed |
 
 The canonical default uses Python 3.14. For the documented legacy-CA path, select
@@ -95,6 +97,8 @@ Operator/agents are non-root and receive no hardware access. Workers/agents have
 no Kubernetes token. Privileged workloads need an explicitly suitable namespace
 Pod Security policy. NetworkPolicy requires a CNI that enforces it. Ingress is
 restricted; worker egress must reach DNS and the configured Prometheus endpoint.
+Set `networkPolicy.workerEgress.enabled` to enforce that. A wrong selector blocks telemetry and
+workers then request failsafe duty, so verify it on one Node first.
 Specify image digests via `image.tag` is not supported: use an immutable version
 tag here; digest-based image configuration is a future packaging enhancement.
 
