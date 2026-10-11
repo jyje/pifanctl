@@ -1,0 +1,57 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: ["config:recommended"],
+
+  timezone: "Asia/Seoul",
+  schedule: ["before 6am on monday"],
+  prConcurrentLimit: 5,
+  prHourlyLimit: 2,
+
+  // jyje/skills git-commit-helper: bot commits are "🤖 ci(deps): <title>".
+  semanticCommits: "disabled",
+  commitMessagePrefix: "🤖 ci(deps):",
+
+  packageRules: [
+    {
+      matchUpdateTypes: ["major"],
+      dependencyDashboardApproval: true,
+    },
+    {
+      // Replaces the "python" group of the old dependabot.yaml.
+      description: "pip requirements, non-major in one PR",
+      matchManagers: ["pip_requirements"],
+      matchUpdateTypes: ["minor", "patch"],
+      groupName: "python",
+    },
+    {
+      // Replaces the "actions" group of the old dependabot.yaml.
+      matchManagers: ["github-actions"],
+      groupName: "actions",
+    },
+    {
+      // The CI matrix and python-version inputs move together with the Dockerfile
+      // base image (python:3.14-slim) and .python-version. A bot bumping only the CI
+      // side (3.14 -> 3.15) would make them disagree, so the Python version stays manual.
+      description: "Python version is bumped by hand",
+      matchManagers: ["github-actions"],
+      matchDepNames: ["python"],
+      enabled: false,
+    },
+    {
+      // scripts/check_version_bump.py fails any PR that touches charts/<chart>/
+      // (outside ci/) without bumping that chart's version. A bot PR editing
+      // charts/**/values.yaml would always fail it, so those stay manual.
+      description: "chart values need a human version bump",
+      matchManagers: ["helm-values"],
+      matchFileNames: ["charts/**"],
+      enabled: false,
+    },
+    {
+      // tests/runtime_lab/Dockerfile builds on this project's own image.
+      // Pinning its digest would open a PR on every release of pifanctl.
+      description: "do not track pifanctl's own image",
+      matchPackageNames: ["ghcr.io/jyje/pifanctl"],
+      enabled: false,
+    },
+  ],
+}
