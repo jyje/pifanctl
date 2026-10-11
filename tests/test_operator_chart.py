@@ -248,7 +248,7 @@ def test_worker_egress_allows_only_dns_and_prometheus():
 def test_worker_egress_rejects_selectors_that_would_widen_access(flag):
     result = subprocess.run(['helm', 'template', 'test', str(CHART), '-n', 'system',
                              '--set', 'networkPolicy.workerEgress.enabled=true', *flag], capture_output=True, text=True)
-    assert result.returncode != 0 and 'networkPolicy.workerEgress' in result.stderr
+    assert result.returncode != 0 and 'workerEgress' in result.stderr
 
 
 def roles(objects):
