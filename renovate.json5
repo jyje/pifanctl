@@ -29,11 +29,12 @@
       groupName: "actions",
     },
     {
-      // The CI matrix and python-version inputs move together with the Dockerfile
-      // base image (python:3.14-slim) and .python-version. A bot bumping only the CI
-      // side (3.14 -> 3.15) would make them disagree, so the Python version stays manual.
+      // The CI python-version, the Dockerfile base image (python:3.14-slim) and
+      // .python-version move together, and the image compiles RPi.GPIO for the Pi. A bot
+      // bumping one of them (3.14 -> 3.15) would make them disagree, so the Python
+      // version stays manual in all three places.
       description: "Python version is bumped by hand",
-      matchManagers: ["github-actions"],
+      matchManagers: ["github-actions", "dockerfile", "pyenv"],
       matchDepNames: ["python"],
       enabled: false,
     },
