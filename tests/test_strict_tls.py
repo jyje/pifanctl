@@ -16,6 +16,7 @@ from kubernetes import client as kclient
 from urllib3.exceptions import MaxRetryError, SSLError
 
 from pifanctl.topology import operator as op
+from kube_client_support import mock_client
 from pifanctl.topology.kube import (
     CLUSTER_CA_DOC, STRICT_TLS_REASON, APIError, Kube, strict_tls_detail, strict_tls_text)
 
@@ -129,7 +130,7 @@ def test_transport_chain_is_classified_by_verification_code():
 
 def test_transport_failure_is_translated_to_the_typed_error():
     cause = verification_error(85, 'Missing Authority Key Identifier')
-    client = Mock()
+    client = mock_client()
     client.call_api.side_effect = MaxRetryError(None, '/version', SSLError(cause))
     with pytest.raises(APIError) as caught:
         Kube(client=client).get('/version')
@@ -191,7 +192,7 @@ def test_watch_reports_strict_tls_rejection_and_stops_the_stream(monkeypatch):
 @pytest.mark.parametrize('status,reason', [(403, 'Forbidden'), (0, 'SSLError\nconnection reset')])
 def test_other_api_failures_keep_their_status_and_have_no_typed_reason(status, reason):
     from kubernetes.client.exceptions import ApiException
-    client = Mock()
+    client = mock_client()
     client.call_api.side_effect = ApiException(status=status, reason=reason)
     with pytest.raises(APIError) as caught:
         Kube(client=client).get('/version')
@@ -200,7 +201,7 @@ def test_other_api_failures_keep_their_status_and_have_no_typed_reason(status, r
 
 def test_request_classifies_the_flattened_client_message():
     from kubernetes.client.exceptions import ApiException
-    client = Mock()
+    client = mock_client()
     client.call_api.side_effect = ApiException(status=0, reason=(
         "SSLError\nMax retries exceeded (Caused by SSLError(SSLCertVerificationError(1, "
         "'[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Missing Authority Key Identifier "

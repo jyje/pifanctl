@@ -83,11 +83,15 @@ class Kube:
         from kubernetes.client.exceptions import ApiException
         from urllib3.exceptions import HTTPError
         try:
-            return self.client.call_api(
-                path, method, body=body, query_params=list((query or {}).items()),
+            # kubernetes 37 split the old call_api into serialize, send and deserialize.
+            method, url, headers, body, post_params = self.client.param_serialize(
+                method, path, query_params=list((query or {}).items()), body=body,
                 header_params={'Accept': 'application/json', 'Content-Type': content_type},
-                response_types_map={200: 'object', 201: 'object', 202: 'object', 204: None}, auth_settings=['BearerToken'],
-                _return_http_data_only=True, _request_timeout=(3, 10))
+                auth_settings=['BearerToken'])
+            response = self.client.call_api(method, url, headers, body, post_params, _request_timeout=(3, 10))
+            response.read()
+            return self.client.response_deserialize(
+                response, {'200': 'object', '201': 'object', '202': 'object', '204': None}).data
         except ApiException as error:
             detail = error.status == 0 and strict_tls_text(error.reason)
             if detail: raise strict_tls_error(detail) from None
