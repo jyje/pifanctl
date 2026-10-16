@@ -6,12 +6,12 @@ from kubernetes.client import ApiClient
 from kubernetes.client.exceptions import ApiException
 from kubernetes import watch
 
+from kube_client_support import mock_client
 from pifanctl.topology.kube import APIError, Kube
 
 
 def test_optional_returns_existing_object():
-    client = Mock()
-    client.call_api.return_value = {'metadata': {'name': 'fan-a'}}
+    client = mock_client({'metadata': {'name': 'fan-a'}})
     assert Kube(client=client).optional('/existing') == {'metadata': {'name': 'fan-a'}}
 
 
@@ -29,6 +29,5 @@ def test_watch_translates_forbidden_and_stops_stream(monkeypatch, kind):
 
 
 def test_items_unwraps_api_list_response():
-    client = Mock()
-    client.call_api.return_value = {'items': [{'metadata': {'name': 'pi-a'}}]}
+    client = mock_client({'items': [{'metadata': {'name': 'pi-a'}}]})
     assert Kube(client=client).items('/api/v1/nodes') == [{'metadata': {'name': 'pi-a'}}]

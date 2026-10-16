@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -23,12 +24,22 @@ def file(tmp_path):
 
 
 class FakeClient:
-    def __init__(self): self.calls = []; self.fail = None
-    def call_api(self, path, method, **kwargs):
-        self.calls.append((path, method, kwargs))
+    """Records the serialized request, then answers like the kubernetes 37 ApiClient."""
+    def __init__(self): self.calls = []; self.fail = None; self.request = None
+
+    def param_serialize(self, method, path, query_params=None, body=None, **kwargs):
+        self.request = (path, method, {'query_params': query_params, 'body': body, **kwargs})
+        return method, path, {}, body, None
+
+    def call_api(self, method, url, headers, body, post_params, _request_timeout=None):
+        self.request[2]['_request_timeout'] = _request_timeout
+        self.calls.append(self.request)
         if self.fail:
             error = ApiException(status=self.fail, reason='test'); error.body = 'PRIVATE'; raise error
-        return kwargs.get('body') or {'items': []}
+        return SimpleNamespace(read=lambda: None, body=body)
+
+    def response_deserialize(self, response, types):
+        return SimpleNamespace(data=response.body or {'items': []})
 
 
 def test_adapter():
