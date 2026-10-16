@@ -578,3 +578,11 @@ coverage badge metadata commit; it does not modify application or test code.
 - [x] Publish app v1.5.0 and operator chart 1.5.0 from `main` (releases `v1.5.0` and `operator-chart-v1.5.0`). The live rack still runs the 1.2.x image and was not changed.
 - [ ] Remove `privileged` from workers through a device plugin, CDI or DRA, or hardware PWM (issue #90). Needs a maintainer decision, a rollback plan and Pi 4 and Pi 5 hardware tests.
 - [ ] Migrate the live rack to a worker namespace and the admission policy, and verify worker acknowledgement across namespaces, the NetworkPolicy ingress rule on Calico and Argo CD ordering (issue #91). Needs an approved window and a rollback plan.
+
+### Dependency tooling and kubernetes client 37 (2026-10-16)
+
+- [x] Hand version updates to Renovate (PR #85 and #93) and remove `dependabot.yaml` (PR #96). Dependabot security updates stay on as a repository setting. Both Dependabot security alerts (setuptools, high and medium) are fixed.
+- [x] Move to the kubernetes Python client 37 (PR #97, app and chart 1.5.1). Dependabot's grouped PR #94 failed in CI because client 37 splits `ApiClient.call_api` into `param_serialize`, `call_api` and `response_deserialize`. Dependabot then closed #94 and opened #98 without that update. Verified by 649 local tests, including real-HTTPS and strict TLS tests. Not run against a live cluster.
+- [x] Publish app v1.5.1 and operator chart 1.5.1. The live rack still runs 1.2.2.
+- [ ] Check Renovate's first run (before 06:00 KST on Monday 2026-10-19): it should open its own `python` PR from the `requirements.*.txt` files. If it does, close Dependabot's #98. If it does not, merge #98 and fix the Renovate file patterns.
+- [x] Document the 1.2.x to 1.5.x upgrade order (CRDs first) in `docs/v1/runtime.md`. The live upgrade itself is tracked in issue #91.

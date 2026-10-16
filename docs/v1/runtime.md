@@ -272,6 +272,21 @@ X.509 verification enabled. Follow the [CA maintenance plan](cluster-ca.md).
 
 The candidate serves `v1` with `v1alpha1` compatibility. Read the [storage migration and rollback procedure](api-migration.md) before upgrading an existing installation.
 
+### Upgrading from 1.2.x to 1.5.x
+
+Apply the CRDs first, then upgrade the chart and image. Application 1.3.0 added `CoolingZone.status.nodeTemperatures`. Helm does not upgrade CRDs, and an operator that writes a field the installed schema does not know loses it silently, so `nodeTemperatures` would never appear.
+
+```sh
+kubectl diff -f charts/pifanctl-operator/crds/
+kubectl apply -f charts/pifanctl-operator/crds/
+```
+
+Then upgrade the chart and the image together (1.5.1 is current). The CRD change is additive and status-only. The new options (`networkPolicy.workerEgress`, `workerNamespace`, `workerAdmission`) are off by default, so an upgrade without new values keeps workers in the release namespace.
+
+While a new operator runs next to workers that still use the old image, their reports have no per-node data. The zone then lists each member as `Unavailable` until the workers are replaced. Zone temperature, the `Ready` condition and failsafe behavior are unaffected. Afterwards, `kubectl get coolingzone NAME -o yaml` should list every member with a `Fresh` reason.
+
+This path is covered by chart and unit tests and a disposable cluster for the namespace options. It has not been run on the live rack, which still runs 1.2.2 (issue #91).
+
 ## Optional tachometer feedback
 
 Application/chart 1.1.0 introduce opt-in Pi 4 RPM observation under
