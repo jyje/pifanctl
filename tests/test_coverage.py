@@ -224,7 +224,7 @@ def test_coverage_actions_remain_outside_the_arm_runner():
     for readme in ("README.md", "README-ko.md"):
         content = (ROOT / readme).read_text()
         assert "https://codecov.io/gh/jyje/pifanctl/branch/main/graph/badge.svg" in content
-    assert workflow["jobs"]["image"]["runs-on"]["labels"] == "r4spi-microk8s"
+    assert "image" not in workflow["jobs"]  # moved to ci-image.yaml so it can filter by path
     codecov_job = workflow["jobs"]["codecov"]
     assert "github.ref == 'refs/heads/main'" in codecov_job["if"]
     assert "github.event.pull_request.head.repo.full_name == github.repository" in codecov_job["if"]
