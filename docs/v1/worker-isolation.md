@@ -51,7 +51,29 @@ Worker Deployments tolerate every taint (`operator: Exists`) so a cooling worker
 
 ## Phase C: device access without `privileged`
 
-Deferred until A and B are done. Options from the #86 findings: a device plugin, CDI or DRA, or hardware PWM through sysfs. Each needs its own hardware test. None is claimed here.
+Decision (issue #90): workers stay `privileged: true` for now. This is an accepted risk, recorded here so it is a choice and not an omission.
+
+Why it cannot be fixed with Pod settings: on a Raspberry Pi 4 (kernel 6.12, cgroup v2) an unprivileged Pod got `EPERM` on `/dev/gpiomem` and `/dev/gpiochip0` even with the right group, because the container runtime's device cgroup ignores devices that are only mounted through hostPath. The remaining routes each add something that needs host device access itself:
+
+| Route | What it costs |
+| --- | --- |
+| Device plugin (a DaemonSet exposing the GPIO devices as Pod resources) | A new component that is itself privileged, so the risk may only move |
+| CDI or DRA | Runtime configuration and a driver, new moving parts on every Node |
+| Hardware PWM through sysfs (`SysfsDriver`, `dtoverlay=pwm`) | A host boot config and wiring change, and the tachometer still opens `/dev/gpiochip*` |
+
+None of these was built or tested, so no claim is made about them.
+
+What limits the damage instead (all in `main`, all off by default except where noted):
+
+- Workers have no Kubernetes token and are pinned to one Node by affinity and Node UID.
+- `workerNamespace` keeps the privileged Pods out of the operator's namespace, so only the operator needs to be `restricted`.
+- `workerAdmission.enabled` limits what the operator can create there to the known worker shape.
+- `networkPolicy.workerEgress.enabled` limits worker egress to DNS and Prometheus. Because a host escape bypasses Pod network policy, treat it as defense in depth.
+- The operator Role in its own namespace holds only Leases and Events when workers are separated.
+
+Seccomp and `allowPrivilegeEscalation: false` stay unset on workers, because the API rejects the second together with `privileged` and privileged containers ignore seccomp.
+
+Revisit when any of these changes: a worker needs to run on shared or untrusted Nodes, the Pi OS or runtime stops ignoring hostPath devices in the device cgroup, a maintained GPIO device plugin or CDI spec appears, or the rack moves to hardware PWM for other reasons. A candidate must be tested on Pi 4 and Pi 5 hardware with a rollback plan, and anything not measured must stay marked Not measured.
 
 ## Verification
 
