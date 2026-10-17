@@ -228,30 +228,3 @@ jobs:
                   yaml.safe_dump({'groups': doc['spec']['groups']}, open('rules.yaml', 'w'))
           "
           docker run --rm -v "$PWD/rules.yaml:/rules.yaml" --entrypoint promtool prom/prometheus:v3.15.0 check rules /rules.yaml
-
-  image:
-    name: 🐳 Image (ARM64, in-cluster runner)
-    # Self-hosted runners never run code from forks.
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    runs-on:
-      labels: r4spi-microk8s
-    steps:
-      - uses: actions/checkout@v7
-      - name: Build without pushing
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: ./docker/all.dockerfile
-          platforms: linux/arm64
-          push: false
-          load: true
-          provenance: false
-          tags: pifanctl:ci
-      - name: Smoke test
-        run: |
-          docker run --rm pifanctl:ci python main.py --help
-          docker run --rm pifanctl:ci python main.py topology --help
-          docker run --rm pifanctl:ci python main.py worker --help
-          docker run --rm pifanctl:ci python main.py operator --help
-          test "$(docker run --rm pifanctl:ci id -u)" != "0"
-          docker run --rm pifanctl:ci python -m pifanctl.hardware_smoke

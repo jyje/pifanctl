@@ -1,0 +1,49 @@
+name: ci-image
+
+# Builds the ARM64 image without pushing and smoke tests it. It runs only when a change can
+# affect the image: the image copies sources/ and is built from docker/all.dockerfile. The
+# publish workflows (build-image-*) filter by path the same way.
+
+on:
+  pull_request:
+    paths:
+      - sources/**
+      - docker/**
+      - .dockerignore
+      - .github/workflows/ci-image.yaml
+  workflow_dispatch:
+
+concurrency:
+  group: ci-image-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  image:
+    name: 🐳 Image (ARM64, in-cluster runner)
+    # Self-hosted runners never run code from forks.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on:
+      labels: r4spi-microk8s
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build without pushing
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./docker/all.dockerfile
+          platforms: linux/arm64
+          push: false
+          load: true
+          provenance: false
+          tags: pifanctl:ci
+      - name: Smoke test
+        run: |
+          docker run --rm pifanctl:ci python main.py --help
+          docker run --rm pifanctl:ci python main.py topology --help
+          docker run --rm pifanctl:ci python main.py worker --help
+          docker run --rm pifanctl:ci python main.py operator --help
+          test "$(docker run --rm pifanctl:ci id -u)" != "0"
+          docker run --rm pifanctl:ci python -m pifanctl.hardware_smoke

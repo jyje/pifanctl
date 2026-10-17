@@ -112,7 +112,7 @@ def test_image_probe_rejects_unexpected_access_and_unrelated_errors(monkeypatch)
 def test_workflows_probe_the_driver_without_standalone_cli():
     from pathlib import Path
     root = Path(__file__).resolve().parents[1]
-    for path in [".github/workflows/ci.yaml", ".github/workflows/_build-image.yaml"]:
+    for path in [".github/workflows/ci-image.yaml", ".github/workflows/_build-image.yaml"]:
         text = (root / path).read_text()
         assert "python -m pifanctl.hardware_smoke" in text
         assert "python main.py start" not in text
