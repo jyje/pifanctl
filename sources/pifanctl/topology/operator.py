@@ -215,8 +215,12 @@ class Operator:
 
     def reconcile(self, now=None):
         now = time.time() if now is None else now
-        self.ready = False
-        if not self.lease.acquire(now): return False
+        # Readiness is not cleared while a pass runs: a leader that reconciled within the
+        # last 30 seconds is ready (see snapshot). It is cleared on lost leadership and on
+        # failure (run_operator), and a first pass has to succeed before it is ever set.
+        if not self.lease.acquire(now):
+            self.ready = False
+            return False
         items, source, nodes = self.topology_snapshot()
         for item in ([source] if source else items):
             path = self.core + '/configmaps/' + name(item['metadata']['name']) if source else resource(item['kind'], item['metadata']['name'])
@@ -270,7 +274,9 @@ class Operator:
                   'data': {'plan.json': plan_text,
                            'heartbeat.json': json.dumps({'time': now, 'healthy': True, 'planHash': desired['hash'], 'nodeUID': desired['nodeUID']})}}
             # Revalidate leadership immediately before each workload/heartbeat write.
-            if not self.lease.acquire(): return False
+            if not self.lease.acquire():
+                self.ready = False
+                return False
             self.managed(self.core + '/configmaps', cm)
             if not desired['fans'] and old and old['metadata'].get('annotations', {}).get(RELEASED) == desired['hash']:
                 reports[node] = {'nodeName': node, 'nodeUID': desired['nodeUID'], 'appliedTopologyHash': desired['hash'],
