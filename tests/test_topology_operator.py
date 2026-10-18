@@ -405,3 +405,41 @@ def test_deletion_waits_for_ack_in_a_separate_worker_namespace():
     o.report_reader = reporter(k, o); o.reconcile()
     assert FINALIZER not in k.get(resource('Fan', 'fan-a'))['metadata']['finalizers']
     assert k.optional('/apis/apps/v1/namespaces/workers/deployments/' + worker_name('pi-a')) is None
+
+
+def test_readiness_survives_a_running_pass(setup):
+    k, o = setup
+    assert not o.snapshot()['ready']  # nothing reconciled yet
+    seen = []
+    o.report_reader = lambda worker, now: seen.append(o.snapshot()['ready'])
+    assert o.reconcile()  # first pass: it has to succeed before the operator is ever ready
+    assert seen == [False] and o.snapshot()['ready']
+    seen.clear()
+    assert o.reconcile()
+    assert seen == [True]  # a request that lands mid-pass still sees a ready operator
+
+
+def test_readiness_is_cleared_on_lost_leadership(setup, monkeypatch):
+    k, o = setup
+    assert o.reconcile() and o.snapshot()['ready']
+    monkeypatch.setattr(o.lease, 'acquire', lambda now=None: False)
+    assert not o.reconcile()
+    assert not o.ready and not o.snapshot()['ready']
+
+
+def test_readiness_is_cleared_when_leadership_is_lost_mid_pass(setup, monkeypatch):
+    k, o = setup
+    assert o.reconcile() and o.ready
+    leases = iter([True, False])
+    monkeypatch.setattr(o.lease, 'acquire', lambda now=None: next(leases, False))
+    assert not o.reconcile()
+    assert not o.ready
+
+
+def test_readiness_goes_stale_after_thirty_seconds(setup):
+    k, o = setup
+    assert o.reconcile()
+    o.last_reconcile = time.time() - 29
+    assert o.snapshot()['ready']
+    o.last_reconcile = time.time() - 31
+    assert not o.snapshot()['ready']
