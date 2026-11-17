@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # Same image as all.dockerfile, built from the Raspberry Pi requirements only.
 
-FROM python:3.14-slim AS builder
+FROM python:3.15-slim AS builder
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc libc6-dev \
@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r /tmp/requirements/requirements.raspi.txt
 
 
-FROM python:3.14-slim AS runner
+FROM python:3.15-slim AS runner
 
 ENV VIRTUAL_ENV=/opt/venv \
     PATH="/opt/venv/bin:$PATH" \
