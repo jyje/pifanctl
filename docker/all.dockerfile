@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM python:3.14-slim AS builder
+FROM python:3.15-slim AS builder
 
 # gcc is only needed to compile RPi.GPIO. It stays in this stage.
 RUN apt-get update \
@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r /tmp/requirements/requirements.all.txt
 
 
-FROM python:3.14-slim AS runner
+FROM python:3.15-slim AS runner
 
 ENV VIRTUAL_ENV=/opt/venv \
     PATH="/opt/venv/bin:$PATH" \
